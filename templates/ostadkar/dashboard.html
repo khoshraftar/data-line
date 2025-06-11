@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome to Your Dashboard</h1>
+            <p class="lead">You are now authenticated and can access protected resources.</p>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Your Profile</h5>
+                    <p class="card-text">You are logged in with OAuth authentication.</p>
+                    <a href="{% url 'ostadkar:home' %}" class="btn btn-primary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}دیتا لاین - پنچره خدمات هوشمند کنار دیوار{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="header text-center mb-5">
+        <h1 class="display-4">به دیتا لاین خوش آمدید</h1>
+        <p class="lead">پنچره خدمات هوشمند کنار دیوار</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 text-primary mb-3">استادکار</h2>
+                    <p>سامانه هوشمند مدیریت خدمات حرفه‌ای</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 text-primary mb-3">رزومه یار</h2>
+                    <p>سامانه هوشمند ساخت و مدیریت رزومه حرفه‌ای</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{% url 'resumeyar:dashboard' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            ورود به داشبورد
+        </a>
+    </div>
+</div>
+{% endblock %} 
