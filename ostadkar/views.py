@@ -5,8 +5,8 @@ import requests
 from urllib.parse import urlencode
 from django.contrib import messages
 from functools import wraps
-from .models import SampleWork, UserAuth
-from .forms import SampleWorkForm
+from .models import SampleWork, UserAuth, PostImage
+from .forms import SampleWorkForm, SampleWorkImageFormSet, PostImageForm
 
 def session_auth_required(view_func):
     @wraps(view_func)
@@ -150,11 +150,22 @@ def edit_sample_work(request, work_id):
         form = SampleWorkForm(request.POST, request.FILES, instance=work)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Sample work updated successfully!')
-            return redirect('ostadkar:sample_works')
+            
+            # Handle the formset
+            formset = SampleWorkImageFormSet(request.POST, request.FILES, instance=work)
+            if formset.is_valid():
+                formset.save()
+                messages.success(request, 'Sample work and images updated successfully!')
+                return redirect('ostadkar:sample_works')
     else:
         form = SampleWorkForm(instance=work)
-    return render(request, 'ostadkar/edit_sample_work.html', {'form': form, 'work': work})
+        formset = SampleWorkImageFormSet(instance=work)
+    
+    return render(request, 'ostadkar/edit_sample_work.html', {
+        'form': form,
+        'formset': formset,
+        'work': work
+    })
 
 @session_auth_required
 def delete_sample_work(request, work_id):
@@ -164,3 +175,30 @@ def delete_sample_work(request, work_id):
         messages.success(request, 'Sample work deleted successfully!')
         return redirect('ostadkar:sample_works')
     return render(request, 'ostadkar/delete_sample_work.html', {'work': work})
+
+@session_auth_required
+def add_post_image(request, post_token):
+    if request.method == 'POST':
+        form = PostImageForm(request.POST)
+        if form.is_valid():
+            post_image = form.save(commit=False)
+            post_image.post_token = post_token
+            post_image.user = request.user_auth
+            post_image.save()
+            messages.success(request, 'Images added successfully!')
+            return redirect('ostadkar:post_images', post_token=post_token)
+    else:
+        form = PostImageForm()
+    
+    return render(request, 'ostadkar/add_post_image.html', {
+        'form': form,
+        'post_token': post_token
+    })
+
+@session_auth_required
+def post_images(request, post_token):
+    post_images = PostImage.objects.filter(post_token=post_token, user=request.user_auth)
+    return render(request, 'ostadkar/post_images.html', {
+        'post_images': post_images,
+        'post_token': post_token
+    })
