@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}رزومه یار - دیتا لاین{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="header text-center mb-5">
+        <h1 class="display-4">به رزومه یار خوش آمدید</h1>
+        <p class="lead">با ساخت رزومه حرفه‌ای، شانس استخدام خود را افزایش دهید</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h2 class="h4 text-primary mb-3">رزومه حرفه‌ای بسازید</h2>
+                    <p>با استفاده از قالب‌های حرفه‌ای و راهنمایی‌های هوشمند، رزومه‌ای تاثیرگذار بسازید که توجه کارفرمایان را جلب کند.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'resumeyar:oauth_login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            ورود و ساخت رزومه
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

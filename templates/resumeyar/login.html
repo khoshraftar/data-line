@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ورود به رزومه یار - دیتا لاین{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <h1 class="h3 mb-4">ورود به رزومه یار</h1>
+                    <p class="text-muted mb-4">برای ساخت و مدیریت رزومه، ابتدا وارد شوید</p>
+                    
+                    <a href="{% url 'resumeyar:oauth_login' %}" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        لاگین با دیوار
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
