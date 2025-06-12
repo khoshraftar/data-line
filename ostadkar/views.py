@@ -116,7 +116,7 @@ def oauth_callback(request):
             request.session.set_expiry(3600)  # 1 hour
             
             # Redirect to add post image page
-            return redirect('ostadkar:add_post_image', post_token='default')
+            return redirect('ostadkar:add_sample_work')
             
         except requests.RequestException as e:
             return render(request, 'ostadkar/error.html', {'error': f'Failed to get user info: {str(e)}'})
