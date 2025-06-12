@@ -52,23 +52,38 @@ def oauth_callback(request):
     }
     
     try:
+        # First try to get access token
         response = requests.post(settings.OAUTH_TOKEN_URL, data=token_data)
         response.raise_for_status()
         token_info = response.json()
         
-        # Get user_id using the access token
         access_token = token_info.get('access_token')
-        user_info_response = requests.get(settings.OAUTH_USER_INFO_URL, headers={'Authorization': f'Bearer {access_token}'})
-        user_info_response.raise_for_status()
-        user_info = user_info_response.json()
-        user_id = user_info.get('user_id')
+        if not access_token:
+            return render(request, 'ostadkar/error.html', {'error': 'Access token not received from OAuth provider'})
         
-        # Store user_id in session
-        request.session['user_id'] = user_id
-        
-        return redirect('ostadkar:add_sample_work')
+        # Then try to get user info
+        try:
+            user_info_response = requests.get(
+                settings.OAUTH_USER_INFO_URL,
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            user_info_response.raise_for_status()
+            user_info = user_info_response.json()
+            
+            user_id = user_info.get('user_id')
+            if not user_id:
+                return render(request, 'ostadkar/error.html', {'error': 'User ID not found in user info response'})
+            
+            # Store user_id in session
+            request.session['user_id'] = user_id
+            
+            return redirect('ostadkar:add_sample_work')
+            
+        except requests.RequestException as e:
+            return render(request, 'ostadkar/error.html', {'error': f'Failed to get user info: {str(e)}'})
+            
     except requests.RequestException as e:
-        return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token or user info: {str(e)}'})
+        return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
 
 @login_required(login_url='ostadkar:login')
 def sample_works(request):
