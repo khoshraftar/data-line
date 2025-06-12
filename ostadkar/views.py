@@ -15,6 +15,9 @@ def home(request):
 
 def login(request):
     """Show login page"""
+    # If user is already authenticated, redirect to add sample work
+    if 'user_id' in request.session:
+        return redirect('ostadkar:add_sample_work')
     return render(request, 'ostadkar/login.html')
 
 def oauth_login(request):
@@ -78,9 +81,13 @@ def oauth_callback(request):
             if not user_id:
                 return render(request, 'ostadkar/error.html', {'error': 'User ID not found in user info response'})
             
-            # Store user_id in session
+            # Store only user_id in session
             request.session['user_id'] = user_id
             
+            # Set session expiry
+            request.session.set_expiry(3600)  # 1 hour
+            
+            # Redirect to add sample work page
             return redirect('ostadkar:add_sample_work')
             
         except requests.RequestException as e:
