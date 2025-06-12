@@ -1,36 +1,48 @@
 {% extends 'base.html' %}
 
-{% block title %}Images for Post {{ post_token }} - Ostadkar{% endblock %}
+{% block title %}Post Images - Ostadkar{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Images for Post {{ post_token }}</h2>
-                <a href="{% url 'ostadkar:add_post_image' post_token=post_token %}" class="btn btn-primary">
-                    Add New Images
-                </a>
-            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="card-title mb-3">{{ sample_work.title }}</h1>
+                    <p class="card-text lead mb-4">{{ sample_work.description }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">Images</h2>
+                        <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary">
+                            Add More Images
+                        </a>
+                    </div>
 
-            {% for post_image in post_images %}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h4>Description: {{ post_image.description }}</h4>
+                    {% if post_images %}
                         <div class="row">
-                            {% for image_url in post_image.get_images_list %}
-                                <div class="col-md-4 mb-3">
-                                    <img src="{{ image_url }}" class="img-fluid" alt="Post Image">
+                            {% for image in post_images %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100">
+                                        <img src="{{ image.image.url }}" class="card-img-top" alt="Post image">
+                                        <div class="card-body">
+                                            <p class="card-text text-muted">
+                                                Added on {{ image.created_at|date:"F j, Y" }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No images have been added yet.
+                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary ml-3">
+                                Add Images
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
-            {% empty %}
-                <div class="alert alert-info">
-                    No images have been added yet.
-                </div>
-            {% endfor %}
+            </div>
         </div>
     </div>
 </div>

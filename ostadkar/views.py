@@ -5,8 +5,8 @@ import requests
 from urllib.parse import urlencode
 from django.contrib import messages
 from functools import wraps
-from .models import SampleWork, UserAuth, PostImage
-from .forms import SampleWorkForm, SampleWorkImageFormSet, PostImageForm
+from .models import UserAuth, PostImage, SampleWork
+from .forms import SampleWorkForm, SampleWorkImageForm, MultiImageUploadForm 
 
 def session_auth_required(view_func):
     @wraps(view_func)
@@ -37,7 +37,7 @@ def login(request):
     if 'user_id' in request.session:
         try:
             UserAuth.objects.get(user_id=request.session['user_id'])
-            return redirect('ostadkar:add_sample_work')
+            return redirect('ostadkar:add_post_image', post_token='default')
         except UserAuth.DoesNotExist:
             request.session.flush()
     return render(request, 'ostadkar/login.html')
@@ -115,8 +115,8 @@ def oauth_callback(request):
             # Set session expiry
             request.session.set_expiry(3600)  # 1 hour
             
-            # Redirect to add sample work page
-            return redirect('ostadkar:add_sample_work')
+            # Redirect to add post image page
+            return redirect('ostadkar:add_post_image', post_token='default')
             
         except requests.RequestException as e:
             return render(request, 'ostadkar/error.html', {'error': f'Failed to get user info: {str(e)}'})
@@ -125,80 +125,54 @@ def oauth_callback(request):
         return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
 
 @session_auth_required
-def sample_works(request):
-    works = SampleWork.objects.filter(user=request.user_auth)
-    return render(request, 'ostadkar/sample_works.html', {'works': works})
-
-@session_auth_required
 def add_sample_work(request):
     if request.method == 'POST':
-        form = SampleWorkForm(request.POST, request.FILES)
+        form = SampleWorkForm(request.POST)
         if form.is_valid():
-            work = form.save(commit=False)
-            work.user = request.user_auth
-            work.save()
+            sample_work = form.save(commit=False)
+            sample_work.user = request.user_auth
+            sample_work.save()
             messages.success(request, 'Sample work added successfully!')
-            return redirect('ostadkar:sample_works')
+            return redirect('ostadkar:upload_sample_work_images', work_id=sample_work.uuid)
     else:
         form = SampleWorkForm()
+    
     return render(request, 'ostadkar/add_sample_work.html', {'form': form})
 
 @session_auth_required
-def edit_sample_work(request, work_id):
-    work = get_object_or_404(SampleWork, id=work_id, user=request.user_auth)
+def upload_sample_work_images(request, work_id):
     if request.method == 'POST':
-        form = SampleWorkForm(request.POST, request.FILES, instance=work)
+        form = MultiImageUploadForm(request.POST)
         if form.is_valid():
-            form.save()
-            
-            # Handle the formset
-            formset = SampleWorkImageFormSet(request.POST, request.FILES, instance=work)
-            if formset.is_valid():
-                formset.save()
-                messages.success(request, 'Sample work and images updated successfully!')
-                return redirect('ostadkar:sample_works')
+            sample_work = SampleWork.objects.get(uuid=work_id, user=request.user_auth)
+            for image in form.cleaned_data['images']:
+                post_image = PostImage.objects.create(
+                    sample_work=sample_work,
+                    image=image
+                )
+
+            messages.success(request, 'Images uploaded successfully!')
+            return redirect('ostadkar:post_images', post_token=sample_work.post_token)
     else:
-        form = SampleWorkForm(instance=work)
-        formset = SampleWorkImageFormSet(instance=work)
+        form = SampleWorkImageForm()
     
-    return render(request, 'ostadkar/edit_sample_work.html', {
+    return render(request, 'ostadkar/upload_sample_work_images.html', {
         'form': form,
-        'formset': formset,
-        'work': work
+        'work_id': work_id
     })
 
-@session_auth_required
-def delete_sample_work(request, work_id):
-    work = get_object_or_404(SampleWork, id=work_id, user=request.user_auth)
-    if request.method == 'POST':
-        work.delete()
-        messages.success(request, 'Sample work deleted successfully!')
-        return redirect('ostadkar:sample_works')
-    return render(request, 'ostadkar/delete_sample_work.html', {'work': work})
-
-@session_auth_required
-def add_post_image(request, post_token):
-    if request.method == 'POST':
-        form = PostImageForm(request.POST)
-        if form.is_valid():
-            post_image = form.save(commit=False)
-            post_image.post_token = post_token
-            post_image.user = request.user_auth
-            post_image.save()
-            messages.success(request, 'Images added successfully!')
-            return redirect('ostadkar:post_images', post_token=post_token)
-    else:
-        form = PostImageForm()
-    
-    return render(request, 'ostadkar/add_post_image.html', {
-        'form': form,
-        'post_token': post_token
-    })
-
-@session_auth_required
 def post_images(request, post_token):
-    post_images = PostImage.objects.filter(post_token=post_token, user=request.user_auth)
+    sample_work = get_object_or_404(SampleWork, post_token=post_token, user=request.user_auth)
+    post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'ostadkar/post_images.html', {
+        'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token
+    })
+
+@session_auth_required
+def sample_works(request):
+    sample_works = SampleWork.objects.filter(user=request.user_auth)
+    return render(request, 'ostadkar/sample_works.html', {
+        'sample_works': sample_works
     })

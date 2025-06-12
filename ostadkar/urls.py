@@ -8,10 +8,8 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('oauth/login/', views.oauth_login, name='oauth_login'),
     path('oauth/callback/', views.oauth_callback, name='oauth_callback'),
+    path('sample-work/add/', views.add_sample_work, name='add_sample_work'),
+    path('sample-work/upload-images/<uuid:work_id>/', views.upload_sample_work_images, name='upload_sample_work_images'),
+    path('sample-work/post-images/<str:post_token>/', views.post_images, name='post_images'),
     path('sample-works/', views.sample_works, name='sample_works'),
-    path('sample-works/add/', views.add_sample_work, name='add_sample_work'),
-    path('sample-works/<int:work_id>/edit/', views.edit_sample_work, name='edit_sample_work'),
-    path('sample-works/<int:work_id>/delete/', views.delete_sample_work, name='delete_sample_work'),
-    path('post/<str:post_token>/images/', views.post_images, name='post_images'),
-    path('post/<str:post_token>/images/add/', views.add_post_image, name='add_post_image'),
 ] 

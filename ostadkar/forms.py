@@ -1,44 +1,33 @@
 from django import forms
-from .models import SampleWork, SampleWorkImage, PostImage
+from .models import PostImage, SampleWork
 
 class SampleWorkForm(forms.ModelForm):
     class Meta:
         model = SampleWork
-        fields = ['title', 'description', 'main_image', 'additional_images']
+        fields = ['title', 'description']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-            'additional_images': forms.Textarea(attrs={
-                'rows': 5,
-                'placeholder': 'Enter image URLs with descriptions (one per line)\nFormat: URL|Description\nExample: https://example.com/image1.jpg|Description of image 1'
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter the title of the sample work'
             }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Enter a description for the sample work'
+            })
         }
-
-class SampleWorkImageForm(forms.ModelForm):
-    class Meta:
-        model = SampleWorkImage
-        fields = ['image', 'description']
-
-SampleWorkImageFormSet = forms.inlineformset_factory(
-    SampleWork,
-    SampleWorkImage,
-    form=SampleWorkImageForm,
-    extra=3,  # Number of empty forms to display
-    can_delete=True
-)
 
 class PostImageForm(forms.ModelForm):
     class Meta:
         model = PostImage
-        fields = ['description', 'images']
+        fields = ['image_url']
         widgets = {
-            'description': forms.Textarea(attrs={
+            'image_url': forms.TextInput(attrs={
                 'class': 'form-control',
-                'rows': 4,
-                'placeholder': 'Enter a general description for all images'
-            }),
-            'images': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5,
-                'placeholder': 'Enter image URLs (one per line)'
+                'placeholder': 'Enter the image URL'
             })
-        } 
+        }
+
+class MultiImageUploadForm(forms.Form):
+    images = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+

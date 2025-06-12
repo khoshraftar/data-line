@@ -1,42 +1,60 @@
 {% extends 'base.html' %}
 
+{% block title %}Sample Works - Ostadkar{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>My Sample Works</h2>
-        <a href="{% url 'add_sample_work' %}" class="btn btn-primary">Add New Work</a>
-    </div>
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-4">Sample Works</h1>
+            <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-primary">
+                Add New Sample Work
+            </a>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
 
-    <div class="row">
-        {% for work in works %}
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ work.image.url }}" class="card-img-top" alt="{{ work.title }}">
+    {% if sample_works %}
+        {% for work in sample_works %}
+            <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">{{ work.title }}</h5>
-                    <p class="card-text">{{ work.description|truncatewords:20 }}</p>
-                    <div class="btn-group">
-                        <a href="{% url 'edit_sample_work' work.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <a href="{% url 'delete_sample_work' work.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                    </div>
+                    <h2 class="card-title">{{ work.title }}</h2>
+                    <p class="card-text lead">{{ work.description }}</p>
+                    
+                    {% with images=work.postimage_set.all %}
+                        {% if images %}
+                            <div class="row mt-4">
+                                {% for image in images %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100">
+                                            <img src="{{ image.image.url }}" class="card-img-top" alt="Sample work image">
+                                            <div class="card-body">
+                                                <p class="card-text text-muted">
+                                                    Added on {{ image.created_at|date:"F j, Y" }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mt-3">
+                                No images have been added yet.
+                                <a href="{% url 'ostadkar:upload_sample_work_images' work.uuid %}" class="btn btn-primary ml-3">
+                                    Add Images
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                 </div>
             </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <p class="text-center">No sample works yet. Add your first work!</p>
-        </div>
         {% endfor %}
-    </div>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't added any sample works yet.
+            <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-primary ml-3">
+                Add Your First Sample Work
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %} 
