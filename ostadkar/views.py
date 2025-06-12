@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from functools import wraps
 from .models import UserAuth, PostImage, SampleWork
-from .forms import SampleWorkForm, SampleWorkImageForm, MultiImageUploadForm 
+from .forms import SampleWorkForm, SampleWorkImageForm 
 
 def session_auth_required(view_func):
     @wraps(view_func)
@@ -141,16 +141,20 @@ def add_sample_work(request):
 
 @session_auth_required
 def upload_sample_work_images(request, work_id):
+    sample_work = get_object_or_404(SampleWork, uuid=work_id, user=request.user_auth)
+    
     if request.method == 'POST':
-        form = MultiImageUploadForm(request.POST)
+        form = SampleWorkImageForm(request.POST, request.FILES)
         if form.is_valid():
-            sample_work = SampleWork.objects.get(uuid=work_id, user=request.user_auth)
-            for image in form.cleaned_data['images']:
-                post_image = PostImage.objects.create(
+            files = request.FILES.getlist('images')
+            description = form.cleaned_data.get('description', '')
+            
+            for image_file in files:
+                PostImage.objects.create(
                     sample_work=sample_work,
-                    image=image
+                    image=image_file
                 )
-
+            
             messages.success(request, 'Images uploaded successfully!')
             return redirect('ostadkar:post_images', post_token=sample_work.post_token)
     else:
@@ -158,7 +162,7 @@ def upload_sample_work_images(request, work_id):
     
     return render(request, 'ostadkar/upload_sample_work_images.html', {
         'form': form,
-        'work_id': work_id
+        'sample_work': sample_work
     })
 
 def post_images(request, post_token):
