@@ -125,12 +125,13 @@ def oauth_callback(request):
         return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
 
 @session_auth_required
-def add_sample_work(request):
+def add_sample_work(request, post_token):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST)
         if form.is_valid():
             sample_work = form.save(commit=False)
             sample_work.user = request.user_auth
+            sample_work.post_token = post_token
             sample_work.save()
             messages.success(request, 'Sample work added successfully!')
             return redirect('ostadkar:upload_sample_work_images', work_id=sample_work.uuid)
