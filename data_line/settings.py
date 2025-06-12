@@ -105,9 +105,9 @@ OAUTH_APPS_SETTINGS = {
     "ostadkar": {
         "api_key": os.getenv('OSTADKAR_API_KEY'),
         "oauth_client_id": os.getenv('OSTADKAR_OAUTH_CLIENT_ID'),
-        "oauth_client_secret": os.getenv('OSTADKAR_OAUTH_CLIENT_SECRET', ''),
-        "oauth_redirect_uri": os.getenv('OSTADKAR_OAUTH_REDIRECT_URI', ''),
-        "oauth_scope": os.getenv('OSTADKAR_OAUTH_SCOPE', 'USER_ID'),
+        "oauth_client_secret": os.getenv('OSTADKAR_OAUTH_CLIENT_SECRET'),
+        "oauth_redirect_uri": os.getenv('OSTADKAR_OAUTH_REDIRECT_URI'),
+        "oauth_scope": os.getenv('OSTADKAR_OAUTH_SCOPE', 'USER_ID&'),
     },
     "resumeyar": {
         "api_key": os.getenv('RESUMEYAR_API_KEY', ''),
