@@ -28,6 +28,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['data-line.ir']
 
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = ['https://data-line.ir']
+
 
 # Application definition
 
