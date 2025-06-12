@@ -27,6 +27,7 @@ def oauth_login(request):
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
         'scope': oauth_settings['oauth_scope'],
+        'state': '1234567890',
     }
     
     # Construct authorization URL
