@@ -3,10 +3,28 @@ from django.conf import settings
 from django.urls import reverse
 import requests
 from urllib.parse import urlencode
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import SampleWork
+from functools import wraps
+from .models import SampleWork, UserAuth
 from .forms import SampleWorkForm
+
+def session_auth_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if 'user_id' not in request.session:
+            return redirect('ostadkar:login')
+        
+        # Get user auth from database
+        try:
+            user_auth = UserAuth.objects.get(user_id=request.session['user_id'])
+            request.user_auth = user_auth
+        except UserAuth.DoesNotExist:
+            # Clear session if user not found in database
+            request.session.flush()
+            return redirect('ostadkar:login')
+            
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 # Create your views here.
 
@@ -17,7 +35,11 @@ def login(request):
     """Show login page"""
     # If user is already authenticated, redirect to add sample work
     if 'user_id' in request.session:
-        return redirect('ostadkar:add_sample_work')
+        try:
+            UserAuth.objects.get(user_id=request.session['user_id'])
+            return redirect('ostadkar:add_sample_work')
+        except UserAuth.DoesNotExist:
+            request.session.flush()
     return render(request, 'ostadkar/login.html')
 
 def oauth_login(request):
@@ -81,7 +103,13 @@ def oauth_callback(request):
             if not user_id:
                 return render(request, 'ostadkar/error.html', {'error': 'User ID not found in user info response'})
             
-            # Store only user_id in session
+            # Create or update user auth in database
+            user_auth, created = UserAuth.objects.update_or_create(
+                user_id=user_id,
+                defaults={'access_token': access_token}
+            )
+            
+            # Store user_id in session
             request.session['user_id'] = user_id
             
             # Set session expiry
@@ -96,18 +124,18 @@ def oauth_callback(request):
     except requests.RequestException as e:
         return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
 
-@login_required(login_url='ostadkar:login')
+@session_auth_required
 def sample_works(request):
-    works = SampleWork.objects.filter(user=request.user)
+    works = SampleWork.objects.filter(user=request.user_auth)
     return render(request, 'ostadkar/sample_works.html', {'works': works})
 
-@login_required(login_url='ostadkar:login')
+@session_auth_required
 def add_sample_work(request):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST, request.FILES)
         if form.is_valid():
             work = form.save(commit=False)
-            work.user = request.user
+            work.user = request.user_auth
             work.save()
             messages.success(request, 'Sample work added successfully!')
             return redirect('ostadkar:sample_works')
@@ -115,9 +143,9 @@ def add_sample_work(request):
         form = SampleWorkForm()
     return render(request, 'ostadkar/add_sample_work.html', {'form': form})
 
-@login_required(login_url='ostadkar:login')
+@session_auth_required
 def edit_sample_work(request, work_id):
-    work = get_object_or_404(SampleWork, id=work_id, user=request.user)
+    work = get_object_or_404(SampleWork, id=work_id, user=request.user_auth)
     if request.method == 'POST':
         form = SampleWorkForm(request.POST, request.FILES, instance=work)
         if form.is_valid():
@@ -128,9 +156,9 @@ def edit_sample_work(request, work_id):
         form = SampleWorkForm(instance=work)
     return render(request, 'ostadkar/edit_sample_work.html', {'form': form, 'work': work})
 
-@login_required(login_url='ostadkar:login')
+@session_auth_required
 def delete_sample_work(request, work_id):
-    work = get_object_or_404(SampleWork, id=work_id, user=request.user)
+    work = get_object_or_404(SampleWork, id=work_id, user=request.user_auth)
     if request.method == 'POST':
         work.delete()
         messages.success(request, 'Sample work deleted successfully!')
