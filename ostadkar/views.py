@@ -55,20 +55,19 @@ def oauth_callback(request):
         response.raise_for_status()
         token_info = response.json()
         
-        # Store token info in session
-        request.session['access_token'] = token_info.get('access_token')
-        request.session['refresh_token'] = token_info.get('refresh_token')
+        # Get user_id using the access token
+        access_token = token_info.get('access_token')
+        user_info_response = requests.get(settings.OAUTH_USER_INFO_URL, headers={'Authorization': f'Bearer {access_token}'})
+        user_info_response.raise_for_status()
+        user_info = user_info_response.json()
+        user_id = user_info.get('user_id')
         
-        return redirect('ostadkar:dashboard')
+        # Store user_id in session
+        request.session['user_id'] = user_id
+        
+        return redirect('ostadkar:add_sample_work')
     except requests.RequestException as e:
-        return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
-
-def dashboard(request):
-    """Protected dashboard view"""
-    if 'access_token' not in request.session:
-        return redirect('ostadkar:login')
-    
-    return render(request, 'ostadkar/dashboard.html')
+        return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token or user info: {str(e)}'})
 
 @login_required(login_url='ostadkar:login')
 def sample_works(request):

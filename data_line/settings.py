@@ -120,6 +120,7 @@ OAUTH_APPS_SETTINGS = {
                   
 OAUTH_AUTHORIZATION_URL = 'https://oauth.divar.ir/oauth2/auth'
 OAUTH_TOKEN_URL = 'https://oauth.divar.ir/oauth2/token'
+OAUTH_USER_INFO_URL = 'https://open-api.divar.ir/v1/open-platform/users'
 
 
 # Internationalization
