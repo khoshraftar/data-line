@@ -12,4 +12,6 @@ urlpatterns = [
     path('sample-works/add/', views.add_sample_work, name='add_sample_work'),
     path('sample-works/<int:work_id>/edit/', views.edit_sample_work, name='edit_sample_work'),
     path('sample-works/<int:work_id>/delete/', views.delete_sample_work, name='delete_sample_work'),
+    path('post/<str:post_token>/images/', views.post_images, name='post_images'),
+    path('post/<str:post_token>/images/add/', views.add_post_image, name='add_post_image'),
 ] 
