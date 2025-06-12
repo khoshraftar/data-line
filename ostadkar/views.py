@@ -63,9 +63,13 @@ def oauth_callback(request):
         
         # Then try to get user info
         try:
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'X-API-Key': oauth_settings['api_key']
+            }
             user_info_response = requests.get(
                 settings.OAUTH_USER_INFO_URL,
-                headers={'Authorization': f'Bearer {access_token}'}
+                headers=headers
             )
             user_info_response.raise_for_status()
             user_info = user_info_response.json()
