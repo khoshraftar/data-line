@@ -17,16 +17,6 @@ class SampleWorkForm(forms.ModelForm):
             })
         }
 
-class PostImageForm(forms.ModelForm):
-    class Meta:
-        model = PostImage
-        fields = ['image_url']
-        widgets = {
-            'image_url': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter the image URL'
-            })
-        }
 
 class MultiImageUploadForm(forms.Form):
     images = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
