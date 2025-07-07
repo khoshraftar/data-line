@@ -147,6 +147,34 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# S3 Storage Configuration (Media files only)
+USE_S3 = os.getenv('USE_S3', 'True').lower() == 'true'
+
+if USE_S3:
+    # Add django-storages to INSTALLED_APPS
+    if 'storages' not in INSTALLED_APPS:
+        INSTALLED_APPS.append('storages')
+    
+    # AWS Settings
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
+    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
+    
+    # S3 Media settings only (static files remain local)
+    AWS_S3_MEDIA_LOCATION = 'media'
+    DEFAULT_FILE_STORAGE = 'data_line.storage.MediaStorage'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_S3_MEDIA_LOCATION}/'
+    
+    # S3 Settings
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = False
+
 # Login URL for @login_required
 LOGIN_URL = '/ostadkar/login/'
 

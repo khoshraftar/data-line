@@ -2,6 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
+import os
+
+def sample_work_image_path(instance, filename):
+    """Generate file path for sample work images"""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return f'sample_works/{instance.sample_work.uuid}/{filename}'
 
 # Create your models here.
 
@@ -28,7 +35,7 @@ class SampleWork(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
 
     def __str__(self):
-        return f"Image for {self.sample_work.title}"
+        return self.title
 
     class Meta:
         ordering = ['created_at']
@@ -36,7 +43,7 @@ class SampleWork(models.Model):
         verbose_name_plural = 'نمونه کارها'
 
 class PostImage(models.Model):
-    image = models.ImageField(upload_to='sample_works/images/', verbose_name='تصویر')
+    image = models.ImageField(upload_to=sample_work_image_path, verbose_name='تصویر')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     sample_work = models.ForeignKey(SampleWork, on_delete=models.CASCADE, verbose_name='نمونه کار')
 
