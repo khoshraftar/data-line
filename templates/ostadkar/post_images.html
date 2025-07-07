@@ -11,12 +11,7 @@
                     <h1 class="card-title mb-3">{{ sample_work.title }}</h1>
                     <p class="card-text lead mb-4">{{ sample_work.description }}</p>
                     
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="h4 mb-0">Images</h2>
-                        <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary">
-                            Add More Images
-                        </a>
-                    </div>
+                    <h2 class="h4 mb-4">Images</h2>
 
                     {% if post_images %}
                         <div class="row">
@@ -36,9 +31,6 @@
                     {% else %}
                         <div class="alert alert-info">
                             No images have been added yet.
-                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary ml-3">
-                                Add Images
-                            </a>
                         </div>
                     {% endif %}
                 </div>
