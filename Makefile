@@ -17,4 +17,10 @@ install:
 # Run Django development server
 runserver:
 	@echo "Starting Django development server..."
-	python manage.py runserver 127.0.0.1:8001 
+	@if [ -f .env ]; then \
+		echo "Loading environment variables from .env file..."; \
+		export $$(cat .env | xargs) && python manage.py runserver 127.0.0.1:8001; \
+	else \
+		echo "No .env file found. Running without environment variables..."; \
+		python manage.py runserver 127.0.0.1:8001; \
+	fi 
