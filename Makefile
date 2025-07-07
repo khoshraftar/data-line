@@ -19,7 +19,7 @@ runserver:
 	@echo "Starting Django development server..."
 	@if [ -f .env ]; then \
 		echo "Loading environment variables from .env file..."; \
-		export $$(cat .env | xargs) && python manage.py runserver 127.0.0.1:8001; \
+		export $$(grep -v '^#' .env | grep -v '^$$' | xargs) && python manage.py runserver 127.0.0.1:8001; \
 	else \
 		echo "No .env file found. Running without environment variables..."; \
 		python manage.py runserver 127.0.0.1:8001; \
