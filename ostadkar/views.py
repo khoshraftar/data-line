@@ -37,7 +37,7 @@ def login(request):
     if 'user_id' in request.session:
         try:
             UserAuth.objects.get(user_id=request.session['user_id'])
-            return redirect('ostadkar:add_post_image', post_token='default')
+            return redirect('ostadkar:post_images', post_token='default1')
         except UserAuth.DoesNotExist:
             request.session.flush()
     return render(request, 'ostadkar/login.html')
@@ -168,7 +168,9 @@ def upload_sample_work_images(request, work_id):
     })
 
 def post_images(request, post_token):
-    sample_work = get_object_or_404(SampleWork, post_token=post_token, user=request.user_auth)
+    # For public access, we need to find the sample work by post_token only
+    # without requiring user authentication
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
     post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'ostadkar/post_images.html', {
         'sample_work': sample_work,
