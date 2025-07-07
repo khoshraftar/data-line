@@ -21,19 +21,39 @@ class SampleWorkForm(forms.ModelForm):
     class Meta:
         model = SampleWork
         fields = ['title', 'description']
+        labels = {
+            'title': 'عنوان نمونه کار',
+            'description': 'توضیحات نمونه کار',
+        }
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter description', 'rows': 4}),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'عنوان نمونه کار خود را وارد کنید',
+                'dir': 'rtl'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'placeholder': 'توضیحات نمونه کار خود را وارد کنید', 
+                'rows': 4,
+                'dir': 'rtl'
+            }),
         }
 
 
 class SampleWorkImageForm(forms.Form):
     images = MultipleFileField(
         required=True,
-        help_text='You can select multiple images at once.'
+        help_text='می‌توانید چندین تصویر را همزمان انتخاب کنید.',
+        label='تصاویر'
     )
     description = forms.CharField(
-        widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter a description for these images', 'rows': 3}),
+        label='توضیحات تصاویر',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control', 
+            'placeholder': 'توضیحات مربوط به این تصاویر را وارد کنید', 
+            'rows': 3,
+            'dir': 'rtl'
+        }),
         required=False
     )
 

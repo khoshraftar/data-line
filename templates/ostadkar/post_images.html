@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Post Images - Ostadkar{% endblock %}
+{% block title %}تصاویر نمونه کار - استادکار{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" dir="rtl">
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
@@ -11,17 +11,17 @@
                     <h1 class="card-title mb-3">{{ sample_work.title }}</h1>
                     <p class="card-text lead mb-4">{{ sample_work.description }}</p>
                     
-                    <h2 class="h4 mb-4">Images</h2>
+                    <h2 class="h4 mb-4">تصاویر</h2>
 
                     {% if post_images %}
                         <div class="row">
                             {% for image in post_images %}
                                 <div class="col-md-4 mb-4">
                                     <div class="card h-100">
-                                        <img src="{{ image.image.url }}" class="card-img-top" alt="Post image">
+                                        <img src="{{ image.image.url }}" class="card-img-top" alt="تصویر نمونه کار">
                                         <div class="card-body">
                                             <p class="card-text text-muted">
-                                                Added on {{ image.created_at|date:"F j, Y" }}
+                                                اضافه شده در {{ image.created_at|date:"j F Y" }}
                                             </p>
                                         </div>
                                     </div>
@@ -30,7 +30,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info">
-                            No images have been added yet.
+                            هنوز تصویری اضافه نشده است.
                         </div>
                     {% endif %}
                 </div>

@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload Images - {{ sample_work.title }} - Ostadkar{% endblock %}
+{% block title %}آپلود تصاویر - {{ sample_work.title }} - استادکار{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" dir="rtl">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h1 class="card-title mb-4">Upload Images for "{{ sample_work.title }}"</h1>
+                    <h1 class="card-title mb-4">آپلود تصاویر برای "{{ sample_work.title }}"</h1>
                     
                     {% if form.errors %}
                         <div class="alert alert-danger">
-                            Please correct the errors below.
+                            لطفاً خطاهای زیر را اصلاح کنید.
                         </div>
                     {% endif %}
                     
@@ -20,7 +20,7 @@
                         {% csrf_token %}
                         
                         <div class="form-group mb-4">
-                            <label for="{{ form.images.id_for_label }}">Select Images</label>
+                            <label for="{{ form.images.id_for_label }}">انتخاب تصاویر</label>
                             {{ form.images }}
                             {% if form.images.help_text %}
                                 <small class="form-text text-muted">{{ form.images.help_text }}</small>
@@ -33,7 +33,7 @@
                         </div>
                         
                         <div class="form-group mb-4">
-                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            <label for="{{ form.description.id_for_label }}">توضیحات</label>
                             {{ form.description }}
                             {% if form.description.errors %}
                                 <div class="invalid-feedback d-block">
@@ -43,8 +43,8 @@
                         </div>
                         
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">Upload Images</button>
-                            <a href="{% url 'ostadkar:post_images' sample_work.post_token %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">آپلود تصاویر</button>
+                            <a href="{% url 'ostadkar:post_images' sample_work.post_token %}" class="btn btn-secondary">انصراف</a>
                         </div>
                     </form>
                 </div>
