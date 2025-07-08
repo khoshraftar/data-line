@@ -165,6 +165,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Media files configuration
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Local fallback for development
+
 # AWS Settings
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -176,7 +179,12 @@ AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
 AWS_S3_MEDIA_LOCATION = 'media'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_S3_MEDIA_LOCATION}/'
+# Use S3 URL for media files
+if AWS_S3_CUSTOM_DOMAIN:
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_S3_MEDIA_LOCATION}/'
+else:
+    MEDIA_URL = '/media/'
+
 # S3 Settings
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
@@ -184,6 +192,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_FILE_OVERWRITE = False
 AWS_QUERYSTRING_AUTH = False
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
 
 # Login URL for @login_required
 LOGIN_URL = '/ostadkar/login/'

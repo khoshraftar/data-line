@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.conf import settings
+from storages.backends.s3boto3 import S3Boto3Storage
 import uuid
 import os
 
@@ -43,7 +45,11 @@ class SampleWork(models.Model):
         verbose_name_plural = 'نمونه کارها'
 
 class PostImage(models.Model):
-    image = models.ImageField(upload_to=sample_work_image_path, verbose_name='تصویر')
+    image = models.ImageField(
+        upload_to=sample_work_image_path, 
+        verbose_name='تصویر',
+        storage=S3Boto3Storage()
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     sample_work = models.ForeignKey(SampleWork, on_delete=models.CASCADE, verbose_name='نمونه کار')
 
