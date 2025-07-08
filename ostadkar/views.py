@@ -137,7 +137,6 @@ def add_sample_work(request):
                 PostImage.objects.filter(sample_work=existing_sample_work).delete()
                 # Delete the sample work
                 existing_sample_work.delete()
-                messages.info(request, 'نمونه کار قبلی حذف شد و نمونه کار جدید ایجاد می‌شود.')
             
             # Create new sample work
             sample_work = form.save(commit=False)
@@ -185,7 +184,6 @@ def upload_sample_work_images(request, work_id):
                         image=image_file
                     )
                 
-                messages.success(request, f'{len(files)} تصویر با موفقیت آپلود شد!')
                 return redirect('ostadkar:post_images', post_token=sample_work.post_token)
                 
             except Exception as e:
