@@ -184,7 +184,7 @@ def upload_sample_work_images(request, work_id):
                         image=image_file
                     )
                 
-                return redirect('ostadkar:post_images', post_token=sample_work.post_token)
+                return redirect('ostadkar:post_images_preview', post_token=sample_work.post_token)
                 
             except Exception as e:
                 messages.error(request, f'خطا در آپلود تصاویر: {str(e)}')
@@ -212,8 +212,55 @@ def post_images(request, post_token):
     })
 
 @session_auth_required
+def post_images_preview(request, post_token):
+    # For authenticated users, find the sample work by post_token
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    
+    # Check if the current user owns this sample work
+    if sample_work.user != request.user_auth:
+        return render(request, 'ostadkar/permission_denied.html', {
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+        }, status=403)
+    
+    post_images = PostImage.objects.filter(sample_work=sample_work)
+    return render(request, 'ostadkar/post_images_preview.html', {
+        'sample_work': sample_work,
+        'post_images': post_images,
+        'post_token': post_token
+    })
+
+@session_auth_required
+def sample_work_preview(request, post_token):
+    # For authenticated users, find the sample work by post_token
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    post_images = PostImage.objects.filter(sample_work=sample_work)
+    return render(request, 'ostadkar/sample_work_preview.html', {
+        'sample_work': sample_work,
+        'post_images': post_images,
+        'post_token': post_token
+    })
+
+@session_auth_required
 def sample_works(request):
     sample_works = SampleWork.objects.filter(user=request.user_auth)
     return render(request, 'ostadkar/sample_works.html', {
         'sample_works': sample_works
+    })
+
+@session_auth_required
+def pre_payment(request, post_token):
+    # For authenticated users, find the sample work by post_token
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    
+    # Check if the current user owns this sample work
+    if sample_work.user != request.user_auth:
+        return render(request, 'ostadkar/permission_denied.html', {
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+        }, status=403)
+    
+    post_images = PostImage.objects.filter(sample_work=sample_work)
+    return render(request, 'ostadkar/pre_payment.html', {
+        'sample_work': sample_work,
+        'post_images': post_images,
+        'post_token': post_token
     })

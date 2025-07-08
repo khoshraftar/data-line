@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}پیش‌نمایش تصاویر نمونه کار - {{ sample_work.title }} - استادکار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="card-title mb-0">پیش‌نمایش تصاویر نمونه کار</h1>
+                        <div>
+                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> افزودن تصاویر
+                            </a>
+                            <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> ویرایش نمونه کار
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title mb-3">{{ sample_work.title }}</h2>
+                    <p class="card-text lead mb-4">{{ sample_work.description }}</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> ایجاد شده در: {{ sample_work.created_at|date:"j F Y" }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-images"></i> تعداد تصاویر: {{ post_images.count }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <h3 class="h4 mb-4">تصاویر</h3>
+
+                    {% if post_images %}
+                        <div class="row">
+                            {% for image in post_images %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100">
+                                        <img src="{{ image.image.url }}" class="card-img-top" alt="تصویر نمونه کار">
+                                        <div class="card-body">
+                                            <p class="card-text text-muted">
+                                                اضافه شده در {{ image.created_at|date:"j F Y" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            هنوز تصویری اضافه نشده است.
+                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="alert-link">افزودن تصاویر</a>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <h4 class="h5 mb-3">لینک‌های دسترسی</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">لینک عمومی (بدون احراز هویت)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'ostadkar:post_images' post_token %}" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(this)">
+                                        <i class="fas fa-copy"></i> کپی
+                                    </button>
+                                </div>
+                                <small class="text-muted">این لینک برای نمایش عمومی نمونه کار استفاده می‌شود.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">لینک پیش‌نمایش (احراز هویت شده)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'ostadkar:post_images_preview' post_token %}" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(this)">
+                                        <i class="fas fa-copy"></i> کپی
+                                    </button>
+                                </div>
+                                <small class="text-muted">این لینک نیاز به احراز هویت دارد.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Publish Button Section -->
+                    <div class="mt-5 pt-4 border-top">
+                        <div class="text-center">
+                            <h4 class="h5 mb-3">انتشار نمونه کار</h4>
+                            <p class="text-muted mb-4">برای انتشار نمونه کار در دیوار و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
+                            <a href="{% url 'ostadkar:pre_payment' post_token %}" class="btn btn-success btn-lg">
+                                <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
+                            </a>
+                            <small class="d-block text-muted mt-2">
+                                <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(button) {
+    const input = button.parentElement.querySelector('input');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> کپی شد';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %} 

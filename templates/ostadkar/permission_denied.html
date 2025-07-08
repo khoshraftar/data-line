@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}دسترسی غیرمجاز - استادکار{% endblock %}
+
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="text-center mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> دسترسی غیرمجاز
+                    </h2>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-lock fa-3x text-danger mb-3"></i>
+                        <h3 class="text-danger">خطای 403 - دسترسی غیرمجاز</h3>
+                    </div>
+                    
+                    <p class="lead">{{ message|default:"شما اجازه دسترسی به این صفحه را ندارید." }}</p>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'ostadkar:home' %}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> بازگشت به صفحه اصلی
+                        </a>
+                        <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> ایجاد نمونه کار جدید
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            اگر فکر می‌کنید این خطا اشتباه است، لطفاً با پشتیبانی تماس بگیرید.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}پیش‌پرداخت - انتشار نمونه کار در دیوار - استادکار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Card -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
+                    </h1>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead mb-0">نمونه کار شما آماده انتشار است!</p>
+                </div>
+            </div>
+
+            <!-- Sample Work Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-eye"></i> پیش‌نمایش نمونه کار
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>{{ sample_work.title }}</h4>
+                            <p class="text-muted">{{ sample_work.description }}</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> تاریخ ایجاد: {{ sample_work.created_at|date:"j F Y" }}
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-images"></i> تعداد تصاویر: {{ post_images.count }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            {% if post_images %}
+                                <div class="row">
+                                    {% for image in post_images|slice:":3" %}
+                                        <div class="col-4 mb-2">
+                                            <img src="{{ image.image.url }}" class="img-fluid rounded" alt="تصویر نمونه کار">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if post_images.count > 3 %}
+                                    <small class="text-muted">+ {{ post_images.count|add:"-3" }} تصویر دیگر</small>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Card -->
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-tag"></i> هزینه انتشار
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="text-success mb-2">بسته انتشار استاندارد</h4>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> انتشار در دیوار به مدت 30 روز</li>
+                                <li><i class="fas fa-check text-success"></i> نمایش در نتایج جستجو</li>
+                                <li><i class="fas fa-check text-success"></i> امکان دریافت پیام از مشتریان</li>
+                                <li><i class="fas fa-check text-success"></i> آمار بازدید و تماس</li>
+                                <li><i class="fas fa-check text-success"></i> پشتیبانی فنی</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="pricing-box">
+                                <h2 class="text-success mb-0">۵۰,۰۰۰</h2>
+                                <p class="text-muted mb-0">تومان</p>
+                                <small class="text-muted">شامل مالیات</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-credit-card"></i> روش‌های پرداخت
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="payment-method text-center p-3 border rounded">
+                                <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                                <h5>کارت بانکی</h5>
+                                <small class="text-muted">پرداخت آنلاین امن</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="payment-method text-center p-3 border rounded">
+                                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                                <h5>کیف پول</h5>
+                                <small class="text-muted">پرداخت سریع</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="payment-method text-center p-3 border rounded">
+                                <i class="fas fa-university fa-2x text-info mb-2"></i>
+                                <h5>درگاه بانکی</h5>
+                                <small class="text-muted">پرداخت مستقیم</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ostadkar:post_images_preview' post_token %}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-arrow-right"></i> بازگشت به پیش‌نمایش
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-success btn-lg w-100" onclick="startPayment()">
+                                <i class="fas fa-lock"></i> پرداخت امن
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt"></i> تمامی پرداخت‌ها با استفاده از درگاه‌های امن بانکی انجام می‌شود.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pricing-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid #28a745;
+}
+
+.payment-method {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #007bff !important;
+}
+</style>
+
+<script>
+function startPayment() {
+    // Here you can add the actual payment gateway integration
+    alert('درگاه پرداخت در حال راه‌اندازی است...');
+    // For now, just show an alert
+    // In the future, this will redirect to payment gateway
+}
+</script>
+{% endblock %} 

@@ -11,5 +11,7 @@ urlpatterns = [
     path('sample-work/add/', views.add_sample_work, name='add_sample_work'),
     path('sample-work/upload-images/<uuid:work_id>/', views.upload_sample_work_images, name='upload_sample_work_images'),
     path('sample-work/post-images/<str:post_token>/', views.post_images, name='post_images'),
+    path('sample-work/post-images-preview/<str:post_token>/', views.post_images_preview, name='post_images_preview'),
+    path('sample-work/pre-payment/<str:post_token>/', views.pre_payment, name='pre_payment'),
     path('sample-works/', views.sample_works, name='sample_works'),
 ] 
