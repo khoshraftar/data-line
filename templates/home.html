@@ -4,114 +4,58 @@
 {% block title %}دیتا لاین - پنچره خدمات هوشمند کنار دیوار{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Hero Section -->
-    <div class="text-center mb-5">
-        <div class="mb-4">
-            <i class="bi bi-graph-up-arrow text-gradient" style="font-size: 4rem;"></i>
-        </div>
-        <h1 class="display-4 fw-bold text-gradient mb-3">به دیتا لاین خوش آمدید</h1>
-        <p class="lead text-muted mb-4">پنچره خدمات هوشمند کنار دیوار</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="{% url 'ostadkar:login' %}" class="btn btn-primary">
-                <i class="bi bi-box-arrow-in-right me-2"></i>
-                شروع کنید
-            </a>
-            <a href="{% url 'ostadkar:sample_works' %}" class="btn btn-outline-primary">
-                <i class="bi bi-images me-2"></i>
-                مشاهده نمونه کارها
-            </a>
-        </div>
+<div class="container py-5">
+    <div class="header text-center mb-5">
+        <h1 class="display-4">به دیتا لاین خوش آمدید</h1>
+        <p class="lead">پنچره خدمات هوشمند کنار دیوار</p>
     </div>
 
-    <!-- Services Grid -->
-    <div class="row g-4 mb-5">
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card h-100 shadow-custom">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-person-workspace text-primary" style="font-size: 3rem;"></i>
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body">
+                    <h2 class="h4 text-primary mb-3">استادکار</h2>
+                    <p>سامانه هوشمند مدیریت خدمات حرفه‌ای</p>
+                    <div class="text-end">
+                        <span class="btn btn-outline-primary">ورود به سامانه</span>
                     </div>
-                    <h3 class="h4 mb-3">استادکار</h3>
-                    <p class="text-muted mb-4">سامانه هوشمند مدیریت خدمات حرفه‌ای و نمونه کارها</p>
-                    <a href="{% url 'ostadkar:login' %}" class="btn btn-primary">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        ورود به سامانه
-                    </a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6">
-            <div class="card h-100 shadow-custom">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-file-earmark-text text-success" style="font-size: 3rem;"></i>
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body">
+                    <h2 class="h4 text-primary mb-3">رزومه یار</h2>
+                    <p>سامانه هوشمند ساخت و مدیریت رزومه حرفه‌ای</p>
+                    <div class="text-end">
+                        <span class="btn btn-outline-primary">ورود به سامانه</span>
                     </div>
-                    <h3 class="h4 mb-3">رزومه یار</h3>
-                    <p class="text-muted mb-4">سامانه هوشمند ساخت و مدیریت رزومه حرفه‌ای</p>
-                    <a href="#" class="btn btn-success">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        ورود به سامانه
-                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sample Works Section -->
-    <div class="card shadow-custom">
-        <div class="card-header">
-            <h2 class="h3 mb-0">
-                <i class="bi bi-images me-2"></i>
-                نمونه کارهای من
-            </h2>
-        </div>
-        <div class="card-body p-4">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h4 class="mb-2">مدیریت و افزودن تصاویر نمونه کارها</h4>
-                    <p class="text-muted mb-0">نمونه کارهای خود را آپلود کنید و به راحتی مدیریت کنید</p>
+        <div class="col-md-12">
+            <a href="{% url 'ostadkar:sample_works' %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm hover-shadow mt-3">
+                    <div class="card-body">
+                        <h2 class="h4 text-success mb-3">نمونه کارهای من</h2>
+                        <p>مدیریت و افزودن تصاویر نمونه کارها برای استادکار</p>
+                        <div class="text-end">
+                            <span class="btn btn-outline-success">مدیریت نمونه کارها</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 text-end">
-                    <a href="{% url 'ostadkar:sample_works' %}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        مدیریت نمونه کارها
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="row g-4 mt-5">
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="mb-3">
-                    <i class="bi bi-shield-check text-primary" style="font-size: 2.5rem;"></i>
-                </div>
-                <h5>امن و قابل اعتماد</h5>
-                <p class="text-muted">اطلاعات شما با بالاترین سطح امنیت محافظت می‌شود</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="mb-3">
-                    <i class="bi bi-lightning text-warning" style="font-size: 2.5rem;"></i>
-                </div>
-                <h5>سریع و آسان</h5>
-                <p class="text-muted">رابط کاربری ساده و سریع برای تجربه‌ای بهتر</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="mb-3">
-                    <i class="bi bi-phone text-info" style="font-size: 2.5rem;"></i>
-                </div>
-                <h5>سازگار با موبایل</h5>
-                <p class="text-muted">تجربه‌ای عالی در تمامی دستگاه‌ها</p>
-            </div>
+            </a>
         </div>
     </div>
 </div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    transition: all 0.3s ease;
+}
+</style>
 {% endblock %} 
