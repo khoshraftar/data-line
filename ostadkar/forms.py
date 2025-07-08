@@ -7,7 +7,6 @@ class MultipleFileInput(forms.ClearableFileInput):
     def __init__(self, attrs=None):
         default_attrs = {
             'accept': 'image/*',
-            'capture': None,  # This allows both camera and gallery
             'multiple': True,
         }
         if attrs:
