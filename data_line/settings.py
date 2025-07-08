@@ -174,7 +174,7 @@ AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
 
 # S3 Storage Configuration - Only S3 storage
 AWS_S3_MEDIA_LOCATION = 'media'
-DEFAULT_FILE_STORAGE = 'data_line.storage.MediaStorage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # S3 Settings
 AWS_S3_OBJECT_PARAMETERS = {
