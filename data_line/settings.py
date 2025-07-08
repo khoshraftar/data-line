@@ -26,10 +26,10 @@ SECRET_KEY = 'django-insecure-n_@)gy1)fmt7ozkv+ae$$&%4e=2wcb(d7ejtmqt2t=7yx&*wvc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['data-line.ir', 'data-lines.ir']
+ALLOWED_HOSTS = ['data-lines.ir']
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = ['https://data-line.ir', 'https://data-lines.ir']
+CSRF_TRUSTED_ORIGINS = ['https://data-lines.ir']
 
 
 # Application definition
