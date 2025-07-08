@@ -29,7 +29,7 @@ class UserAuth(models.Model):
 class SampleWork(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True, verbose_name='شناسه یکتا')
     title = models.CharField(max_length=200, verbose_name='عنوان')
-    post_token = models.CharField(max_length=8, verbose_name='توکن پست')
+    post_token = models.CharField(max_length=8, unique=True, verbose_name='توکن پست')
     user = models.ForeignKey(UserAuth, on_delete=models.CASCADE, verbose_name='کاربر')
     description = models.TextField(verbose_name='توضیحات')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')

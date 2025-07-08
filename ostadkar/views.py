@@ -130,11 +130,22 @@ def add_sample_work(request):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST)
         if form.is_valid():
+            # Delete existing sample work with this token if it exists
+            existing_sample_work = SampleWork.objects.filter(post_token=post_token).first()
+            if existing_sample_work:
+                # Delete associated images first (due to foreign key constraint)
+                PostImage.objects.filter(sample_work=existing_sample_work).delete()
+                # Delete the sample work
+                existing_sample_work.delete()
+                messages.info(request, 'نمونه کار قبلی حذف شد و نمونه کار جدید ایجاد می‌شود.')
+            
+            # Create new sample work
             sample_work = form.save(commit=False)
             sample_work.user = request.user_auth
             sample_work.post_token = post_token
             sample_work.save()
-            messages.success(request, 'Sample work added successfully!')
+            
+            messages.success(request, 'نمونه کار جدید با موفقیت ایجاد شد!')
             return redirect('ostadkar:upload_sample_work_images', work_id=sample_work.uuid)
     else:
         form = SampleWorkForm()
