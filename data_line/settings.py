@@ -31,6 +31,26 @@ ALLOWED_HOSTS = ['data-lines.ir']
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = ['https://data-lines.ir']
 
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Session Security
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 3600  # 1 hour
+
+# CSRF Security
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Application definition
 
@@ -143,6 +163,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
 MEDIA_URL = '/media/'
@@ -183,3 +204,13 @@ LOGIN_URL = '/ostadkar/login/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# File Upload Settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB in bytes
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB in bytes
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+# Media file upload settings
+MEDIA_UPLOAD_MAX_SIZE = 2621440  # 2.5MB
+ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+MAX_IMAGES_PER_UPLOAD = 24

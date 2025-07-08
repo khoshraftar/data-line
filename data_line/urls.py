@@ -26,4 +26,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('resumeyar/', include('resumeyar.urls')),
     path('ostadkar/', include('ostadkar.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Only serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

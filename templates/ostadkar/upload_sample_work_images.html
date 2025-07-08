@@ -31,6 +31,9 @@
                                     <small class="d-block text-muted mt-2" id="fileHelp">
                                         روی این قسمت کلیک کنید و گزینه "گالری" یا "تصاویر" را انتخاب کنید
                                     </small>
+                                    <small class="d-block text-info mt-1">
+                                        <i class="fas fa-info-circle"></i> حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
+                                    </small>
                                     <div id="filePreview" class="mt-3" style="display: none;">
                                         <div class="selected-files"></div>
                                     </div>
@@ -151,6 +154,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = Array.from(e.target.files);
         
         if (files.length > 0) {
+            // Check file count limit
+            if (files.length > 24) {
+                alert('حداکثر ۲۴ تصویر می‌توانید انتخاب کنید. لطفاً تعداد کمتری انتخاب کنید.');
+                this.value = '';
+                return;
+            }
+            
+            // Check total file size
+            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+            const maxSize = 62914560; // 60MB
+            
+            if (totalSize > maxSize) {
+                alert('حجم کل فایل‌ها بیش از ۶۰ مگابایت است. لطفاً فایل‌های کوچکتر انتخاب کنید.');
+                this.value = '';
+                return;
+            }
+            
             // Update text to show selected files
             fileText.textContent = `${files.length} تصویر انتخاب شده`;
             fileHelp.textContent = 'برای تغییر انتخاب، دوباره کلیک کنید';
@@ -162,7 +182,17 @@ document.addEventListener('DOMContentLoaded', function() {
             files.forEach((file, index) => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
-                fileItem.textContent = `${index + 1}. ${file.name}`;
+                
+                // Format file size
+                const fileSize = (file.size / 1024 / 1024).toFixed(1);
+                fileItem.textContent = `${index + 1}. ${file.name} (${fileSize} MB)`;
+                
+                // Add color coding for large files
+                if (file.size > 2621440) { // 2.5MB
+                    fileItem.style.color = '#dc3545';
+                    fileItem.innerHTML += ' <i class="fas fa-exclamation-triangle text-warning"></i>';
+                }
+                
                 selectedFiles.appendChild(fileItem);
             });
             

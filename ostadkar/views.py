@@ -150,14 +150,39 @@ def upload_sample_work_images(request, work_id):
         if form.is_valid():
             files = request.FILES.getlist('images')
             
-            for image_file in files:
-                PostImage.objects.create(
-                    sample_work=sample_work,
-                    image=image_file
-                )
+            # Additional validation for maximum 24 images
+            if len(files) > 24:
+                messages.error(request, 'حداکثر ۲۴ تصویر می‌توانید آپلود کنید.')
+                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                    'form': form,
+                    'sample_work': sample_work
+                })
             
-            messages.success(request, 'Images uploaded successfully!')
-            return redirect('ostadkar:post_images', post_token=sample_work.post_token)
+            # Validate total upload size (max 60MB for 24 images * 2.5MB each)
+            total_size = sum(file.size for file in files)
+            if total_size > 62914560:  # 60MB in bytes
+                messages.error(request, 'حجم کل فایل‌ها بیش از ۶۰ مگابایت است.')
+                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                    'form': form,
+                    'sample_work': sample_work
+                })
+            
+            try:
+                for image_file in files:
+                    PostImage.objects.create(
+                        sample_work=sample_work,
+                        image=image_file
+                    )
+                
+                messages.success(request, f'{len(files)} تصویر با موفقیت آپلود شد!')
+                return redirect('ostadkar:post_images', post_token=sample_work.post_token)
+                
+            except Exception as e:
+                messages.error(request, f'خطا در آپلود تصاویر: {str(e)}')
+                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                    'form': form,
+                    'sample_work': sample_work
+                })
     else:
         form = SampleWorkImageForm()
     
