@@ -3,6 +3,16 @@ from .models import PostImage, SampleWork
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+    
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'accept': 'image/*',
+            'capture': None,  # This allows both camera and gallery
+            'multiple': True,
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
 
 class MultipleFileField(forms.FileField):
     def __init__(self, *args, **kwargs):
@@ -43,7 +53,7 @@ class SampleWorkForm(forms.ModelForm):
 class SampleWorkImageForm(forms.Form):
     images = MultipleFileField(
         required=True,
-        help_text='می‌توانید چندین تصویر را همزمان انتخاب کنید.',
+        help_text='می‌توانید چندین تصویر را همزمان انتخاب کنید. برای انتخاب از گالری، روی "انتخاب فایل" کلیک کنید.',
         label='تصاویر'
     )
     description = forms.CharField(
