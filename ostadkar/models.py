@@ -3,12 +3,12 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
 import os
-
+from django.conf import settings
 def sample_work_image_path(instance, filename):
     """Generate file path for sample work images"""
     ext = filename.split('.')[-1]
     filename = f"{uuid.uuid4()}.{ext}"
-    return f'sample_works/{instance.sample_work.uuid}/{filename}'
+    return f"{settings.MEDIA_URL}/{filename}"
 
 # Create your models here.
 
