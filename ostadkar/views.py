@@ -149,7 +149,6 @@ def upload_sample_work_images(request, work_id):
         form = SampleWorkImageForm(request.POST, request.FILES)
         if form.is_valid():
             files = request.FILES.getlist('images')
-            description = form.cleaned_data.get('description', '')
             
             for image_file in files:
                 PostImage.objects.create(

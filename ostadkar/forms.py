@@ -55,14 +55,4 @@ class SampleWorkImageForm(forms.Form):
         help_text='می‌توانید چندین تصویر را همزمان انتخاب کنید. برای انتخاب از گالری، روی "انتخاب فایل" کلیک کنید.',
         label='تصاویر'
     )
-    description = forms.CharField(
-        label='توضیحات تصاویر',
-        widget=forms.Textarea(attrs={
-            'class': 'form-control', 
-            'placeholder': 'توضیحات مربوط به این تصاویر را وارد کنید', 
-            'rows': 3,
-            'dir': 'rtl'
-        }),
-        required=False
-    )
 
