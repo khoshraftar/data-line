@@ -144,7 +144,6 @@ def add_sample_work(request):
             sample_work.post_token = post_token
             sample_work.save()
             
-            messages.success(request, 'نمونه کار جدید با موفقیت ایجاد شد!')
             return redirect('ostadkar:upload_sample_work_images', work_id=sample_work.uuid)
     else:
         form = SampleWorkForm()
