@@ -305,7 +305,7 @@ def initiate_payment(request, post_token):
     # Prepare payment request data
     payment_data = {
         'merchant_id': settings.ZARINPAL_MERCHANT_ID,
-        'amount': payment.amount,
+        'amount': str(payment.amount),
         'description': f'پرداخت برای نمونه کار: {sample_work.title}',
         'callback_url': settings.ZARINPAL_CALLBACK_URL,
         'metadata': {
