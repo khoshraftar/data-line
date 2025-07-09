@@ -91,58 +91,26 @@
                 </div>
             </div>
 
-            <!-- Payment Methods -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">
-                        <i class="fas fa-credit-card"></i> روش‌های پرداخت
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="payment-method text-center p-3 border rounded">
-                                <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
-                                <h5>کارت بانکی</h5>
-                                <small class="text-muted">پرداخت آنلاین امن</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="payment-method text-center p-3 border rounded">
-                                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
-                                <h5>کیف پول</h5>
-                                <small class="text-muted">پرداخت سریع</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="payment-method text-center p-3 border rounded">
-                                <i class="fas fa-university fa-2x text-info mb-2"></i>
-                                <h5>درگاه بانکی</h5>
-                                <small class="text-muted">پرداخت مستقیم</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Action Buttons -->
             <div class="card">
                 <div class="card-body text-center">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <a href="{% url 'ostadkar:post_images_preview' post_token %}" class="btn btn-outline-secondary btn-lg w-100">
-                                <i class="fas fa-arrow-right"></i> بازگشت به پیش‌نمایش
+                                <i class="fas fa-arrow-right"></i> بازگشت
                             </a>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'ostadkar:initiate_payment' post_token %}" class="btn btn-success btn-lg w-100">
-                                <i class="fas fa-lock"></i> پرداخت امن
+                        <div class="col-md-8 mb-3">
+                            <a href="{% url 'ostadkar:initiate_payment' post_token %}" class="btn btn-success btn-lg w-100 payment-btn">
+                                <i class="fas fa-lock"></i> شروع پرداخت امن
                             </a>
                         </div>
                     </div>
-                    <small class="text-muted">
-                        <i class="fas fa-shield-alt"></i> تمامی پرداخت‌ها با استفاده از درگاه‌های امن بانکی انجام می‌شود.
-                    </small>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> تمامی پرداخت‌ها با استفاده از درگاه‌های امن بانکی انجام می‌شود.
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -157,15 +125,19 @@
     border: 2px solid #28a745;
 }
 
-.payment-method {
+.payment-btn {
+    font-size: 1.1rem;
+    padding: 15px 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
-.payment-method:hover {
+.payment-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-color: #007bff !important;
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+    background-color: #218838;
+    border-color: #1e7e34;
 }
 </style>
 
