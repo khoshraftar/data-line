@@ -75,10 +75,9 @@
 </style>
 
 <script>
-// Auto-redirect after a short delay (fallback)
+// Auto-redirect to ZarinPal payment gateway
 setTimeout(function() {
-    // This is just a fallback in case the server redirect doesn't work
-    console.log('Payment redirect initiated...');
+    window.location.href = '{{ payment_url }}';
 }, 2000);
 </script>
 {% endblock %} 

@@ -285,7 +285,11 @@ def initiate_payment(request, post_token):
         # If there's a pending payment, redirect to ZarinPal with existing authority
         if existing_payment.authority:
             payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{existing_payment.authority}"
-            return redirect(payment_url)
+            return render(request, 'ostadkar/payment_loading.html', {
+                'payment_url': payment_url,
+                'sample_work': sample_work,
+                'post_token': post_token
+            })
     
     # Create new payment record
     payment = Payment.objects.create(
@@ -317,9 +321,13 @@ def initiate_payment(request, post_token):
             payment.authority = authority
             payment.save()
             
-            # Redirect to ZarinPal payment gateway
+            # Show loading page with redirect to ZarinPal payment gateway
             payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{authority}"
-            return redirect(payment_url)
+            return render(request, 'ostadkar/payment_loading.html', {
+                'payment_url': payment_url,
+                'sample_work': sample_work,
+                'post_token': post_token
+            })
         else:
             # Payment request failed
             payment.status = 'failed'
