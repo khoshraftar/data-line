@@ -147,7 +147,7 @@ OAUTH_TOKEN_URL = 'https://oauth.divar.ir/oauth2/token'
 OAUTH_USER_INFO_URL = 'https://open-api.divar.ir/v1/open-platform/users'
 
 # ZarinPal Payment Gateway Configuration
-ZARINPAL_MERCHANT_ID = os.getenv('ZARINPAL_MERCHANT_ID')
+ZARINPAL_MERCHANT_ID = os.getenv('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
 ZARINPAL_CALLBACK_URL = 'https://data-lines.ir/ostadkar/payment/callback/'
 ZARINPAL_VERIFY_URL =  'https://payment.zarinpal.com/pg/v4/payment/verify.json'
 ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'

@@ -275,6 +275,11 @@ def initiate_payment(request, post_token):
             'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
         }, status=403)
     
+    # Check if ZarinPal merchant ID is configured
+    if not settings.ZARINPAL_MERCHANT_ID:
+        messages.error(request, 'خطا در پیکربندی درگاه پرداخت. لطفاً با پشتیبانی تماس بگیرید.')
+        return redirect('ostadkar:pre_payment', post_token=post_token)
+    
     # Check if payment already exists and is pending
     existing_payment = Payment.objects.filter(
         sample_work=sample_work, 
@@ -332,13 +337,19 @@ def initiate_payment(request, post_token):
             # Payment request failed
             payment.status = 'failed'
             payment.save()
-            messages.error(request, f'خطا در ایجاد درخواست پرداخت: {result["errors"]["message"]}')
+            error_message = result.get('errors', {}).get('message', 'خطای نامشخص')
+            messages.error(request, f'خطا در ایجاد درخواست پرداخت: {error_message}')
             return redirect('ostadkar:pre_payment', post_token=post_token)
             
     except requests.RequestException as e:
         payment.status = 'failed'
         payment.save()
         messages.error(request, f'خطا در ارتباط با درگاه پرداخت: {str(e)}')
+        return redirect('ostadkar:pre_payment', post_token=post_token)
+    except Exception as e:
+        payment.status = 'failed'
+        payment.save()
+        messages.error(request, f'خطای غیرمنتظره: {str(e)}')
         return redirect('ostadkar:pre_payment', post_token=post_token)
 
 def payment_callback(request):
