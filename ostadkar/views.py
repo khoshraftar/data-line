@@ -316,7 +316,14 @@ def initiate_payment(request, post_token):
     
     try:
         # Send payment request to ZarinPal
-        response = requests.post(settings.ZARINPAL_REQUEST_URL, json=payment_data)
+        print(f"Payment request data: {payment_data}")  # Debug info
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        response = requests.post(settings.ZARINPAL_REQUEST_URL, json=payment_data, headers=headers)
+        print(f"Response status: {response.status_code}")  # Debug info
+        print(f"Response content: {response.text}")  # Debug info
         response.raise_for_status()
         result = response.json()
         
@@ -334,6 +341,7 @@ def initiate_payment(request, post_token):
                 'post_token': post_token
             })
         else:
+            
             # Payment request failed
             payment.status = 'failed'
             payment.save()

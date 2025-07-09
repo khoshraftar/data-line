@@ -154,7 +154,7 @@ ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'
 ZARINPAL_GATEWAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
 
 # Payment Settings
-PAYMENT_AMOUNT = 50000  # 50,000 Toman in Rials (500,000 Rials)
+PAYMENT_AMOUNT = 500000  # 50,000 Toman in Rials (500,000 Rials)
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
