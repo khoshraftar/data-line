@@ -1,0 +1,66 @@
+User-agent: *
+Allow: /
+
+# Allow access to main pages
+Allow: /$
+Allow: /about/$
+Allow: /resumeyar/$
+Allow: /ostadkar/$
+
+# Allow access to static files
+Allow: /static/
+Allow: /media/
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /django-admin/
+Disallow: /accounts/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /oauth/
+Disallow: /api/
+Disallow: /api/*
+Disallow: /_admin/
+Disallow: /_api/
+
+# Disallow temporary and system files
+Disallow: /tmp/
+Disallow: /temp/
+Disallow: /.env
+Disallow: /.git/
+Disallow: /.htaccess
+Disallow: /robots.txt$
+Disallow: /sitemap.xml$
+
+# Disallow search and filter pages
+Disallow: /*?*
+Disallow: /*search*
+Disallow: /*filter*
+Disallow: /*sort*
+
+# Disallow user-specific content
+Disallow: /user/
+Disallow: /profile/
+Disallow: /dashboard/
+Disallow: /my-*
+
+# Allow specific file types
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.ico$
+Allow: /*.pdf$
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://data-lines.ir/sitemap.xml
+
+# Host directive
+Host: https://data-lines.ir 
