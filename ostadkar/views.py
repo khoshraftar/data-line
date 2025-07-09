@@ -5,7 +5,7 @@ import requests
 from urllib.parse import urlencode
 from django.contrib import messages
 from functools import wraps
-from .models import UserAuth, PostImage, SampleWork
+from .models import UserAuth, PostImage, SampleWork, Payment
 from .forms import SampleWorkForm, SampleWorkImageForm 
 
 def session_auth_required(view_func):
@@ -261,5 +261,151 @@ def pre_payment(request, post_token):
     return render(request, 'ostadkar/pre_payment.html', {
         'sample_work': sample_work,
         'post_images': post_images,
+        'post_token': post_token
+    })
+
+@session_auth_required
+def initiate_payment(request, post_token):
+    """Initiate ZarinPal payment"""
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    
+    # Check if the current user owns this sample work
+    if sample_work.user != request.user_auth:
+        return render(request, 'ostadkar/permission_denied.html', {
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+        }, status=403)
+    
+    # Check if payment already exists and is pending
+    existing_payment = Payment.objects.filter(
+        sample_work=sample_work, 
+        status='pending'
+    ).first()
+    
+    if existing_payment:
+        # If there's a pending payment, redirect to ZarinPal with existing authority
+        if existing_payment.authority:
+            payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{existing_payment.authority}"
+            return redirect(payment_url)
+    
+    # Create new payment record
+    payment = Payment.objects.create(
+        sample_work=sample_work,
+        amount=settings.PAYMENT_AMOUNT
+    )
+    
+    # Prepare payment request data
+    payment_data = {
+        'merchant_id': settings.ZARINPAL_MERCHANT_ID,
+        'amount': payment.amount,
+        'description': f'پرداخت برای نمونه کار: {sample_work.title}',
+        'callback_url': settings.ZARINPAL_CALLBACK_URL,
+        'metadata': {
+            'mobile': '',
+            'email': ''
+        }
+    }
+    
+    try:
+        # Send payment request to ZarinPal
+        response = requests.post(settings.ZARINPAL_REQUEST_URL, json=payment_data)
+        response.raise_for_status()
+        result = response.json()
+        
+        if result['data']['code'] == 100:
+            # Payment request successful
+            authority = result['data']['authority']
+            payment.authority = authority
+            payment.save()
+            
+            # Redirect to ZarinPal payment gateway
+            payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{authority}"
+            return redirect(payment_url)
+        else:
+            # Payment request failed
+            payment.status = 'failed'
+            payment.save()
+            messages.error(request, f'خطا در ایجاد درخواست پرداخت: {result["errors"]["message"]}')
+            return redirect('ostadkar:pre_payment', post_token=post_token)
+            
+    except requests.RequestException as e:
+        payment.status = 'failed'
+        payment.save()
+        messages.error(request, f'خطا در ارتباط با درگاه پرداخت: {str(e)}')
+        return redirect('ostadkar:pre_payment', post_token=post_token)
+
+def payment_callback(request):
+    """Handle ZarinPal payment callback"""
+    authority = request.GET.get('Authority')
+    status = request.GET.get('Status')
+    
+    if not authority:
+        messages.error(request, 'کد مرجع پرداخت یافت نشد.')
+        return redirect('ostadkar:home')
+    
+    try:
+        payment = Payment.objects.get(authority=authority)
+    except Payment.DoesNotExist:
+        messages.error(request, 'پرداخت یافت نشد.')
+        return redirect('ostadkar:home')
+    
+    if status == 'OK':
+        # Payment was successful, verify with ZarinPal
+        verify_data = {
+            'merchant_id': settings.ZARINPAL_MERCHANT_ID,
+            'amount': payment.amount,
+            'authority': authority
+        }
+        
+        try:
+            response = requests.post(settings.ZARINPAL_VERIFY_URL, json=verify_data)
+            response.raise_for_status()
+            result = response.json()
+            
+            if result['data']['code'] == 100:
+                # Payment verified successfully
+                payment.status = 'completed'
+                payment.ref_id = result['data']['ref_id']
+                payment.save()
+                
+                messages.success(request, f'پرداخت با موفقیت انجام شد. شماره پیگیری: {payment.ref_id}')
+                return redirect('ostadkar:payment_success', post_token=payment.sample_work.post_token)
+            else:
+                # Payment verification failed
+                payment.status = 'failed'
+                payment.save()
+                messages.error(request, f'تایید پرداخت ناموفق بود: {result["errors"]["message"]}')
+                return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+                
+        except requests.RequestException as e:
+            payment.status = 'failed'
+            payment.save()
+            messages.error(request, f'خطا در تایید پرداخت: {str(e)}')
+            return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+    else:
+        # Payment was cancelled or failed
+        payment.status = 'cancelled'
+        payment.save()
+        messages.warning(request, 'پرداخت لغو شد.')
+        return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+
+def payment_success(request, post_token):
+    """Show payment success page"""
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    payment = Payment.objects.filter(sample_work=sample_work, status='completed').first()
+    
+    return render(request, 'ostadkar/payment_success.html', {
+        'sample_work': sample_work,
+        'payment': payment,
+        'post_token': post_token
+    })
+
+def payment_failed(request, post_token):
+    """Show payment failed page"""
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    payment = Payment.objects.filter(sample_work=sample_work).order_by('-created_at').first()
+    
+    return render(request, 'ostadkar/payment_failed.html', {
+        'sample_work': sample_work,
+        'payment': payment,
         'post_token': post_token
     })

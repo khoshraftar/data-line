@@ -60,3 +60,28 @@ class PostImage(models.Model):
         ordering = ['-created_at']
         verbose_name = 'تصویر پست'
         verbose_name_plural = 'تصاویر پست'
+
+
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'در انتظار پرداخت'),
+        ('completed', 'پرداخت شده'),
+        ('failed', 'ناموفق'),
+        ('cancelled', 'لغو شده'),
+    ]
+    
+    sample_work = models.ForeignKey(SampleWork, on_delete=models.CASCADE, verbose_name='نمونه کار')
+    amount = models.IntegerField(verbose_name='مبلغ (ریال)')
+    authority = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد مرجع')
+    ref_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شماره پیگیری')
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending', verbose_name='وضعیت')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
+    
+    def __str__(self):
+        return f"Payment for {self.sample_work.title} - {self.get_status_display()}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'پرداخت'
+        verbose_name_plural = 'پرداخت‌ها'

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}پرداخت موفق - استادکار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Card -->
+            <div class="card border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-check-circle"></i> پرداخت با موفقیت انجام شد
+                    </h1>
+                </div>
+                <div class="card-body text-center">
+                    <div class="success-icon mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h3 class="text-success mb-3">تبریک! پرداخت شما با موفقیت انجام شد</h3>
+                    
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-info-circle"></i> اطلاعات پرداخت:</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p><strong>عنوان نمونه کار:</strong> {{ sample_work.title }}</p>
+                                <p><strong>مبلغ پرداختی:</strong> {{ payment.amount|floatformat:0 }} ریال</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>شماره پیگیری:</strong> {{ payment.ref_id }}</p>
+                                <p><strong>تاریخ پرداخت:</strong> {{ payment.updated_at|date:"j F Y - H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-rocket"></i> مراحل بعدی:</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-clock text-info"></i> نمونه کار شما در حال بررسی است</li>
+                            <li><i class="fas fa-check text-success"></i> پس از تایید، در دیوار منتشر خواهد شد</li>
+                            <li><i class="fas fa-bell text-warning"></i> از طریق پیامک از انتشار مطلع خواهید شد</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ostadkar:post_images' post_token %}" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-eye"></i> مشاهده نمونه کار
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ostadkar:home' %}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-home"></i> بازگشت به خانه
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> 
+                            تمامی اطلاعات پرداخت شما در سیستم ذخیره شده و قابل پیگیری است.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    animation: bounce 1s ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+</style>
+{% endblock %} 

@@ -13,5 +13,9 @@ urlpatterns = [
     path('sample-work/post-images/<str:post_token>/', views.post_images, name='post_images'),
     path('sample-work/post-images-preview/<str:post_token>/', views.post_images_preview, name='post_images_preview'),
     path('sample-work/pre-payment/<str:post_token>/', views.pre_payment, name='pre_payment'),
+    path('sample-work/initiate-payment/<str:post_token>/', views.initiate_payment, name='initiate_payment'),
+    path('payment/callback/', views.payment_callback, name='payment_callback'),
+    path('payment/success/<str:post_token>/', views.payment_success, name='payment_success'),
+    path('payment/failed/<str:post_token>/', views.payment_failed, name='payment_failed'),
     path('sample-works/', views.sample_works, name='sample_works'),
 ] 

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}پرداخت ناموفق - استادکار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Failed Card -->
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-times-circle"></i> پرداخت ناموفق
+                    </h1>
+                </div>
+                <div class="card-body text-center">
+                    <div class="failed-icon mb-4">
+                        <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h3 class="text-danger mb-3">متأسفانه پرداخت شما ناموفق بود</h3>
+                    
+                    {% if payment %}
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-info-circle"></i> اطلاعات تراکنش:</h5>
+                            <div class="row text-start">
+                                <div class="col-md-6">
+                                    <p><strong>عنوان نمونه کار:</strong> {{ sample_work.title }}</p>
+                                    <p><strong>مبلغ:</strong> {{ payment.amount|floatformat:0 }} ریال</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>وضعیت:</strong> 
+                                        {% if payment.status == 'cancelled' %}
+                                            <span class="badge bg-warning">لغو شده</span>
+                                        {% elif payment.status == 'failed' %}
+                                            <span class="badge bg-danger">ناموفق</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>تاریخ:</strong> {{ payment.updated_at|date:"j F Y - H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-lightbulb"></i> راهنمایی:</h5>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li><i class="fas fa-check text-success"></i> اطمینان حاصل کنید که موجودی کارت کافی است</li>
+                            <li><i class="fas fa-check text-success"></i> رمز دوم کارت را درست وارد کنید</li>
+                            <li><i class="fas fa-check text-success"></i> از اتصال اینترنت مطمئن شوید</li>
+                            <li><i class="fas fa-check text-success"></i> در صورت مشکل، با پشتیبانی تماس بگیرید</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ostadkar:initiate_payment' post_token %}" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-redo"></i> تلاش مجدد
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ostadkar:pre_payment' post_token %}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-arrow-right"></i> بازگشت
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-phone"></i> 
+                            برای دریافت راهنمایی بیشتر با شماره <strong>۰۲۱-۱۲۳۴۵۶۷۸</strong> تماس بگیرید.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.failed-icon {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.badge {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %} 
