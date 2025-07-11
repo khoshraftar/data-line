@@ -200,8 +200,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 
 # Divar API Configuration for Addons
-DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v1/open-platform'
-DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}/addons/create-post-addon-v2/'+'{post_token}'
+DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v2/open-platform/'
+DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}addons/posts/'+'{post_token}'
 
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_FILE_OVERWRITE = False
