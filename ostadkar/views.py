@@ -623,14 +623,14 @@ def addon_status(request, post_token):
     payment = Payment.objects.filter(sample_work=sample_work, status='completed').first()
     addon = None
     if payment:
-        addon = PostAddon.objects.filter(payment=payment).first()
+        addon = PostAddon.objects.filter(sample_work=sample_work).first()
     
     # Handle retry request
     if request.method == 'POST' and 'retry_addon' in request.POST:
         if addon and addon.status == 'failed':
             # Delete the failed addon and try again
             addon.delete()
-            addon_result = create_post_addon(sample_work, payment)
+            addon_result = create_post_addon(sample_work)
             if addon_result.get('success'):
                 messages.success(request, 'افزونه پست با موفقیت ایجاد شد.')
             else:
