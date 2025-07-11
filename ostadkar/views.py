@@ -287,13 +287,6 @@ def sample_work_preview(request, post_token):
     })
 
 @session_auth_required
-def sample_works(request):
-    sample_works = SampleWork.objects.filter(user=request.user_auth)
-    return render(request, 'ostadkar/sample_works.html', {
-        'sample_works': sample_works
-    })
-
-@session_auth_required
 def pre_payment(request, post_token):
     # For authenticated users, find the sample work by post_token
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
