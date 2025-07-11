@@ -64,12 +64,12 @@ class SampleWorkForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control', 
-                'placeholder': 'عنوان نمونه کار خود را وارد کنید',
+                'placeholder': 'مثال: تعمیرکار یخچال',
                 'dir': 'rtl'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control', 
-                'placeholder': 'توضیحات نمونه کار خود را وارد کنید', 
+                'placeholder': 'مثال: تعمیرکار انواع یخچال های ایرانی و خارجی همراه با تامین قطعات', 
                 'rows': 4,
                 'dir': 'rtl'
             }),
