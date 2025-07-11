@@ -40,15 +40,21 @@ def session_auth_required(view_func):
 # Create your views here.
 
 def home(request, post_token=None):
+    # Debug: Print the post_token value
+    print(f"DEBUG: post_token = '{post_token}'")
+    print(f"DEBUG: request.GET = {request.GET}")
+    
     # If post_token is provided via GET parameter, redirect to the URL with post_token
     if not post_token and 'post_token' in request.GET:
         post_token = request.GET['post_token'].strip()
+        print(f"DEBUG: post_token from GET = '{post_token}'")
         if post_token:  # Only redirect if post_token is not empty
             return redirect('ostadkar:home_with_token', post_token=post_token)
     
     # Clean up post_token if it exists
     if post_token:
         post_token = post_token.strip()
+        print(f"DEBUG: cleaned post_token = '{post_token}'")
     
     return render(request, 'ostadkar/home.html', {'post_token': post_token})
 

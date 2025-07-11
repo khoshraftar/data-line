@@ -5,7 +5,6 @@ app_name = 'ostadkar'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('<str:post_token>/', views.home, name='home_with_token'),
     path('login/', views.login, name='login'),
     path('login/<str:post_token>/', views.login, name='login_with_token'),
     path('oauth/login/<str:post_token>/', views.oauth_login, name='oauth_login'),
@@ -21,4 +20,6 @@ urlpatterns = [
     path('payment/failed/<str:post_token>/', views.payment_failed, name='payment_failed'),
     path('addon/status/<str:post_token>/', views.addon_status, name='addon_status'),
     path('sample-works/', views.sample_works, name='sample_works'),
+    # This should be last to avoid catching other URLs
+    path('<str:post_token>/', views.home, name='home_with_token'),
 ] 
