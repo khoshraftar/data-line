@@ -85,7 +85,7 @@ def oauth_login(request, post_token):
         'client_id': oauth_settings['oauth_client_id'],
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
-        'scope': oauth_settings['oauth_scope'],
+        'scope': oauth_settings['oauth_scope'].format(post_token=post_token),
         'state': post_token,
     }
     
