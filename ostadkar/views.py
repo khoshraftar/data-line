@@ -481,13 +481,13 @@ def payment_success(request, post_token):
         'post_token': post_token
     })
 
-def create_post_addon(sample_work, payment):
+def create_post_addon(sample_work):
     """
     Create an addon for a post using Divar API
     Based on: https://divar-ir.github.io/kenar-docs/openapi-doc/addons-create-post-addon-v-2
     """
     # Check if addon already exists for this payment
-    existing_addon = PostAddon.objects.filter(payment=payment).first()
+    existing_addon = PostAddon.objects.filter(sample_work=sample_work).first()
     if existing_addon:
         if existing_addon.status == 'created':
             return {
