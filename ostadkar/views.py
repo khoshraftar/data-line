@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.urls import reverse
 import requests
-from urllib.parse import urlencode
+from urllib.parse import urlencode, unquote
 from django.contrib import messages
 from functools import wraps
 from .models import UserAuth, PostImage, SampleWork, Payment, PostAddon
@@ -54,6 +54,8 @@ def home(request, post_token=None):
     # Clean up post_token if it exists
     if post_token:
         post_token = post_token.strip()
+        # Decode URL-encoded characters in post_token if present
+        post_token = unquote(post_token)
         print(f"DEBUG: cleaned post_token = '{post_token}'")
     
     return render(request, 'ostadkar/home.html', {'post_token': post_token})
@@ -76,17 +78,25 @@ def login(request, post_token=None):
 def oauth_login(request, post_token):
     """Initiate OAuth login process"""
     oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
+    post_token = post_token.strip()
+    
+    # Decode URL-encoded characters in post_token if present
+    # This prevents double encoding when the scope is URL-encoded
+    decoded_post_token = unquote(post_token)
     
     # Store post_token in session for callback
-    request.session['post_token'] = post_token
+    request.session['post_token'] = decoded_post_token
+    
+    # Format the scope with decoded post_token before URL encoding
+    scope = oauth_settings['oauth_scope'].format(post_token=decoded_post_token)
     
     # Prepare OAuth parameters
     params = {
         'client_id': oauth_settings['oauth_client_id'],
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
-        'scope': oauth_settings['oauth_scope'].format(post_token=post_token),
-        'state': post_token,
+        'scope': scope,
+        'state': decoded_post_token,
     }
     
     # Construct authorization URL
@@ -260,20 +270,7 @@ def post_images_preview(request, post_token):
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
     
     # Check if the current user owns this sample work
-    if sample_work.user != request.user_auth:
-        return render(request, 'ostadkar/permission_denied.html', {
-            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
-        }, status=403)
-    
-    post_images = PostImage.objects.filter(sample_work=sample_work)
-    return render(request, 'ostadkar/post_images_preview.html', {
-        'sample_work': sample_work,
-        'post_images': post_images,
-        'post_token': post_token
-    })
-
-@session_auth_required
-def sample_work_preview(request, post_token):
+    if sample_work.user != request.user_auth:decoded_post_token
     # For authenticated users, find the sample work by post_token
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
     post_images = PostImage.objects.filter(sample_work=sample_work)
