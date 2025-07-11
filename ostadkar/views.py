@@ -469,7 +469,7 @@ def payment_success(request, post_token):
     
     # Create addon for the post using Divar API
     if payment and sample_work.user.access_token:
-        addon_result = create_post_addon(sample_work, payment)
+        addon_result = create_post_addon(sample_work)
         if addon_result.get('success'):
             messages.success(request, 'افزونه پست با موفقیت ایجاد شد.')
         else:
