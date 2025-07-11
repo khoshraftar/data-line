@@ -86,7 +86,7 @@ def oauth_login(request, post_token):
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
         'scope': oauth_settings['oauth_scope'],
-        'state': 'post_token',
+        'state': post_token,
     }
     
     # Construct authorization URL
@@ -103,11 +103,8 @@ def oauth_callback(request):
     
     # Get post_token from state parameter
     state = request.GET.get('state', '')
-    post_token = 'AaxBDckp'  # Default fallback
     
-    # Extract post_token from state if it was passed
-    if state == 'post_token' and 'post_token' in request.session:
-        post_token = request.session.get('post_token', 'AaxBDckp')
+    post_token = state
     
     # Exchange code for access token
     token_data = {
