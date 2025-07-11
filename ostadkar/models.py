@@ -17,6 +17,7 @@ def sample_work_image_path(instance, filename):
 class UserAuth(models.Model):
     user_id = models.CharField(max_length=255, unique=True, verbose_name='شناسه کاربر')
     access_token = models.TextField(verbose_name='توکن دسترسی')
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='شماره تلفن')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
 

@@ -103,10 +103,16 @@ def oauth_callback(request):
             if not user_id:
                 return render(request, 'ostadkar/error.html', {'error': 'User ID not found in user info response'})
             
+            # Extract phone number from user info
+            phone = user_info.get('phone', '')
+            
             # Create or update user auth in database
             user_auth, created = UserAuth.objects.update_or_create(
                 user_id=user_id,
-                defaults={'access_token': access_token}
+                defaults={
+                    'access_token': access_token,
+                    'phone': phone
+                }
             )
             
             # Store user_id in session
@@ -309,7 +315,7 @@ def initiate_payment(request, post_token):
         'description': f'پرداخت برای نمونه کار: {sample_work.title}',
         'callback_url': settings.ZARINPAL_CALLBACK_URL,
         'metadata': {
-            'mobile': '',
+            'mobile': sample_work.user.phone or '09199187529',  # Use stored phone or fallback
             'email': ''
         }
     }
