@@ -5,14 +5,20 @@ import requests
 from urllib.parse import urlencode
 from django.contrib import messages
 from functools import wraps
-from .models import UserAuth, PostImage, SampleWork, Payment
+from .models import UserAuth, PostImage, SampleWork, Payment, PostAddon
 from .forms import SampleWorkForm, SampleWorkImageForm 
+import json
 
 def session_auth_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         if 'user_id' not in request.session:
-            return redirect('ostadkar:login')
+            # Check if we have post_token in kwargs to pass to login
+            post_token = kwargs.get('post_token')
+            if post_token:
+                return redirect('ostadkar:login_with_token', post_token=post_token)
+            else:
+                return redirect('ostadkar:login')
         
         # Get user auth from database
         try:
@@ -21,38 +27,55 @@ def session_auth_required(view_func):
         except UserAuth.DoesNotExist:
             # Clear session if user not found in database
             request.session.flush()
-            return redirect('ostadkar:login')
+            # Check if we have post_token in kwargs to pass to login
+            post_token = kwargs.get('post_token')
+            if post_token:
+                return redirect('ostadkar:login_with_token', post_token=post_token)
+            else:
+                return redirect('ostadkar:login')
             
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
 # Create your views here.
 
-def home(request):
-    return render(request, 'ostadkar/home.html')
+def home(request, post_token=None):
+    # If post_token is provided via GET parameter, redirect to the URL with post_token
+    if not post_token and 'post_token' in request.GET:
+        post_token = request.GET['post_token']
+        return redirect('ostadkar:home_with_token', post_token=post_token)
+    
+    return render(request, 'ostadkar/home.html', {'post_token': post_token})
 
-def login(request):
+def login(request, post_token=None):
     """Show login page"""
     # If user is already authenticated, redirect to add sample work
     if 'user_id' in request.session:
         try:
             UserAuth.objects.get(user_id=request.session['user_id'])
-            return redirect('ostadkar:post_images', post_token='default1')
+            if post_token:
+                return redirect('ostadkar:add_sample_work', post_token=post_token)
+            else:
+                return redirect('ostadkar:post_images', post_token='default1')
         except UserAuth.DoesNotExist:
             request.session.flush()
-    return render(request, 'ostadkar/login.html')
+    
+    return render(request, 'ostadkar/login.html', {'post_token': post_token})
 
-def oauth_login(request):
+def oauth_login(request, post_token):
     """Initiate OAuth login process"""
     oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
+    
+    # Store post_token in session for callback
+    request.session['post_token'] = post_token
     
     # Prepare OAuth parameters
     params = {
         'client_id': oauth_settings['oauth_client_id'],
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
-        'scope': oauth_settings['oauth_scope'],
-        'state': '1234567890',
+        'scope': oauth_settings['oauth_scope']+f"&POST_ADDON_CREATE.{post_token}",
+        'state': 'post_token',
     }
     
     # Construct authorization URL
@@ -66,6 +89,14 @@ def oauth_callback(request):
     
     oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
     code = request.GET['code']
+    
+    # Get post_token from state parameter
+    state = request.GET.get('state', '')
+    post_token = 'AaxBDckp'  # Default fallback
+    
+    # Extract post_token from state if it was passed
+    if state == 'post_token' and 'post_token' in request.session:
+        post_token = request.session.get('post_token', 'AaxBDckp')
     
     # Exchange code for access token
     token_data = {
@@ -121,8 +152,8 @@ def oauth_callback(request):
             # Set session expiry
             request.session.set_expiry(3600)  # 1 hour
             
-            # Redirect to add post image page
-            return redirect('ostadkar:add_sample_work')
+            # Redirect to add post image page with post_token
+            return redirect('ostadkar:add_sample_work', post_token=post_token)
             
         except requests.RequestException as e:
             return render(request, 'ostadkar/error.html', {'error': f'Failed to get user info: {str(e)}'})
@@ -131,8 +162,7 @@ def oauth_callback(request):
         return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
 
 @session_auth_required
-def add_sample_work(request):
-    post_token = 'default1'
+def add_sample_work(request, post_token='AaxBDckp'):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST)
         if form.is_valid():
@@ -426,11 +456,135 @@ def payment_success(request, post_token):
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
     payment = Payment.objects.filter(sample_work=sample_work, status='completed').first()
     
+    # Create addon for the post using Divar API
+    if payment and sample_work.user.access_token:
+        addon_result = create_post_addon(sample_work, payment)
+        if addon_result.get('success'):
+            messages.success(request, 'افزونه پست با موفقیت ایجاد شد.')
+        else:
+            messages.warning(request, f'خطا در ایجاد افزونه پست: {addon_result.get("error", "خطای نامشخص")}')
+    
     return render(request, 'ostadkar/payment_success.html', {
         'sample_work': sample_work,
         'payment': payment,
         'post_token': post_token
     })
+
+def create_post_addon(sample_work, payment):
+    """
+    Create an addon for a post using Divar API
+    Based on: https://divar-ir.github.io/kenar-docs/openapi-doc/addons-create-post-addon-v-2
+    """
+    # Check if addon already exists for this payment
+    existing_addon = PostAddon.objects.filter(payment=payment).first()
+    if existing_addon:
+        if existing_addon.status == 'created':
+            return {
+                'success': True,
+                'addon_id': existing_addon.addon_id,
+                'message': 'Addon already exists'
+            }
+        elif existing_addon.status == 'failed':
+            # Try again if previous attempt failed
+            existing_addon.delete()
+    
+    # Create a new addon record
+    addon = PostAddon.objects.create(
+        sample_work=sample_work,
+        duration=30,  # Default duration in days
+        status='pending'
+    )
+    
+    try:
+        # Prepare the addon data according to Divar API documentation
+        addon_data = {
+            "widgets": [
+                {
+                    "button_bar": {
+                        "title": "مشاهده آلبوم نمونه کار",
+                        "action": {
+                            "open_direct_link": f"https://data-lines.ir/ostadkar/{sample_work.post_token}"
+                        }
+                    }
+                }
+            ]
+        }
+        
+        
+        # Get user's access token
+        access_token = sample_work.user.access_token
+        
+        # Prepare headers with authorization
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {access_token}',
+            'X-API-Key': settings.OAUTH_APPS_SETTINGS['ostadkar']['api_key']
+        }
+        
+        # Make API request to create addon
+        response = requests.post(
+            settings.DIVAR_ADDON_CREATE_URL.format(post_token=sample_work.post_token),
+            json=addon_data,
+            headers=headers,
+            timeout=30
+        )
+        
+        # Log the request and response for debugging
+        print(f"Addon creation request data: {addon_data}")
+        print(f"Addon creation response status: {response.status_code}")
+        print(f"Addon creation response content: {response.text}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        # Check if the addon was created successfully
+        if response.status_code == 200 and result.get('success'):
+            # Update addon record with success
+            addon.status = 'created'
+            addon.addon_id = result.get('data', {}).get('addon_id')
+            addon.save()
+            
+            return {
+                'success': True,
+                'addon_id': addon.addon_id,
+                'message': 'Addon created successfully'
+            }
+        else:
+            # Update addon record with failure
+            error_message = result.get('error', {}).get('message', 'Unknown error')
+            addon.status = 'failed'
+            addon.error_message = error_message
+            addon.save()
+            
+            return {
+                'success': False,
+                'error': error_message
+            }
+            
+    except requests.RequestException as e:
+        # Update addon record with network error
+        error_message = f'Network error: {str(e)}'
+        addon.status = 'failed'
+        addon.error_message = error_message
+        addon.save()
+        
+        print(f"Request error in create_post_addon: {str(e)}")
+        return {
+            'success': False,
+            'error': error_message
+        }
+    except Exception as e:
+        # Update addon record with unexpected error
+        error_message = f'Unexpected error: {str(e)}'
+        addon.status = 'failed'
+        addon.error_message = error_message
+        addon.save()
+        
+        print(f"Unexpected error in create_post_addon: {str(e)}")
+        return {
+            'success': False,
+            'error': error_message
+        }
 
 def payment_failed(request, post_token):
     """Show payment failed page"""
@@ -440,5 +594,41 @@ def payment_failed(request, post_token):
     return render(request, 'ostadkar/payment_failed.html', {
         'sample_work': sample_work,
         'payment': payment,
+        'post_token': post_token
+    })
+
+@session_auth_required
+def addon_status(request, post_token):
+    """Check addon status and allow retry for failed addons"""
+    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    
+    # Check if the current user owns this sample work
+    if sample_work.user != request.user_auth:
+        return render(request, 'ostadkar/permission_denied.html', {
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+        }, status=403)
+    
+    # Get the latest payment and addon
+    payment = Payment.objects.filter(sample_work=sample_work, status='completed').first()
+    addon = None
+    if payment:
+        addon = PostAddon.objects.filter(payment=payment).first()
+    
+    # Handle retry request
+    if request.method == 'POST' and 'retry_addon' in request.POST:
+        if addon and addon.status == 'failed':
+            # Delete the failed addon and try again
+            addon.delete()
+            addon_result = create_post_addon(sample_work, payment)
+            if addon_result.get('success'):
+                messages.success(request, 'افزونه پست با موفقیت ایجاد شد.')
+            else:
+                messages.error(request, f'خطا در ایجاد افزونه پست: {addon_result.get("error", "خطای نامشخص")}')
+            return redirect('ostadkar:addon_status', post_token=post_token)
+    
+    return render(request, 'ostadkar/addon_status.html', {
+        'sample_work': sample_work,
+        'payment': payment,
+        'addon': addon,
         'post_token': post_token
     })

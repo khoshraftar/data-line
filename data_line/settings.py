@@ -198,6 +198,11 @@ else:
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
+
+# Divar API Configuration for Addons
+DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v1/open-platform'
+DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}/addons/create-post-addon-v2/'+'{post_token}'
+
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_FILE_OVERWRITE = False
 AWS_QUERYSTRING_AUTH = False

@@ -86,3 +86,33 @@ class Payment(models.Model):
         ordering = ['-created_at']
         verbose_name = 'پرداخت'
         verbose_name_plural = 'پرداخت‌ها'
+
+
+class PostAddon(models.Model):
+    ADDON_STATUS_CHOICES = [
+        ('pending', 'در انتظار'),
+        ('created', 'ایجاد شده'),
+        ('failed', 'ناموفق'),
+    ]
+    
+    ADDON_TYPE_CHOICES = [
+        ('premium', 'پریمیوم'),
+        ('urgent', 'فوری'),
+        ('vip', 'ویژه'),
+    ]
+    
+    sample_work = models.ForeignKey(SampleWork, on_delete=models.CASCADE, verbose_name='نمونه کار')
+    duration = models.IntegerField(verbose_name='مدت زمان (روز)')
+    status = models.CharField(max_length=20, choices=ADDON_STATUS_CHOICES, default='pending', verbose_name='وضعیت')
+    addon_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شناسه افزونه')
+    error_message = models.TextField(blank=True, null=True, verbose_name='پیام خطا')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
+    
+    def __str__(self):
+        return f"Addon for {self.sample_work.title} - {self.get_addon_type_display()}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'افزونه پست'
+        verbose_name_plural = 'افزونه‌های پست'
