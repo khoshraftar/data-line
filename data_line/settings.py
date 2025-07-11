@@ -131,7 +131,7 @@ OAUTH_APPS_SETTINGS = {
         "oauth_client_id": os.getenv('OSTADKAR_OAUTH_CLIENT_ID'),
         "oauth_client_secret": os.getenv('OSTADKAR_OAUTH_CLIENT_SECRET'),
         "oauth_redirect_uri": os.getenv('OSTADKAR_OAUTH_REDIRECT_URI'),
-        "oauth_scope": 'USER_ID&PHON_NUMBER&POST_ADDON_CREATE.{post_token}'
+        "oauth_scope": 'USER_ID&PHONE_NUMBER&POST_ADDON_CREATE.{post_token}'
     },
     "resumeyar": {
         "api_key": os.getenv('RESUMEYAR_API_KEY', ''),
