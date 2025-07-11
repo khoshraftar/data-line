@@ -42,8 +42,13 @@ def session_auth_required(view_func):
 def home(request, post_token=None):
     # If post_token is provided via GET parameter, redirect to the URL with post_token
     if not post_token and 'post_token' in request.GET:
-        post_token = request.GET['post_token']
-        return redirect('ostadkar:home_with_token', post_token=post_token)
+        post_token = request.GET['post_token'].strip()
+        if post_token:  # Only redirect if post_token is not empty
+            return redirect('ostadkar:home_with_token', post_token=post_token)
+    
+    # Clean up post_token if it exists
+    if post_token:
+        post_token = post_token.strip()
     
     return render(request, 'ostadkar/home.html', {'post_token': post_token})
 
