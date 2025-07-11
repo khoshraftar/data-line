@@ -7,7 +7,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="mb-4">نمونه کارها</h1>
-            <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-primary">
+            <a href="{% url 'ostadkar:add_sample_work' post_token=post_token %}" class="btn btn-primary">
                 افزودن نمونه کار جدید
             </a>
         </div>
@@ -51,7 +51,7 @@
     {% else %}
         <div class="alert alert-info">
             هنوز نمونه کاری اضافه نکرده‌اید.
-            <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-primary mr-3">
+            <a href="{% url 'ostadkar:add_sample_work' post_token=post_token %}" class="btn btn-primary mr-3">
                 افزودن اولین نمونه کار
             </a>
         </div>
