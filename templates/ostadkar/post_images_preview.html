@@ -11,7 +11,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h1 class="card-title mb-0">پیش‌نمایش تصاویر نمونه کار</h1>
                         <div>
-                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid post_token=post_token %}" class="btn btn-primary">
+                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> افزودن تصاویر
                             </a>
                             <a href="{% url 'ostadkar:add_sample_work' post_token=post_token %}" class="btn btn-secondary">
