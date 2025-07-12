@@ -18,7 +18,6 @@ urlpatterns = [
     path('payment/callback/', views.payment_callback, name='payment_callback'),
     path('payment/success/<str:post_token>/', views.payment_success, name='payment_success'),
     path('payment/failed/<str:post_token>/', views.payment_failed, name='payment_failed'),
-    path('addon/status/<str:post_token>/', views.addon_status, name='addon_status'),
     # This should be last to avoid catching other URLs
     path('<str:post_token>/', views.home, name='home_with_token'),
 ] 

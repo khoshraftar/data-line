@@ -605,9 +605,6 @@ def payment_failed(request, post_token):
         'post_token': post_token
     })
 
-@session_auth_required
-def addon_status(request, post_token):
-    """Check addon status and allow retry for failed addons"""
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
     
     # Check if the current user owns this sample work
