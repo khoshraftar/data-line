@@ -21,6 +21,20 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Separate Publish Button Box - Moved to top -->
+                    <div class="card border-success mb-4">
+                        <div class="card-body text-center py-4">
+                            <h4 class="h5 mb-3 text-success">انتشار نمونه کار در دیوار</h4>
+                            <p class="text-muted mb-4">برای انتشار نمونه کار در دیوار و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
+                            <a href="{% url 'ostadkar:pre_payment' post_token %}" class="btn btn-success btn-lg px-5 py-3">
+                                <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
+                            </a>
+                            <small class="d-block text-muted mt-3">
+                                <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
+                            </small>
+                        </div>
+                    </div>
+                    
                     <h2 class="card-title mb-3">{{ sample_work.title }}</h2>
                     <p class="card-text lead mb-4">{{ sample_work.description }}</p>
                     
@@ -60,20 +74,6 @@
                             <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="alert-link">افزودن تصاویر</a>
                         </div>
                     {% endif %}
-                    
-                    <!-- Publish Button Section -->
-                    <div class="mt-5 pt-4 border-top">
-                        <div class="text-center">
-                            <h4 class="h5 mb-3">انتشار نمونه کار</h4>
-                            <p class="text-muted mb-4">برای انتشار نمونه کار در دیوار و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
-                            <a href="{% url 'ostadkar:pre_payment' post_token %}" class="btn btn-success btn-lg">
-                                <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
-                            </a>
-                            <small class="d-block text-muted mt-2">
-                                <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
-                            </small>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
