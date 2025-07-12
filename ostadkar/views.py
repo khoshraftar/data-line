@@ -40,14 +40,9 @@ def session_auth_required(view_func):
 # Create your views here.
 
 def home(request, post_token=None):
-    # Debug: Print the post_token value
-    print(f"DEBUG: post_token = '{post_token}'")
-    print(f"DEBUG: request.GET = {request.GET}")
-    
     # If post_token is provided via GET parameter, redirect to the URL with post_token
     if not post_token and 'post_token' in request.GET:
         post_token = request.GET['post_token'].strip()
-        print(f"DEBUG: post_token from GET = '{post_token}'")
         if post_token:  # Only redirect if post_token is not empty
             return redirect('ostadkar:home_with_token', post_token=post_token)
     
@@ -56,7 +51,6 @@ def home(request, post_token=None):
         post_token = post_token.strip()
         # Decode URL-encoded characters in post_token if present
         post_token = unquote(post_token)
-        print(f"DEBUG: cleaned post_token = '{post_token}'")
     
     return render(request, 'ostadkar/home.html', {'post_token': post_token})
 
@@ -353,14 +347,11 @@ def initiate_payment(request, post_token):
     
     try:
         # Send payment request to ZarinPal
-        print(f"Payment request data: {payment_data}")  # Debug info
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
         response = requests.post(settings.ZARINPAL_REQUEST_URL, json=payment_data, headers=headers)
-        print(f"Response status: {response.status_code}")  # Debug info
-        print(f"Response content: {response.text}")  # Debug info
         response.raise_for_status()
         result = response.json()
         
@@ -538,11 +529,6 @@ def create_post_addon(sample_work):
             timeout=30
         )
         
-        # Log the request and response for debugging
-        print(f"Addon creation request data: {addon_data}")
-        print(f"Addon creation response status: {response.status_code}")
-        print(f"Addon creation response content: {response.text}")
-        
         response.raise_for_status()
         result = response.json()
         
@@ -577,7 +563,6 @@ def create_post_addon(sample_work):
         addon.error_message = error_message
         addon.save()
         
-        print(f"Request error in create_post_addon: {str(e)}")
         return {
             'success': False,
             'error': error_message
@@ -589,7 +574,6 @@ def create_post_addon(sample_work):
         addon.error_message = error_message
         addon.save()
         
-        print(f"Unexpected error in create_post_addon: {str(e)}")
         return {
             'success': False,
             'error': error_message
