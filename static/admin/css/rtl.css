@@ -1,0 +1,96 @@
+/* RTL Support for Django Admin */
+body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Fix form fields alignment */
+.form-row {
+    direction: rtl;
+}
+
+.form-row label {
+    text-align: right;
+    float: right;
+}
+
+.form-row .help {
+    text-align: right;
+    float: right;
+}
+
+/* Fix inline forms */
+.inline-group {
+    direction: rtl;
+}
+
+.inline-related h3 {
+    text-align: right;
+}
+
+/* Fix table headers */
+thead th {
+    text-align: right;
+}
+
+/* Fix breadcrumbs */
+.breadcrumbs {
+    direction: rtl;
+}
+
+/* Fix object tools */
+.object-tools {
+    direction: rtl;
+}
+
+.object-tools a {
+    float: right;
+    margin-left: 0;
+    margin-right: 5px;
+}
+
+/* Fix pagination */
+.pagination {
+    direction: rtl;
+}
+
+.pagination a {
+    float: right;
+    margin-left: 0;
+    margin-right: 5px;
+}
+
+/* Fix filter sidebar */
+.module h2, .module h3 {
+    text-align: right;
+}
+
+/* Fix action buttons */
+.submit-row {
+    direction: rtl;
+}
+
+.submit-row input {
+    float: right;
+    margin-left: 0;
+    margin-right: 5px;
+}
+
+/* Fix help text */
+.help {
+    text-align: right;
+}
+
+/* Fix error messages */
+.errornote {
+    text-align: right;
+}
+
+/* Fix success messages */
+.messagelist {
+    direction: rtl;
+}
+
+.messagelist li {
+    text-align: right;
+} 
