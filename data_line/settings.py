@@ -101,8 +101,12 @@ WSGI_APPLICATION = 'data_line.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':  'default',
+        'USER':  'base-user',
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': '1df785cfddad4f9a9d045b1cc9b3c861.db.arvandbaas.ir',
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
