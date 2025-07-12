@@ -468,7 +468,8 @@ def payment_success(request, post_token):
     return render(request, 'ostadkar/payment_success.html', {
         'sample_work': sample_work,
         'payment': payment,
-        'post_token': post_token
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 def create_post_addon(sample_work):
@@ -602,38 +603,6 @@ def payment_failed(request, post_token):
     return render(request, 'ostadkar/payment_failed.html', {
         'sample_work': sample_work,
         'payment': payment,
-        'post_token': post_token
-    })
-
-    sample_work = get_object_or_404(SampleWork, post_token=post_token)
-    
-    # Check if the current user owns this sample work
-    if sample_work.user != request.user_auth:
-        return render(request, 'ostadkar/permission_denied.html', {
-            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
-        }, status=403)
-    
-    # Get the latest payment and addon
-    payment = Payment.objects.filter(sample_work=sample_work, status='completed').first()
-    addon = None
-    if payment:
-        addon = PostAddon.objects.filter(sample_work=sample_work).first()
-    
-    # Handle retry request
-    if request.method == 'POST' and 'retry_addon' in request.POST:
-        if addon and addon.status == 'failed':
-            # Delete the failed addon and try again
-            addon.delete()
-            addon_result = create_post_addon(sample_work)
-            if addon_result.get('success'):
-                messages.success(request, 'افزونه پست با موفقیت ایجاد شد.')
-            else:
-                messages.error(request, f'خطا در ایجاد افزونه پست: {addon_result.get("error", "خطای نامشخص")}')
-            return redirect('ostadkar:addon_status', post_token=post_token)
-    
-    return render(request, 'ostadkar/addon_status.html', {
-        'sample_work': sample_work,
-        'payment': payment,
-        'addon': addon,
-        'post_token': post_token
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
