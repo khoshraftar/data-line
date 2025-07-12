@@ -61,7 +61,7 @@ class UserAuthAdmin(admin.ModelAdmin):
     sample_works_count.short_description = 'تعداد نمونه کارها'
     
     def payments_count(self, obj):
-        return obj.payment_set.count()
+        return Payment.objects.filter(sample_work__user=obj).count()
     payments_count.short_description = 'تعداد پرداخت‌ها'
     
     def export_user_data(self, request, queryset):
@@ -82,7 +82,7 @@ class UserAuthAdmin(admin.ModelAdmin):
                 user.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 user.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
                 user.samplework_set.count(),
-                user.payment_set.count()
+                Payment.objects.filter(sample_work__user=user).count()
             ])
         
         return response
