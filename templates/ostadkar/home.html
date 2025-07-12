@@ -24,7 +24,7 @@
                     <div class="alert alert-info">
                         <strong>کد آگهی:</strong> {{ post_token }}
                     </div>
-                    <a href="{% url 'ostadkar:oauth_login' post_token=post_token %}" class="btn btn-success btn-lg">
+                    <a href="{% url 'ostadkar:login_with_token' post_token=post_token %}" class="btn btn-success btn-lg">
                         افزودن نمونه کار به آگهی
                     </a>
                 </div>
