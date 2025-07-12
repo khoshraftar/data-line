@@ -292,7 +292,8 @@ def pre_payment(request, post_token):
     return render(request, 'ostadkar/pre_payment.html', {
         'sample_work': sample_work,
         'post_images': post_images,
-        'post_token': post_token
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 @session_auth_required
