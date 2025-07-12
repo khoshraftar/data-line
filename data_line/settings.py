@@ -101,8 +101,12 @@ WSGI_APPLICATION = 'data_line.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':  'default',
+        'USER':  'base-user',
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': '1df785cfddad4f9a9d045b1cc9b3c861.db.arvandbaas.ir',
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -131,7 +135,7 @@ OAUTH_APPS_SETTINGS = {
         "oauth_client_id": os.getenv('OSTADKAR_OAUTH_CLIENT_ID'),
         "oauth_client_secret": os.getenv('OSTADKAR_OAUTH_CLIENT_SECRET'),
         "oauth_redirect_uri": os.getenv('OSTADKAR_OAUTH_REDIRECT_URI'),
-        "oauth_scope": os.getenv('OSTADKAR_OAUTH_SCOPE', 'USER_ID&'),
+        "oauth_scope": 'USER_ID USER_PHONE POST_ADDON_CREATE.{post_token}'
     },
     "resumeyar": {
         "api_key": os.getenv('RESUMEYAR_API_KEY', ''),
@@ -154,7 +158,7 @@ ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'
 ZARINPAL_GATEWAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
 
 # Payment Settings
-PAYMENT_AMOUNT = 500000  # 50,000 Toman in Rials (500,000 Rials)
+PAYMENT_AMOUNT = 220000  # 22,000 Toman in Rials (220,000 Rials)
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -198,6 +202,12 @@ else:
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
+
+# Divar API Configuration for Addons
+DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v2/open-platform/'
+DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}addons/post/'+'{post_token}'
+DIVAR_COMPLETION_URL = 'https://open-platform-redirect.divar.ir/completion'
+
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_FILE_OVERWRITE = False
 AWS_QUERYSTRING_AUTH = False

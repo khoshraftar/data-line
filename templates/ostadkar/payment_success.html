@@ -39,19 +39,13 @@
                         <ul class="list-unstyled mb-0">
                             <li><i class="fas fa-clock text-info"></i> نمونه کار شما در حال بررسی است</li>
                             <li><i class="fas fa-check text-success"></i> پس از تایید، در دیوار منتشر خواهد شد</li>
-                            <li><i class="fas fa-bell text-warning"></i> از طریق پیامک از انتشار مطلع خواهید شد</li>
                         </ul>
                     </div>
                     
                     <div class="row mt-4">
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'ostadkar:post_images' post_token %}" class="btn btn-primary btn-lg w-100">
-                                <i class="fas fa-eye"></i> مشاهده نمونه کار
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="{% url 'ostadkar:home' %}" class="btn btn-outline-secondary btn-lg w-100">
-                                <i class="fas fa-home"></i> بازگشت به خانه
+                        <div class="col-12">
+                            <a href="{{ divar_completion_url }}" class="btn btn-success btn-lg w-100" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> بازگشت به دیوار
                             </a>
                         </div>
                     </div>

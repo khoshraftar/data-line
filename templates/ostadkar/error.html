@@ -7,7 +7,7 @@
         <p>{{ error }}</p>
         <hr>
         <p class="mb-0">
-            <a href="{% url 'ostadkar:oauth_login' %}" class="btn btn-primary">Try Again</a>
+            <a href="{% url 'ostadkar:oauth_login' post_token=post_token %}" class="btn btn-primary">Try Again</a>
         </p>
     </div>
 </div>
