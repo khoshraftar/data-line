@@ -4,8 +4,8 @@
 {% block title %}استادکار - دیتا لاین{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="header text-center mb-5">
+<div class="container py-4 py-md-5">
+    <div class="header text-center mb-4 mb-md-5">
         <h1 class="display-4">به استادکار خوش آمدید</h1>
         <p class="lead">با آپلود عکس‌های نمونه کارت و افزوده شدن نمونه کار به آگهی،اعتماد بساز، زنگ خورت رو بیشتر کن و درآمدت رو افزایش بده</p>
     </div>
@@ -41,5 +41,8 @@
             {% endif %}
         </div>
     </div>
+    
+    <!-- Extra spacing for mobile to prevent footer overlap -->
+    <div class="d-block d-md-none" style="height: 2rem;"></div>
 </div>
 {% endblock %} 
