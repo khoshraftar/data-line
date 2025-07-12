@@ -510,7 +510,7 @@ def create_post_addon(sample_work):
                     "button_bar": {
                         "title": "آلبوم نمونه کار",
                         "action": {
-                            "open_direct_link": f"https://data-lines.ir/ostadkar/post-images/{sample_work.post_token}"
+                            "open_direct_link": f"https://data-lines.ir/ostadkar/sample-work/post-images/{sample_work.post_token}"
                         }
                     }
                 }
