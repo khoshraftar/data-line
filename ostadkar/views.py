@@ -501,10 +501,16 @@ def create_post_addon(sample_work):
         addon_data = {
             "widgets": [
                 {
+                    "description_row": {
+                        "expandable": True,
+                        "has_divider": True,
+                        "text": "مشاهده آلبوم تصاویر نمونه کار های تایید شده در سایت استادکار"
+                }},
+                {
                     "button_bar": {
-                        "title": "مشاهده آلبوم نمونه کار",
+                        "title": "آلبوم نمونه کار",
                         "action": {
-                            "open_direct_link": f"https://data-lines.ir/ostadkar/{sample_work.post_token}"
+                            "open_direct_link": f"https://data-lines.ir/ostadkar/post-images/{sample_work.post_token}"
                         }
                     }
                 }
