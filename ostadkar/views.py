@@ -546,7 +546,7 @@ def create_post_addon(sample_work):
         result = response.json()
         
         # Check if the addon was created successfully
-        if response.status_code == 200 and result.get('success'):
+        if response.status_code == 200:
             # Update addon record with success
             addon.status = 'created'
             addon.addon_id = result.get('data', {}).get('addon_id')
