@@ -502,9 +502,9 @@ def create_post_addon(sample_work):
             "widgets": [
                 {
                     "description_row": {
-                        "expandable": True,
+                        "expandable": False,
                         "has_divider": True,
-                        "text": "مشاهده آلبوم تصاویر نمونه کار های تایید شده در سایت استادکار"
+                        "text": "مشاهده آلبوم کامل تصاویر نمونه کار های تایید شده در سایت استادکار"
                 }},
                 {
                     "button_bar": {
@@ -514,6 +514,7 @@ def create_post_addon(sample_work):
                         }
                     }
                 }
+
             ]
         }
         
