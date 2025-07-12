@@ -110,7 +110,7 @@ class PostAddon(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
     
     def __str__(self):
-        return f"Addon for {self.sample_work.title} - {self.get_addon_type_display()}"
+        return f"Addon for {self.sample_work.title} - {self.get_status_display()}"
     
     class Meta:
         ordering = ['-created_at']
