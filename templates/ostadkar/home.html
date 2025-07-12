@@ -20,7 +20,7 @@
             </div>
             
             {% if post_token and post_token.strip %}
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 mb-5">
                     <div class="alert alert-info">
                         <strong>کد آگهی:</strong> {{ post_token }}
                     </div>
@@ -29,7 +29,7 @@
                     </a>
                 </div>
             {% else %}
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 mb-5">
                     <form method="GET" action="{% url 'ostadkar:home' %}" class="mb-3">
                         <div class="input-group">
                             <input type="text" name="post_token" class="form-control" placeholder="کد آگهی خود را وارد کنید" required>
@@ -43,6 +43,6 @@
     </div>
     
     <!-- Extra spacing for mobile to prevent footer overlap -->
-    <div class="d-block d-md-none" style="height: 2rem;"></div>
+    <div class="d-block d-md-none" style="height: 4rem;"></div>
 </div>
 {% endblock %} 
