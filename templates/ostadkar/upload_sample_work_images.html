@@ -419,7 +419,7 @@ class ImageUploader {
                     created_at: data.created_at
                 });
                 this.updateImageCounter();
-                this.showAlert(`تصویر ${file.name} با موفقیت آپلود شد.`, 'success');
+                // Removed success notification - keeping only the tiny badge
             } else {
                 this.removeImageCard(tempImageId);
                 this.showAlert(data.error || 'خطا در آپلود تصویر', 'error');
