@@ -27,9 +27,9 @@
                                 {{ form.images }}
                                 <div class="file-input-overlay" id="fileOverlay">
                                     <i class="fas fa-images"></i>
-                                    <span id="fileText">انتخاب تصاویر از گالری</span>
+                                    <span id="fileText">انتخاب چندین تصویر از گالری</span>
                                     <small class="d-block text-muted mt-2" id="fileHelp">
-                                        روی این قسمت کلیک کنید و گزینه "گالری" یا "تصاویر" را انتخاب کنید
+                                        روی این قسمت کلیک کنید و چندین تصویر را از گالری انتخاب کنید
                                     </small>
                                     <small class="d-block text-info mt-1">
                                         <i class="fas fa-info-circle"></i> حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
@@ -136,6 +136,11 @@
 @media (max-width: 768px) {
     .file-input-overlay {
         padding: 30px 15px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
     
     .file-input-overlay i {
@@ -144,6 +149,16 @@
     
     .file-input-overlay span {
         font-size: 1rem;
+    }
+    
+    .custom-file-upload input[type="file"] {
+        min-height: 120px;
+        touch-action: manipulation;
+    }
+    
+    .file-input-overlay {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 123, 255, 0.3);
     }
 }
 </style>
@@ -157,8 +172,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const filePreview = document.getElementById('filePreview');
     const selectedFiles = document.querySelector('.selected-files');
     
+    // Ensure the file input has the multiple attribute
+    if (fileInput) {
+        fileInput.setAttribute('multiple', 'true');
+        fileInput.setAttribute('accept', 'image/*');
+        console.log('File input attributes:', {
+            multiple: fileInput.hasAttribute('multiple'),
+            accept: fileInput.getAttribute('accept'),
+            type: fileInput.type
+        });
+    }
+    
     fileInput.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
+        console.log('Selected files:', files.length, files);
         
         if (files.length > 0) {
             // Check file count limit
@@ -208,8 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fileOverlay.style.backgroundColor = '#d4edda';
         } else {
             // Reset to default state
-            fileText.textContent = 'انتخاب تصاویر از گالری';
-            fileHelp.textContent = 'روی این قسمت کلیک کنید و گزینه "گالری" یا "تصاویر" را انتخاب کنید';
+            fileText.textContent = 'انتخاب چندین تصویر از گالری';
+            fileHelp.textContent = 'روی این قسمت کلیک کنید و چندین تصویر را از گالری انتخاب کنید';
             filePreview.style.display = 'none';
             fileOverlay.style.borderColor = '#007bff';
             fileOverlay.style.backgroundColor = '#f8f9fa';
@@ -223,6 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fileOverlay.addEventListener('touchend', function() {
         this.style.transform = 'scale(1)';
+    });
+    
+    // Ensure clicking the overlay triggers the file input
+    fileOverlay.addEventListener('click', function(e) {
+        e.preventDefault();
+        fileInput.click();
     });
 });
 </script>

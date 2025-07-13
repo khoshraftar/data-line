@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from .models import PostImage, SampleWork
 import os
 
-class MultipleFileInput(forms.ClearableFileInput):
+class MultipleFileInput(forms.FileInput):
     allow_multiple_selected = True
     
     def __init__(self, attrs=None):
@@ -14,6 +14,13 @@ class MultipleFileInput(forms.ClearableFileInput):
         if attrs:
             default_attrs.update(attrs)
         super().__init__(default_attrs)
+    
+    def render(self, name, value, attrs=None, renderer=None):
+        if attrs is None:
+            attrs = {}
+        attrs['multiple'] = True
+        attrs['accept'] = 'image/*'
+        return super().render(name, value, attrs, renderer)
 
 class MultipleFileField(forms.FileField):
     def __init__(self, *args, **kwargs):
