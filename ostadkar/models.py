@@ -61,6 +61,16 @@ class SampleWork(models.Model):
     def __str__(self):
         return self.title
 
+    @classmethod
+    def all_including_archived(cls):
+        """Return all sample works including archived ones"""
+        return cls.objects.all_including_archived()
+    
+    @classmethod
+    def archived(cls):
+        """Return only archived sample works"""
+        return cls.objects.archived()
+
     def archive(self):
         """Archive the sample work instead of deleting it"""
         self.is_archived = True
