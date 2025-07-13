@@ -182,7 +182,7 @@ def oauth_callback(request):
             request.session['user_id'] = user_id
             
             # Set session expiry
-            request.session.set_expiry(600)  # 10 minutes
+            request.session.set_expiry(1200)  # 20 minutes
             
             # Redirect to add post image page with post_token
             return redirect('ostadkar:add_sample_work', post_token=post_token)
