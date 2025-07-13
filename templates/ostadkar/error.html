@@ -4,13 +4,12 @@
 <div class="container mt-5">
     <div class="alert alert-danger" role="alert">
         <h4 class="alert-heading">خطا!</h4>
-        <p>{{ error }}</p>
         <hr>
         <p class="mb-3">
             برای ایجاد افزونه و ارائه خدمات بهتر، نیاز به دسترسی به اطلاعات حساب کاربری شما داریم. بدون این دسترسی‌ها نمی‌توانیم افزونه مورد نظر شما را ایجاد کنیم.
         </p>
         <div class="d-flex gap-2">
-            <a href="{{ divar_completion_url }}" class="btn btn-secondary">صفحه تکمیل دیوار</a>
+            <a href="{{ divar_completion_url }}" class="btn btn-secondary">بازگشت به دیوار</a>
             <a href="{% url 'ostadkar:oauth_login' post_token=post_token %}" class="btn btn-primary">تلاش مجدد</a>
         </div>
     </div>
