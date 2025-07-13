@@ -42,6 +42,9 @@ def session_auth_required(view_func):
 # Create your views here.
 
 def home(request, post_token=None):
+    # Clear session every time home is accessed
+    request.session.flush()
+    
     # If post_token is provided via GET parameter, redirect to the URL with post_token
     if not post_token and 'post_token' in request.GET:
         post_token = request.GET['post_token'].strip()
@@ -202,7 +205,7 @@ def oauth_callback(request):
         })
 
 @session_auth_required
-def add_sample_work(request, post_token='AaxBDckp'):
+def add_sample_work(request, post_token):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST)
         if form.is_valid():
