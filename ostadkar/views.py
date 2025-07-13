@@ -100,7 +100,11 @@ def oauth_login(request, post_token):
 def oauth_callback(request):
     """Handle OAuth callback"""
     if 'code' not in request.GET:
-        return render(request, 'ostadkar/error.html', {'error': 'Authorization code not received'})
+        return render(request, 'ostadkar/error.html', {
+            'error': 'Authorization code not received',
+            'post_token': request.GET.get('state', ''),
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+        })
     
     oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
     code = request.GET['code']
@@ -127,7 +131,11 @@ def oauth_callback(request):
         
         access_token = token_info.get('access_token')
         if not access_token:
-            return render(request, 'ostadkar/error.html', {'error': 'Access token not received from OAuth provider'})
+            return render(request, 'ostadkar/error.html', {
+                'error': 'Access token not received from OAuth provider',
+                'post_token': post_token,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            })
         
         # Then try to get user info
         try:
@@ -144,7 +152,11 @@ def oauth_callback(request):
             
             user_id = user_info.get('user_id')
             if not user_id:
-                return render(request, 'ostadkar/error.html', {'error': 'User ID not found in user info response'})
+                return render(request, 'ostadkar/error.html', {
+                    'error': 'User ID not found in user info response',
+                    'post_token': post_token,
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                })
             
             # Extract phone number from user info
             phone = user_info.get('phone', '')
@@ -168,10 +180,18 @@ def oauth_callback(request):
             return redirect('ostadkar:add_sample_work', post_token=post_token)
             
         except requests.RequestException as e:
-            return render(request, 'ostadkar/error.html', {'error': f'Failed to get user info: {str(e)}'})
+            return render(request, 'ostadkar/error.html', {
+                'error': f'Failed to get user info: {str(e)}',
+                'post_token': post_token,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            })
             
     except requests.RequestException as e:
-        return render(request, 'ostadkar/error.html', {'error': f'Failed to get access token: {str(e)}'})
+        return render(request, 'ostadkar/error.html', {
+            'error': f'Failed to get access token: {str(e)}',
+            'post_token': post_token,
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+        })
 
 @session_auth_required
 def add_sample_work(request, post_token='AaxBDckp'):
