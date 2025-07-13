@@ -341,10 +341,10 @@
     <div class="actions-section">
         <div class="section-title">عملیات بررسی</div>
         <div class="action-buttons">
-            <a href="{% url 'samplework_review:samplework_accept' sample_work.uuid %}" class="btn btn-approve" onclick="return confirm('آیا از تایید این نمونه کار اطمینان دارید؟')">
+            <a href="{% url 'samplework_review:samplework_accept' %}" class="btn btn-approve">
                 ✓ تایید نمونه کار
             </a>
-            <a href="{% url 'samplework_review:samplework_reject' sample_work.uuid %}" class="btn btn-reject" onclick="return confirm('آیا از رد و حذف این نمونه کار اطمینان دارید؟ این عمل قابل بازگشت نیست.')">
+            <a href="{% url 'samplework_review:samplework_reject' %}" class="btn btn-reject">
                 ✗ رد نمونه کار
             </a>
         </div>
