@@ -91,7 +91,9 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
             return HttpResponseRedirect('/admin/review/')
         
         title = sample_work.title
-        sample_work.archive()
+        sample_work.is_reviewed = True  # Mark as reviewed
+        sample_work.save()  # Save the reviewed status
+        sample_work.archive()  # Then archive it
         
         messages.success(request, f'نمونه کار "{title}" رد و آرشیو شد.')
         return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
