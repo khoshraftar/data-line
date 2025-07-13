@@ -15,12 +15,14 @@ class SampleWorkReviewSite(admin.AdminSite):
         """Custom index view for the review admin site"""
         unreviewed_count = SampleWork.objects.filter(is_reviewed=False).count()
         reviewed_count = SampleWork.objects.filter(is_reviewed=True).count()
-        total_count = SampleWork.objects.count()
+        archived_count = SampleWork.archived().count()
+        total_count = SampleWork.all_including_archived().count()
         
         extra_context = extra_context or {}
         extra_context.update({
             'unreviewed_count': unreviewed_count,
             'reviewed_count': reviewed_count,
+            'archived_count': archived_count,
             'total_count': total_count,
         })
         
@@ -82,16 +84,16 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
     
     def reject_sample_work(self, request):
-        """Reject and delete sample work, then reload page"""
+        """Reject and archive sample work, then reload page"""
         sample_work = SampleWork.objects.filter(is_reviewed=False).first()
         if not sample_work:
             messages.error(request, 'نمونه کار مورد نظر یافت نشد.')
             return HttpResponseRedirect('/admin/review/')
         
         title = sample_work.title
-        sample_work.delete()
+        sample_work.archive()
         
-        messages.success(request, f'نمونه کار "{title}" رد و حذف شد.')
+        messages.success(request, f'نمونه کار "{title}" رد و آرشیو شد.')
         return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
 
 # Register the review admin view with the review site

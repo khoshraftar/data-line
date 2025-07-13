@@ -29,6 +29,21 @@ class UserAuth(models.Model):
         verbose_name_plural = 'احراز هویت کاربران'
 
 
+class SampleWorkManager(models.Manager):
+    """Custom manager to filter out archived sample works by default"""
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(is_archived=False)
+    
+    def all_including_archived(self):
+        """Return all sample works including archived ones"""
+        return super().get_queryset()
+    
+    def archived(self):
+        """Return only archived sample works"""
+        return super().get_queryset().filter(is_archived=True)
+
+
 class SampleWork(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True, verbose_name='شناسه یکتا')
     title = models.CharField(max_length=200, verbose_name='عنوان')
@@ -36,10 +51,27 @@ class SampleWork(models.Model):
     user = models.ForeignKey(UserAuth, on_delete=models.CASCADE, verbose_name='کاربر')
     description = models.TextField(verbose_name='توضیحات')
     is_reviewed = models.BooleanField(default=False, verbose_name='بررسی شده')
+    is_archived = models.BooleanField(default=False, verbose_name='آرشیو شده')
+    archived_at = models.DateTimeField(blank=True, null=True, verbose_name='تاریخ آرشیو')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+
+    # Use custom manager
+    objects = SampleWorkManager()
 
     def __str__(self):
         return self.title
+
+    def archive(self):
+        """Archive the sample work instead of deleting it"""
+        self.is_archived = True
+        self.archived_at = timezone.now()
+        self.save()
+
+    def unarchive(self):
+        """Unarchive the sample work"""
+        self.is_archived = False
+        self.archived_at = None
+        self.save()
 
     class Meta:
         ordering = ['created_at']

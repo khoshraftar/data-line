@@ -248,6 +248,19 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="meta-item">
+                <div class="meta-label">وضعیت آرشیو:</div>
+                <div class="meta-value">
+                    {% if sample_work.is_archived %}
+                        <span class="status-badge status-failed">آرشیو شده</span>
+                        {% if sample_work.archived_at %}
+                            <br><small>{{ sample_work.archived_at|date:"Y/m/d H:i" }}</small>
+                        {% endif %}
+                    {% else %}
+                        <span class="status-badge status-completed">فعال</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 

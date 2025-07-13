@@ -6,35 +6,51 @@
 <div class="container mt-4" dir="rtl">
     <div class="row">
         <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h1 class="card-title mb-3">{{ sample_work.title }}</h1>
-                    <p class="card-text lead mb-4">{{ sample_work.description }}</p>
-                    
-                    <h2 class="h4 mb-4">تصاویر</h2>
+            {% if is_archived %}
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <div class="alert alert-warning">
+                            <h4 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                این نمونه کار به دلیل قوانین حذف شده است
+                            </h4>
+                            <p class="mb-0">
+                                این نمونه کار به دلیل عدم رعایت قوانین و مقررات سایت آرشیو شده است.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h1 class="card-title mb-3">{{ sample_work.title }}</h1>
+                        <p class="card-text lead mb-4">{{ sample_work.description }}</p>
+                        
+                        <h2 class="h4 mb-4">تصاویر</h2>
 
-                    {% if post_images %}
-                        <div class="row">
-                            {% for image in post_images %}
-                                <div class="col-md-4 mb-4">
-                                    <div class="card h-100">
-                                        <img src="{{ image.image.url }}" class="card-img-top" alt="تصویر نمونه کار">
-                                        <div class="card-body">
-                                            <p class="card-text text-muted">
-                                                اضافه شده در {{ image.created_at|date:"j F Y" }}
-                                            </p>
+                        {% if post_images %}
+                            <div class="row">
+                                {% for image in post_images %}
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card h-100">
+                                            <img src="{{ image.image.url }}" class="card-img-top" alt="تصویر نمونه کار">
+                                            <div class="card-body">
+                                                <p class="card-text text-muted">
+                                                    اضافه شده در {{ image.created_at|date:"j F Y" }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="alert alert-info">
-                            هنوز تصویری اضافه نشده است.
-                        </div>
-                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                هنوز تصویری اضافه نشده است.
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>

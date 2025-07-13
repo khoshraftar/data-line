@@ -101,13 +101,13 @@ class UserAuthAdmin(admin.ModelAdmin):
 
 @admin.register(SampleWork)
 class SampleWorkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'post_token', 'user', 'is_reviewed', 'images_count', 'addons_count', 'created_at']
-    list_filter = ['is_reviewed', 'created_at']
+    list_display = ['title', 'post_token', 'user', 'is_reviewed', 'is_archived', 'images_count', 'addons_count', 'created_at']
+    list_filter = ['is_reviewed', 'is_archived', 'created_at']
     list_editable = ['is_reviewed']
     search_fields = ['title', 'post_token', 'user__user_id', 'user__phone']
-    readonly_fields = ['uuid', 'created_at']
+    readonly_fields = ['uuid', 'created_at', 'archived_at']
     ordering = ['-created_at']
-    actions = ['mark_as_reviewed', 'mark_as_unreviewed']
+    actions = ['mark_as_reviewed', 'mark_as_unreviewed', 'archive_sample_works', 'unarchive_sample_works']
     
     fieldsets = (
         ('اطلاعات نمونه کار', {
@@ -115,6 +115,10 @@ class SampleWorkAdmin(admin.ModelAdmin):
         }),
         ('وضعیت بررسی', {
             'fields': ('is_reviewed',)
+        }),
+        ('وضعیت آرشیو', {
+            'fields': ('is_archived', 'archived_at'),
+            'classes': ('collapse',)
         }),
         ('اطلاعات فنی', {
             'fields': ('uuid',),
@@ -127,6 +131,10 @@ class SampleWorkAdmin(admin.ModelAdmin):
     )
     
     inlines = [PostImageInline, PostAddonInline]
+    
+    def get_queryset(self, request):
+        """Show all sample works including archived ones in admin"""
+        return SampleWork.all_including_archived()
     
     def images_count(self, obj):
         return obj.postimage_set.count()
@@ -147,6 +155,34 @@ class SampleWorkAdmin(admin.ModelAdmin):
         updated = queryset.update(is_reviewed=False)
         self.message_user(request, f'{updated} نمونه کار به عنوان بررسی نشده علامت‌گذاری شد.')
     mark_as_unreviewed.short_description = "علامت‌گذاری به عنوان بررسی نشده"
+    
+    def archive_sample_works(self, request, queryset):
+        """Archive selected sample works"""
+        archived_count = 0
+        for sample_work in queryset:
+            if not sample_work.is_archived:
+                sample_work.archive()
+                archived_count += 1
+        
+        if archived_count > 0:
+            self.message_user(request, f'{archived_count} نمونه کار آرشیو شد.')
+        else:
+            self.message_user(request, 'هیچ نمونه کار جدیدی آرشیو نشد.')
+    archive_sample_works.short_description = "آرشیو نمونه کارهای انتخاب شده"
+    
+    def unarchive_sample_works(self, request, queryset):
+        """Unarchive selected sample works"""
+        unarchived_count = 0
+        for sample_work in queryset:
+            if sample_work.is_archived:
+                sample_work.unarchive()
+                unarchived_count += 1
+        
+        if unarchived_count > 0:
+            self.message_user(request, f'{unarchived_count} نمونه کار از آرشیو خارج شد.')
+        else:
+            self.message_user(request, 'هیچ نمونه کار جدیدی از آرشیو خارج نشد.')
+    unarchive_sample_works.short_description = "خارج کردن نمونه کارهای انتخاب شده از آرشیو"
 
 @admin.register(PostImage)
 class PostImageAdmin(admin.ModelAdmin):

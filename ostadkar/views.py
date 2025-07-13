@@ -250,12 +250,24 @@ def upload_sample_work_images(request, work_id):
 def post_images(request, post_token):
     # For public access, we need to find the sample work by post_token only
     # without requiring user authentication
-    sample_work = get_object_or_404(SampleWork, post_token=post_token)
+    # Use all_including_archived() to get archived sample works too
+    sample_work = get_object_or_404(SampleWork.all_including_archived(), post_token=post_token)
+    
+    # Check if the sample work is archived
+    if sample_work.is_archived:
+        return render(request, 'ostadkar/post_images.html', {
+            'sample_work': sample_work,
+            'post_images': [],
+            'post_token': post_token,
+            'is_archived': True
+        })
+    
     post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'ostadkar/post_images.html', {
         'sample_work': sample_work,
         'post_images': post_images,
-        'post_token': post_token
+        'post_token': post_token,
+        'is_archived': False
     })
 
 @session_auth_required
