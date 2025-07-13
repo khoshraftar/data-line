@@ -3,6 +3,9 @@
 {% block title %}آپلود تصاویر - {{ sample_work.title }} - استادکار{% endblock %}
 
 {% block content %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
 <div class="container mt-4" dir="rtl">
     <div class="row">
         <div class="col-12">
@@ -49,11 +52,6 @@
 
                     <!-- Action Buttons -->
                     <div class="mt-4 d-flex justify-content-between">
-                        <div>
-                            <a href="{% url 'ostadkar:post_images' sample_work.post_token %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-right"></i> انصراف
-                            </a>
-                        </div>
                         <div>
                             <button id="finishUpload" class="btn btn-success" style="display: none;">
                                 <i class="fas fa-check"></i> تکمیل آپلود
@@ -340,15 +338,24 @@ class ImageUploader {
     async loadExistingImages() {
         try {
             const response = await fetch(`/ostadkar/sample-work/get-images/${this.workId}/`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
-            if (data.success !== undefined) {
+            if (data.success) {
                 this.uploadedImages = data.images || [];
                 this.updateImageCounter();
                 this.renderImages();
+            } else {
+                console.error('API returned success: false', data);
+                this.showAlert('خطا در بارگذاری تصاویر موجود', 'error');
             }
         } catch (error) {
             console.error('Error loading existing images:', error);
+            this.showAlert('خطا در بارگذاری تصاویر موجود: ' + error.message, 'error');
         }
     }
     
@@ -392,6 +399,10 @@ class ImageUploader {
                 }
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.success) {
@@ -411,8 +422,8 @@ class ImageUploader {
             
         } catch (error) {
             this.removeImageCard(tempImageId);
-            this.showAlert('خطا در ارتباط با سرور', 'error');
             console.error('Upload error:', error);
+            this.showAlert('خطا در ارتباط با سرور: ' + error.message, 'error');
         }
         
         this.hideProgress();

@@ -386,6 +386,7 @@ def get_uploaded_images(request, work_id):
         })
     
     return JsonResponse({
+        'success': True,
         'images': image_list,
         'current_count': len(image_list),
         'max_count': 24
