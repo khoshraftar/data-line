@@ -79,7 +79,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         sample_work.save()
         
         messages.success(request, f'نمونه کار "{title}" پذیرفته و بررسی شد.')
-        return HttpResponseRedirect('/admin/review/')
+        return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
     
     def reject_sample_work(self, request):
         """Reject and delete sample work, then reload page"""
@@ -92,7 +92,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         sample_work.delete()
         
         messages.success(request, f'نمونه کار "{title}" رد و حذف شد.')
-        return HttpResponseRedirect('/admin/review/')
+        return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
 
 # Register the review admin view with the review site
 review_site.register(SampleWork, SampleWorkReviewAdmin)
