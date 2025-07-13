@@ -35,10 +35,10 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('review/', self.admin_site.admin_view(self.review_sample_work), name='samplework_review'),
-            path('review/<uuid:sample_work_id>/', self.admin_site.admin_view(self.review_sample_work_detail), name='samplework_review_detail'),
-            path('review/<uuid:sample_work_id>/accept/', self.admin_site.admin_view(self.accept_sample_work), name='samplework_accept'),
-            path('review/<uuid:sample_work_id>/reject/', self.admin_site.admin_view(self.reject_sample_work), name='samplework_reject'),
+            path('', self.admin_site.admin_view(self.review_sample_work), name='samplework_review'),
+            path('<uuid:sample_work_id>/', self.admin_site.admin_view(self.review_sample_work_detail), name='samplework_review_detail'),
+            path('<uuid:sample_work_id>/accept/', self.admin_site.admin_view(self.accept_sample_work), name='samplework_accept'),
+            path('<uuid:sample_work_id>/reject/', self.admin_site.admin_view(self.reject_sample_work), name='samplework_reject'),
         ]
         return custom_urls + urls
     
@@ -77,7 +77,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         sample_work.is_reviewed = True
         sample_work.save()
         messages.success(request, f'نمونه کار "{sample_work.title}" پذیرفته و بررسی شد.')
-        return HttpResponseRedirect(reverse('samplework_review:samplework_review'))
+        return HttpResponseRedirect('/admin/review/')
     
     def reject_sample_work(self, request, sample_work_id):
         """Reject and delete sample work"""
@@ -85,7 +85,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         title = sample_work.title
         sample_work.delete()
         messages.success(request, f'نمونه کار "{title}" رد و حذف شد.')
-        return HttpResponseRedirect(reverse('samplework_review:samplework_review'))
+        return HttpResponseRedirect('/admin/review/')
 
 # Register the review admin view with the review site
 review_site.register(SampleWork, SampleWorkReviewAdmin)
