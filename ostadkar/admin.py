@@ -103,9 +103,11 @@ class UserAuthAdmin(admin.ModelAdmin):
 class SampleWorkAdmin(admin.ModelAdmin):
     list_display = ['title', 'post_token', 'user', 'is_reviewed', 'images_count', 'addons_count', 'created_at']
     list_filter = ['is_reviewed', 'created_at']
+    list_editable = ['is_reviewed']
     search_fields = ['title', 'post_token', 'user__user_id', 'user__phone']
     readonly_fields = ['uuid', 'created_at']
     ordering = ['-created_at']
+    actions = ['mark_as_reviewed', 'mark_as_unreviewed']
     
     fieldsets = (
         ('اطلاعات نمونه کار', {
@@ -133,6 +135,18 @@ class SampleWorkAdmin(admin.ModelAdmin):
     def addons_count(self, obj):
         return obj.postaddon_set.count()
     addons_count.short_description = 'تعداد افزونه‌ها'
+    
+    def mark_as_reviewed(self, request, queryset):
+        """Mark selected sample works as reviewed"""
+        updated = queryset.update(is_reviewed=True)
+        self.message_user(request, f'{updated} نمونه کار به عنوان بررسی شده علامت‌گذاری شد.')
+    mark_as_reviewed.short_description = "علامت‌گذاری به عنوان بررسی شده"
+    
+    def mark_as_unreviewed(self, request, queryset):
+        """Mark selected sample works as unreviewed"""
+        updated = queryset.update(is_reviewed=False)
+        self.message_user(request, f'{updated} نمونه کار به عنوان بررسی نشده علامت‌گذاری شد.')
+    mark_as_unreviewed.short_description = "علامت‌گذاری به عنوان بررسی نشده"
 
 @admin.register(PostImage)
 class PostImageAdmin(admin.ModelAdmin):
