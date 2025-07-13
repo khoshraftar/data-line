@@ -88,4 +88,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(reverse('samplework_review:samplework_review'))
 
 # Register the review admin view with the review site
-review_site.register(SampleWork, SampleWorkReviewAdmin) 
+review_site.register(SampleWork, SampleWorkReviewAdmin)
+
+# Set the template directory for the review site
+review_site.site_url = '/admin/review/' 
