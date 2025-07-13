@@ -1,0 +1,364 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+<style>
+    .review-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .sample-work-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .sample-work-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .sample-work-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .meta-item {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    
+    .meta-label {
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .meta-value {
+        color: #333;
+    }
+    
+    .images-section {
+        margin-bottom: 30px;
+    }
+    
+    .images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .image-item {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    .image-item img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .image-caption {
+        padding: 10px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+    
+    .description-section {
+        background: white;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .description-text {
+        line-height: 1.6;
+        color: #333;
+        white-space: pre-wrap;
+    }
+    
+    .actions-section {
+        background: white;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .btn-approve {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-reject {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn:hover {
+        opacity: 0.9;
+    }
+    
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
+    .nav-btn {
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .nav-btn:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .nav-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .status-completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .status-failed {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .related-data {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .data-section {
+        background: white;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+    }
+    
+    .empty-message {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <!-- Sample Work Header -->
+    <div class="sample-work-header">
+        <div class="sample-work-title">{{ sample_work.title }}</div>
+        <div class="sample-work-meta">
+            <div class="meta-item">
+                <div class="meta-label">توکن پست:</div>
+                <div class="meta-value">{{ sample_work.post_token }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">کاربر:</div>
+                <div class="meta-value">{{ sample_work.user.user_id }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">تاریخ ایجاد:</div>
+                <div class="meta-value">{{ sample_work.created_at|date:"Y/m/d H:i" }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">وضعیت بررسی:</div>
+                <div class="meta-value">
+                    {% if sample_work.is_reviewed %}
+                        <span class="status-badge status-completed">بررسی شده</span>
+                    {% else %}
+                        <span class="status-badge status-pending">بررسی نشده</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description Section -->
+    <div class="description-section">
+        <div class="section-title">توضیحات</div>
+        <div class="description-text">{{ sample_work.description }}</div>
+    </div>
+
+    <!-- Images Section -->
+    <div class="images-section">
+        <div class="section-title">تصاویر ({{ images.count }})</div>
+        {% if images %}
+            <div class="images-grid">
+                {% for image in images %}
+                    <div class="image-item">
+                        <img src="{{ image.image.url }}" alt="تصویر {{ forloop.counter }}">
+                        <div class="image-caption">
+                            تصویر {{ forloop.counter }} - {{ image.created_at|date:"Y/m/d H:i" }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-message">هیچ تصویری برای این نمونه کار وجود ندارد.</div>
+        {% endif %}
+    </div>
+
+    <!-- Related Data -->
+    <div class="related-data">
+        <!-- Payments Section -->
+        <div class="data-section">
+            <div class="section-title">پرداخت‌ها ({{ payments.count }})</div>
+            {% if payments %}
+                {% for payment in payments %}
+                    <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                        <div><strong>مبلغ:</strong> {{ payment.amount|floatformat:0 }} ریال</div>
+                        <div><strong>وضعیت:</strong> 
+                            <span class="status-badge 
+                                {% if payment.status == 'completed' %}status-completed
+                                {% elif payment.status == 'failed' %}status-failed
+                                {% else %}status-pending{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </div>
+                        {% if payment.authority %}
+                            <div><strong>کد مرجع:</strong> {{ payment.authority }}</div>
+                        {% endif %}
+                        {% if payment.ref_id %}
+                            <div><strong>شماره پیگیری:</strong> {{ payment.ref_id }}</div>
+                        {% endif %}
+                        <div><strong>تاریخ:</strong> {{ payment.created_at|date:"Y/m/d H:i" }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">هیچ پرداختی برای این نمونه کار وجود ندارد.</div>
+            {% endif %}
+        </div>
+
+        <!-- Addons Section -->
+        <div class="data-section">
+            <div class="section-title">افزونه‌ها ({{ addons.count }})</div>
+            {% if addons %}
+                {% for addon in addons %}
+                    <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                        <div><strong>مدت زمان:</strong> {{ addon.duration }} روز</div>
+                        <div><strong>وضعیت:</strong> 
+                            <span class="status-badge 
+                                {% if addon.status == 'created' %}status-completed
+                                {% elif addon.status == 'failed' %}status-failed
+                                {% else %}status-pending{% endif %}">
+                                {{ addon.get_status_display }}
+                            </span>
+                        </div>
+                        {% if addon.addon_id %}
+                            <div><strong>شناسه افزونه:</strong> {{ addon.addon_id }}</div>
+                        {% endif %}
+                        {% if addon.error_message %}
+                            <div><strong>خطا:</strong> {{ addon.error_message }}</div>
+                        {% endif %}
+                        <div><strong>تاریخ:</strong> {{ addon.created_at|date:"Y/m/d H:i" }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">هیچ افزونه‌ای برای این نمونه کار وجود ندارد.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="actions-section">
+        <div class="section-title">عملیات بررسی</div>
+        <div class="action-buttons">
+            <a href="{% url 'samplework_review:samplework_accept' sample_work.uuid %}" class="btn btn-approve" onclick="return confirm('آیا از تایید این نمونه کار اطمینان دارید؟')">
+                ✓ تایید نمونه کار
+            </a>
+            <a href="{% url 'samplework_review:samplework_reject' sample_work.uuid %}" class="btn btn-reject" onclick="return confirm('آیا از رد و حذف این نمونه کار اطمینان دارید؟ این عمل قابل بازگشت نیست.')">
+                ✗ رد نمونه کار
+            </a>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="navigation-buttons">
+            <a href="{% url 'admin:ostadkar_samplework_changelist' %}" class="nav-btn">
+                بازگشت به لیست
+            </a>
+            
+            <a href="{% url 'samplework_review:samplework_review' %}" class="nav-btn">
+                نمونه کار بعدی
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

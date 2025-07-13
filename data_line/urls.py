@@ -20,11 +20,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from .views import home, about
+from ostadkar.admin_review import review_site
 
 urlpatterns = [
     path('', home, name='home'),
     path('about/', about, name='about'),
     path('admin/', admin.site.urls),
+    path('admin/review/', review_site.urls),
     path('resumeyar/', include('resumeyar.urls')),
     path('ostadkar/', include('ostadkar.urls')),
 ]

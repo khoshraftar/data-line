@@ -35,6 +35,7 @@ class SampleWork(models.Model):
     post_token = models.CharField(max_length=8, unique=True, verbose_name='توکن پست')
     user = models.ForeignKey(UserAuth, on_delete=models.CASCADE, verbose_name='کاربر')
     description = models.TextField(verbose_name='توضیحات')
+    is_reviewed = models.BooleanField(default=False, verbose_name='بررسی شده')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
 
     def __str__(self):

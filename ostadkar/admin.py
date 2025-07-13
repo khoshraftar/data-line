@@ -1,4 +1,9 @@
 from django.contrib import admin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
+from django.utils.html import format_html
 from .models import UserAuth, SampleWork, PostImage, Payment, PostAddon
 
 # Register your models here.
@@ -187,3 +192,6 @@ class Media:
     css = {
         'all': ('admin/css/rtl.css',)
     }
+
+# Import the review admin
+from . import admin_review
