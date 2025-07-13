@@ -52,7 +52,10 @@ def home(request, post_token=None):
         # Decode URL-encoded characters in post_token if present
         post_token = unquote(post_token)
     
-    return render(request, 'ostadkar/home.html', {'post_token': post_token})
+    return render(request, 'ostadkar/home.html', {
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
 
 def login(request, post_token=None):
     """Show login page"""
@@ -67,7 +70,10 @@ def login(request, post_token=None):
         except UserAuth.DoesNotExist:
             request.session.flush()
     
-    return render(request, 'ostadkar/login.html', {'post_token': post_token})
+    return render(request, 'ostadkar/login.html', {
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
 
 def oauth_login(request, post_token):
     """Initiate OAuth login process"""
@@ -216,7 +222,10 @@ def add_sample_work(request, post_token='AaxBDckp'):
     else:
         form = SampleWorkForm()
     
-    return render(request, 'ostadkar/add_sample_work.html', {'form': form})
+    return render(request, 'ostadkar/add_sample_work.html', {
+        'form': form,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
 
 @session_auth_required
 def upload_sample_work_images(request, work_id):
@@ -232,7 +241,8 @@ def upload_sample_work_images(request, work_id):
                 messages.error(request, 'حداکثر ۲۴ تصویر می‌توانید آپلود کنید.')
                 return render(request, 'ostadkar/upload_sample_work_images.html', {
                     'form': form,
-                    'sample_work': sample_work
+                    'sample_work': sample_work,
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
             
             # Validate total upload size (max 60MB for 24 images * 2.5MB each)
@@ -241,7 +251,8 @@ def upload_sample_work_images(request, work_id):
                 messages.error(request, 'حجم کل فایل‌ها بیش از ۶۰ مگابایت است.')
                 return render(request, 'ostadkar/upload_sample_work_images.html', {
                     'form': form,
-                    'sample_work': sample_work
+                    'sample_work': sample_work,
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
             
             try:
@@ -257,14 +268,16 @@ def upload_sample_work_images(request, work_id):
                 messages.error(request, f'خطا در آپلود تصاویر: {str(e)}')
                 return render(request, 'ostadkar/upload_sample_work_images.html', {
                     'form': form,
-                    'sample_work': sample_work
+                    'sample_work': sample_work,
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
     else:
         form = SampleWorkImageForm()
     
     return render(request, 'ostadkar/upload_sample_work_images.html', {
         'form': form,
-        'sample_work': sample_work
+        'sample_work': sample_work,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 def post_images(request, post_token):
@@ -279,7 +292,8 @@ def post_images(request, post_token):
             'sample_work': sample_work,
             'post_images': [],
             'post_token': post_token,
-            'is_archived': True
+            'is_archived': True,
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
         })
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
@@ -287,7 +301,8 @@ def post_images(request, post_token):
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
-        'is_archived': False
+        'is_archived': False,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 @session_auth_required
@@ -298,14 +313,16 @@ def post_images_preview(request, post_token):
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
         return render(request, 'ostadkar/permission_denied.html', {
-            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'ostadkar/post_images_preview.html', {
         'sample_work': sample_work,
         'post_images': post_images,
-        'post_token': post_token
+        'post_token': post_token,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 
@@ -317,7 +334,8 @@ def pre_payment(request, post_token):
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
         return render(request, 'ostadkar/permission_denied.html', {
-            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
@@ -336,7 +354,8 @@ def initiate_payment(request, post_token):
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
         return render(request, 'ostadkar/permission_denied.html', {
-            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.'
+            'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
     # Check if ZarinPal merchant ID is configured
@@ -357,7 +376,8 @@ def initiate_payment(request, post_token):
             return render(request, 'ostadkar/payment_loading.html', {
                 'payment_url': payment_url,
                 'sample_work': sample_work,
-                'post_token': post_token
+                'post_token': post_token,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
             })
     
     # Create new payment record
@@ -399,7 +419,8 @@ def initiate_payment(request, post_token):
             return render(request, 'ostadkar/payment_loading.html', {
                 'payment_url': payment_url,
                 'sample_work': sample_work,
-                'post_token': post_token
+                'post_token': post_token,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
             })
         else:
             
