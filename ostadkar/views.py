@@ -170,7 +170,7 @@ def oauth_callback(request):
                 })
             
             # Extract phone number from user info
-            phone = user_info.get('phone', '')
+            phone = user_info.get('phone_number', '')
             
             # Create or update user auth in database
             user_auth, created = UserAuth.objects.update_or_create(
