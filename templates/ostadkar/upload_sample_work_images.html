@@ -3,6 +3,9 @@
 {% block title %}آپلود تصاویر - {{ sample_work.title }} - استادکار{% endblock %}
 
 {% block content %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
 <div class="container mt-4" dir="rtl">
     <div class="row">
         <div class="col-12">
@@ -10,51 +13,56 @@
                 <div class="card-body">
                     <h1 class="card-title mb-4">آپلود تصاویر برای "{{ sample_work.title }}"</h1>
                     
-                    {% if form.errors %}
-                        <div class="alert alert-danger">
-                            لطفاً خطاهای زیر را اصلاح کنید.
+                    <!-- Upload Progress Section -->
+                    <div id="uploadProgress" class="mb-4" style="display: none;">
+                        <div class="progress mb-2">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
                         </div>
-                    {% endif %}
-                    
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="form-group mb-4">
-                            <label for="{{ form.images.id_for_label }}">انتخاب تصاویر</label>
-                            
-                            <!-- Mobile-friendly file input styling -->
-                            <div class="custom-file-upload">
-                                {{ form.images }}
-                                <div class="file-input-overlay" id="fileOverlay">
-                                    <i class="fas fa-images"></i>
-                                    <span id="fileText">انتخاب تصاویر از گالری</span>
-                                    <small class="d-block text-muted mt-2" id="fileHelp">
-                                        روی این قسمت کلیک کنید و گزینه "گالری" یا "تصاویر" را انتخاب کنید
-                                    </small>
-                                    <small class="d-block text-info mt-1">
-                                        <i class="fas fa-info-circle"></i> حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
-                                    </small>
-                                    <div id="filePreview" class="mt-3" style="display: none;">
-                                        <div class="selected-files"></div>
-                                    </div>
-                                </div>
+                        <small id="progressText" class="text-muted">آماده برای آپلود...</small>
+                    </div>
+
+                    <!-- Image Counter -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">تصاویر آپلود شده</h5>
+                        <span id="imageCounter" class="badge bg-primary">0 / 24</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mb-4 d-flex justify-content-end">
+                        <button id="finishUpload" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-check"></i>تکمیل آپلود
+                        </button>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="upload-area mb-4">
+                        <div class="custom-file-upload" id="uploadArea">
+                            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                            <div class="file-input-overlay" id="fileOverlay">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span id="fileText">تصاویر را جداگانه انتخاب کنید</span>
+                                <small class="d-block text-muted mt-2">
+                                    حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
+                                </small>
+                                <small class="d-block text-info mt-1">
+                                    <i class="fas fa-info-circle"></i> فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG
+                                </small>
                             </div>
-                            
-                            {% if form.images.help_text %}
-                                <small class="form-text text-muted">{{ form.images.help_text }}</small>
-                            {% endif %}
-                            {% if form.images.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.images.errors }}
-                                </div>
-                            {% endif %}
                         </div>
-                        
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">آپلود تصاویر</button>
-                            <a href="{% url 'ostadkar:post_images' sample_work.post_token %}" class="btn btn-secondary">انصراف</a>
+                    </div>
+
+                    <!-- Uploaded Images Grid -->
+                    <div id="uploadedImages" class="row g-3">
+                        <!-- Images will be dynamically added here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-4 d-flex justify-content-between">
+                        <div>
+                            <!-- Removed finish button from here -->
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,162 +76,516 @@
     </div>
 </div>
 
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">پیش‌نمایش تصویر</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="پیش‌نمایش">
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-.custom-file-upload {
+.upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
     position: relative;
-    display: inline-block;
-    width: 100%;
 }
 
-.custom-file-upload input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    z-index: 2;
+.upload-area.dragover {
+    border-color: #28a745;
+    background-color: #d4edda;
+    transform: scale(1.02);
 }
 
 .file-input-overlay {
-    border: 2px dashed #007bff;
-    border-radius: 8px;
     padding: 40px 20px;
     text-align: center;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .file-input-overlay:hover {
     background-color: #e9ecef;
-    border-color: #0056b3;
 }
 
 .file-input-overlay i {
-    font-size: 2rem;
+    font-size: 3rem;
     color: #007bff;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     display: block;
 }
 
 .file-input-overlay span {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 500;
     color: #333;
+    display: block;
+    margin-bottom: 10px;
 }
 
-.selected-files {
+.image-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.image-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.image-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    align-items: center;
     justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.file-item {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+.image-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.image-actions button {
     padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-preview {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-preview:hover {
+    background-color: #0056b3;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.image-info {
+    padding: 10px;
+    background: white;
+}
+
+.image-filename {
+    font-size: 0.9rem;
+    font-weight: 500;
     color: #333;
-    max-width: 200px;
+    margin-bottom: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Mobile-specific improvements */
+.image-size {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.upload-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.status-uploading {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.status-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-error {
+    background-color: #dc3545;
+    color: white;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
 @media (max-width: 768px) {
     .file-input-overlay {
         padding: 30px 15px;
     }
     
     .file-input-overlay i {
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
     
     .file-input-overlay span {
         font-size: 1rem;
     }
+    
+    .image-card img {
+        height: 150px;
+    }
+    
+    .image-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .image-actions button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.querySelector('input[type="file"]');
-    const fileOverlay = document.getElementById('fileOverlay');
-    const fileText = document.getElementById('fileText');
-    const fileHelp = document.getElementById('fileHelp');
-    const filePreview = document.getElementById('filePreview');
-    const selectedFiles = document.querySelector('.selected-files');
-    
-    fileInput.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
+class ImageUploader {
+    constructor() {
+        this.uploadedImages = [];
+        this.maxImages = 24;
+        this.workId = '{{ sample_work.uuid }}';
         
-        if (files.length > 0) {
-            // Check file count limit
-            if (files.length > 24) {
-                alert('حداکثر ۲۴ تصویر می‌توانید انتخاب کنید. لطفاً تعداد کمتری انتخاب کنید.');
-                this.value = '';
-                return;
+        this.initializeElements();
+        this.bindEvents();
+        this.loadExistingImages();
+    }
+    
+    initializeElements() {
+        this.uploadArea = document.getElementById('uploadArea');
+        this.fileInput = document.getElementById('imageInput');
+        this.fileOverlay = document.getElementById('fileOverlay');
+        this.fileText = document.getElementById('fileText');
+        this.uploadedImagesContainer = document.getElementById('uploadedImages');
+        this.imageCounter = document.getElementById('imageCounter');
+        this.uploadProgress = document.getElementById('uploadProgress');
+        this.progressBar = document.getElementById('progressBar');
+        this.progressText = document.getElementById('progressText');
+        this.finishButton = document.getElementById('finishUpload');
+    }
+    
+    bindEvents() {
+        this.fileInput.addEventListener('change', (e) => {
+            this.handleFileSelection(e.target.files);
+        });
+        
+        this.uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            this.uploadArea.classList.add('dragover');
+        });
+        
+        this.uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            this.uploadArea.classList.remove('dragover');
+        });
+        
+        this.uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            this.uploadArea.classList.remove('dragover');
+            this.handleFileSelection(e.dataTransfer.files);
+        });
+        
+        this.fileOverlay.addEventListener('click', () => {
+            this.fileInput.click();
+        });
+        
+        this.finishButton.addEventListener('click', () => {
+            window.location.href = '{% url "ostadkar:post_images_preview" sample_work.post_token %}';
+        });
+    }
+    
+    async loadExistingImages() {
+        try {
+            const response = await fetch(`/ostadkar/sample-work/get-images/${this.workId}/`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            // Check total file size
-            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-            const maxSize = 62914560; // 60MB
+            const data = await response.json();
             
-            if (totalSize > maxSize) {
-                alert('حجم کل فایل‌ها بیش از ۶۰ مگابایت است. لطفاً فایل‌های کوچکتر انتخاب کنید.');
-                this.value = '';
-                return;
+            if (data.success) {
+                this.uploadedImages = data.images || [];
+                this.updateImageCounter();
+                this.renderImages();
+            } else {
+                console.error('API returned success: false', data);
+                this.showAlert('خطا در بارگذاری تصاویر موجود', 'error');
             }
+        } catch (error) {
+            console.error('Error loading existing images:', error);
+            this.showAlert('خطا در بارگذاری تصاویر موجود: ' + error.message, 'error');
+        }
+    }
+    
+    handleFileSelection(files) {
+        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+        
+        if (imageFiles.length === 0) {
+            this.showAlert('لطفاً فقط فایل‌های تصویری انتخاب کنید.', 'warning');
+            return;
+        }
+        
+        if (this.uploadedImages.length + imageFiles.length > this.maxImages) {
+            this.showAlert(`حداکثر ${this.maxImages} تصویر مجاز است. لطفاً تعداد کمتری انتخاب کنید.`, 'warning');
+            return;
+        }
+        
+        imageFiles.forEach(file => this.uploadImage(file));
+    }
+    
+    async uploadImage(file) {
+        if (file.size > 2621440) {
+            this.showAlert(`فایل ${file.name} بیش از ۲.۵ مگابایت است.`, 'error');
+            return;
+        }
+        
+        const tempImageId = 'temp_' + Date.now() + '_' + Math.random();
+        const imageCard = this.createImageCard(tempImageId, file, true);
+        this.uploadedImagesContainer.appendChild(imageCard);
+        
+        this.showProgress();
+        
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
             
-            // Update text to show selected files
-            fileText.textContent = `${files.length} تصویر انتخاب شده`;
-            fileHelp.textContent = 'برای تغییر انتخاب، دوباره کلیک کنید';
-            
-            // Show file preview
-            filePreview.style.display = 'block';
-            selectedFiles.innerHTML = '';
-            
-            files.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                
-                // Format file size
-                const fileSize = (file.size / 1024 / 1024).toFixed(1);
-                fileItem.textContent = `${index + 1}. ${file.name} (${fileSize} MB)`;
-                
-                // Add color coding for large files
-                if (file.size > 2621440) { // 2.5MB
-                    fileItem.style.color = '#dc3545';
-                    fileItem.innerHTML += ' <i class="fas fa-exclamation-triangle text-warning"></i>';
+            const response = await fetch(`/ostadkar/sample-work/upload-single-image/${this.workId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': this.getCSRFToken()
                 }
-                
-                selectedFiles.appendChild(fileItem);
             });
             
-            // Change overlay style to indicate files are selected
-            fileOverlay.style.borderColor = '#28a745';
-            fileOverlay.style.backgroundColor = '#d4edda';
-        } else {
-            // Reset to default state
-            fileText.textContent = 'انتخاب تصاویر از گالری';
-            fileHelp.textContent = 'روی این قسمت کلیک کنید و گزینه "گالری" یا "تصاویر" را انتخاب کنید';
-            filePreview.style.display = 'none';
-            fileOverlay.style.borderColor = '#007bff';
-            fileOverlay.style.backgroundColor = '#f8f9fa';
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateImageCard(tempImageId, data);
+                this.uploadedImages.push({
+                    id: data.image_id,
+                    url: data.image_url,
+                    filename: data.filename,
+                    created_at: data.created_at
+                });
+                this.updateImageCounter();
+                this.showAlert(`تصویر ${file.name} با موفقیت آپلود شد.`, 'success');
+            } else {
+                this.removeImageCard(tempImageId);
+                this.showAlert(data.error || 'خطا در آپلود تصویر', 'error');
+            }
+            
+        } catch (error) {
+            this.removeImageCard(tempImageId);
+            console.error('Upload error:', error);
+            this.showAlert('خطا در ارتباط با سرور: ' + error.message, 'error');
         }
-    });
+        
+        this.hideProgress();
+    }
     
-    // Add touch feedback for mobile
-    fileOverlay.addEventListener('touchstart', function() {
-        this.style.transform = 'scale(0.98)';
-    });
+    createImageCard(imageId, file, isUploading = false) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 col-sm-6 col-12';
+        col.id = imageId;
+        
+        const imageUrl = isUploading ? URL.createObjectURL(file) : file.url || file;
+        
+        col.innerHTML = `
+            <div class="image-card">
+                <img src="${imageUrl}" alt="${file.name || file.filename}" 
+                     onclick="imageUploader.previewImage('${imageUrl}')">
+                <div class="image-overlay">
+                    <div class="image-actions">
+                        <button class="btn-preview" onclick="imageUploader.previewImage('${imageUrl}')">
+                            <i class="fas fa-eye"></i> مشاهده
+                        </button>
+                        <button class="btn-delete" onclick="imageUploader.deleteImage('${imageId}', ${file.id || 'null'})">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </div>
+                </div>
+                ${isUploading ? '<div class="upload-status status-uploading">در حال آپلود...</div>' : ''}
+                <div class="image-info">
+                    <div class="image-filename">${file.name || file.filename}</div>
+                    <div class="image-size">${this.formatFileSize(file.size)}</div>
+                </div>
+            </div>
+        `;
+        
+        return col;
+    }
     
-    fileOverlay.addEventListener('touchend', function() {
-        this.style.transform = 'scale(1)';
-    });
+    updateImageCard(tempId, data) {
+        const card = document.getElementById(tempId);
+        if (card) {
+            card.id = `image_${data.image_id}`;
+            card.querySelector('img').src = data.image_url;
+            card.querySelector('.upload-status').className = 'upload-status status-success';
+            card.querySelector('.upload-status').textContent = 'آپلود شد';
+            card.querySelector('.btn-delete').setAttribute('onclick', `imageUploader.deleteImage('image_${data.image_id}', ${data.image_id})`);
+        }
+    }
+    
+    removeImageCard(imageId) {
+        const card = document.getElementById(imageId);
+        if (card) {
+            card.remove();
+        }
+    }
+    
+    async deleteImage(imageId, imageDbId) {
+        try {
+            const response = await fetch(`/ostadkar/sample-work/delete-image/${this.workId}/${imageDbId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': this.getCSRFToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.removeImageCard(imageId);
+                this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageDbId);
+                this.updateImageCounter();
+                this.showAlert('تصویر با موفقیت حذف شد.', 'success');
+            } else {
+                this.showAlert(data.error || 'خطا در حذف تصویر', 'error');
+            }
+            
+        } catch (error) {
+            this.showAlert('خطا در ارتباط با سرور', 'error');
+            console.error('Delete error:', error);
+        }
+    }
+    
+    previewImage(imageUrl) {
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        document.getElementById('modalImage').src = imageUrl;
+        modal.show();
+    }
+    
+    renderImages() {
+        this.uploadedImagesContainer.innerHTML = '';
+        this.uploadedImages.forEach(image => {
+            const imageCard = this.createImageCard(`image_${image.id}`, image);
+            this.uploadedImagesContainer.appendChild(imageCard);
+        });
+    }
+    
+    updateImageCounter() {
+        const count = this.uploadedImages.length;
+        this.imageCounter.textContent = `${count} / ${this.maxImages}`;
+        this.imageCounter.className = count > 0 ? 'badge bg-success' : 'badge bg-primary';
+        
+        this.finishButton.style.display = count > 0 ? 'block' : 'none';
+        
+        if (count >= this.maxImages) {
+            this.fileText.textContent = 'حداکثر تعداد تصاویر انتخاب شده';
+            this.uploadArea.style.opacity = '0.5';
+            this.uploadArea.style.pointerEvents = 'none';
+        } else {
+            this.fileText.textContent = 'تصاویر را اینجا بکشید یا کلیک کنید';
+            this.uploadArea.style.opacity = '1';
+            this.uploadArea.style.pointerEvents = 'auto';
+        }
+    }
+    
+    showProgress() {
+        this.uploadProgress.style.display = 'block';
+        this.progressBar.style.width = '0%';
+        this.progressText.textContent = 'در حال آپلود...';
+    }
+    
+    hideProgress() {
+        this.uploadProgress.style.display = 'none';
+    }
+    
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    
+    showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertBefore(alertDiv, cardBody.firstChild);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+let imageUploader;
+document.addEventListener('DOMContentLoaded', function() {
+    imageUploader = new ImageUploader();
 });
 </script>
 {% endblock %} 

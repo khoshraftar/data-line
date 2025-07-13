@@ -8,6 +8,8 @@ from functools import wraps
 from .models import UserAuth, PostImage, SampleWork, Payment, PostAddon
 from .forms import SampleWorkForm, SampleWorkImageForm 
 import json
+from django.http import JsonResponse
+import os
 
 def session_auth_required(view_func):
     @wraps(view_func)
@@ -180,7 +182,7 @@ def oauth_callback(request):
             request.session['user_id'] = user_id
             
             # Set session expiry
-            request.session.set_expiry(600)  # 10 minutes
+            request.session.set_expiry(1200)  # 20 minutes
             
             # Redirect to add post image page with post_token
             return redirect('ostadkar:add_sample_work', post_token=post_token)
@@ -278,6 +280,116 @@ def upload_sample_work_images(request, work_id):
         'form': form,
         'sample_work': sample_work,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
+
+@session_auth_required
+def upload_single_image(request, work_id):
+    """AJAX endpoint for uploading a single image"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    sample_work = get_object_or_404(SampleWork, uuid=work_id, user=request.user_auth)
+    
+    # Check if we've reached the maximum number of images
+    current_image_count = PostImage.objects.filter(sample_work=sample_work).count()
+    if current_image_count >= 24:
+        return JsonResponse({
+            'error': 'حداکثر ۲۴ تصویر مجاز است. لطفاً ابتدا برخی تصاویر را حذف کنید.'
+        }, status=400)
+    
+    # Get the uploaded file
+    if 'image' not in request.FILES:
+        return JsonResponse({'error': 'هیچ فایلی ارسال نشده است'}, status=400)
+    
+    image_file = request.FILES['image']
+    
+    # Validate file size (2.5MB limit)
+    if image_file.size > 2621440:  # 2.5MB in bytes
+        return JsonResponse({
+            'error': f'حجم فایل {image_file.name} بیش از ۲.۵ مگابایت است.'
+        }, status=400)
+    
+    # Validate file extension
+    allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+    file_extension = os.path.splitext(image_file.name)[1].lower().lstrip('.')
+    
+    if file_extension not in allowed_extensions:
+        return JsonResponse({
+            'error': f'فرمت فایل {image_file.name} پشتیبانی نمی‌شود. فرمت‌های مجاز: {", ".join(allowed_extensions)}'
+        }, status=400)
+    
+    try:
+        # Create the PostImage object
+        post_image = PostImage.objects.create(
+            sample_work=sample_work,
+            image=image_file
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'image_id': post_image.id,
+            'image_url': post_image.image.url,
+            'filename': image_file.name,
+            'filesize': image_file.size,
+            'created_at': post_image.created_at.isoformat(),
+            'current_count': current_image_count + 1,
+            'max_count': 24
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': f'خطا در آپلود تصویر: {str(e)}'
+        }, status=500)
+
+@session_auth_required
+def delete_single_image(request, work_id, image_id):
+    """AJAX endpoint for deleting a single image"""
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    sample_work = get_object_or_404(SampleWork, uuid=work_id, user=request.user_auth)
+    post_image = get_object_or_404(PostImage, id=image_id, sample_work=sample_work)
+    
+    try:
+        # Delete the image file from storage
+        post_image.image.delete(save=False)
+        # Delete the database record
+        post_image.delete()
+        
+        current_count = PostImage.objects.filter(sample_work=sample_work).count()
+        
+        return JsonResponse({
+            'success': True,
+            'current_count': current_count,
+            'max_count': 24
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': f'خطا در حذف تصویر: {str(e)}'
+        }, status=500)
+
+@session_auth_required
+def get_uploaded_images(request, work_id):
+    """AJAX endpoint for getting current uploaded images"""
+    sample_work = get_object_or_404(SampleWork, uuid=work_id, user=request.user_auth)
+    
+    images = PostImage.objects.filter(sample_work=sample_work).order_by('created_at')
+    
+    image_list = []
+    for image in images:
+        image_list.append({
+            'id': image.id,
+            'url': image.image.url,
+            'filename': os.path.basename(image.image.name),
+            'created_at': image.created_at.isoformat()
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'images': image_list,
+        'current_count': len(image_list),
+        'max_count': 24
     })
 
 def post_images(request, post_token):
