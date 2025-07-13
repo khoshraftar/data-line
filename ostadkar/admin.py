@@ -101,8 +101,8 @@ class UserAuthAdmin(admin.ModelAdmin):
 
 @admin.register(SampleWork)
 class SampleWorkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'post_token', 'user', 'images_count', 'addons_count', 'created_at']
-    list_filter = ['created_at']
+    list_display = ['title', 'post_token', 'user', 'is_reviewed', 'images_count', 'addons_count', 'created_at']
+    list_filter = ['is_reviewed', 'created_at']
     search_fields = ['title', 'post_token', 'user__user_id', 'user__phone']
     readonly_fields = ['uuid', 'created_at']
     ordering = ['-created_at']
@@ -110,6 +110,9 @@ class SampleWorkAdmin(admin.ModelAdmin):
     fieldsets = (
         ('اطلاعات نمونه کار', {
             'fields': ('title', 'post_token', 'user', 'description')
+        }),
+        ('وضعیت بررسی', {
+            'fields': ('is_reviewed',)
         }),
         ('اطلاعات فنی', {
             'fields': ('uuid',),
