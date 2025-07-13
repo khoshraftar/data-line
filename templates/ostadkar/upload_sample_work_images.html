@@ -34,7 +34,7 @@
                             <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
                             <div class="file-input-overlay" id="fileOverlay">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <span id="fileText">تصاویر را اینجا بکشید یا کلیک کنید</span>
+                                <span id="fileText">تصاویر را جداگانه انتخاب کنید</span>
                                 <small class="d-block text-muted mt-2">
                                     حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
                                 </small>
@@ -480,10 +480,6 @@ class ImageUploader {
     }
     
     async deleteImage(imageId, imageDbId) {
-        if (!confirm('آیا از حذف این تصویر اطمینان دارید؟')) {
-            return;
-        }
-        
         try {
             const response = await fetch(`/ostadkar/sample-work/delete-image/${this.workId}/${imageDbId}/`, {
                 method: 'DELETE',
