@@ -1,27 +1,35 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}خودرویار - مشاور انتخاب و خرید خودرو صفر{% endblock %}
+{% block title %}خودرویار - مشاور هوشمند انتخاب و خرید خودرو صفر{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="header text-center mb-5">
         <h1 class="display-4">به خودرویار خوش آمدید</h1>
         <p class="lead">مشاور هوشمند انتخاب و خرید خودرو صفر</p>
+        
+        <!-- Main CTA Button -->
+        <div class="row justify-content-center mt-4 mb-5">
+            <div class="col-lg-6">
+                <a href="#" class="btn btn-primary btn-lg px-5 py-3 shadow-lg">
+                    <i class="fas fa-robot me-2"></i>
+                    شروع مشاوره هوشمند
+                </a>
+                <p class="text-muted mt-2">با هوش مصنوعی، بهترین خودرو را برای شما پیشنهاد می‌دهیم</p>
+            </div>
+        </div>
+
         <div class="row justify-content-center mt-4">
             <div class="col-lg-8">
                 <div class="alert alert-info">
                     <h4 class="alert-heading">خودرویار چیست؟</h4>
                     <p class="mb-0">
-                        <strong>خودرویار</strong> بستر هوشمند مشاوره انتخاب و خرید خودرو صفر با استفاده از داده‌های بازار و تحلیل‌های تخصصی می‌باشد.
+                        <strong>خودرویار</strong> یک مشاور هوشمند مبتنی بر هوش مصنوعی است که با تحلیل نیازها، بودجه و ترجیحات شما، بهترین برند و مدل خودرو را پیشنهاد می‌دهد.
                     </p>
                     <hr>
                     <p class="mb-0">
-                        با کمک خودرویار، بهترین خودرو را با مناسب‌ترین قیمت انتخاب کنید و از خرید خود مطمئن باشید.
-                    </p>
-                    <hr>
-                    <p class="mb-0">
-                        <a href="{% url 'khodroyar:settings' %}" class="alert-link">تنظیمات و پیکربندی</a>
+                        به سوالات شما پاسخ می‌دهد، راهنمای کامل خرید ارائه می‌کند و در تمام مراحل تصمیم‌گیری همراه شماست.
                     </p>
                 </div>
             </div>
@@ -33,82 +41,53 @@
             <div class="card h-100 shadow-sm hover-shadow">
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <i class="fas fa-car fa-3x text-primary"></i>
+                        <i class="fas fa-robot fa-3x text-primary"></i>
                     </div>
-                    <h2 class="h4 text-primary mb-3">مشاوره انتخاب خودرو</h2>
-                    <p>انتخاب هوشمند خودرو بر اساس نیاز و بودجه</p>
+                    <h2 class="h4 text-primary mb-3">مشاوره هوشمند انتخاب خودرو</h2>
+                    <p>پیشنهاد هوشمند برند و مدل خودرو بر اساس نیاز و بودجه شما</p>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>تحلیل نیازهای شما</li>
-                        <li><i class="fas fa-check text-success me-2"></i>مقایسه مدل‌های مختلف</li>
-                        <li><i class="fas fa-check text-success me-2"></i>پیشنهاد بهترین گزینه</li>
-                        <li><i class="fas fa-check text-success me-2"></i>تحلیل قیمت و ارزش</li>
+                        <li><i class="fas fa-check text-success me-2"></i>تحلیل هوشمند نیازهای شما</li>
+                        <li><i class="fas fa-check text-success me-2"></i>پیشنهاد بهترین برند و مدل</li>
+                        <li><i class="fas fa-check text-success me-2"></i>مقایسه گزینه‌های مختلف</li>
+                        <li><i class="fas fa-check text-success me-2"></i>پاسخ به سوالات تخصصی</li>
                     </ul>
                     <div class="text-end">
-                        <span class="btn btn-outline-primary">شروع مشاوره</span>
+                        <a href="#" class="btn btn-outline-primary">شروع مشاوره</a>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-6 mb-4">
             <div class="card h-100 shadow-sm hover-shadow">
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <i class="fas fa-chart-line fa-3x text-success"></i>
+                        <i class="fas fa-chart-line fa-3x text-info"></i>
                     </div>
-                    <h2 class="h4 text-success mb-3">تحلیل بازار خودرو</h2>
-                    <p>تحلیل هوشمند قیمت‌ها و روند بازار</p>
+                    <h2 class="h4 text-info mb-3">تحلیل بازار و قیمت</h2>
+                    <p>تحلیل هوشمند قیمت‌ها و روند بازار خودرو</p>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>روند قیمت خودروهای صفر</li>
+                        <li><i class="fas fa-check text-success me-2"></i>قیمت‌های به‌روز بازار</li>
                         <li><i class="fas fa-check text-success me-2"></i>مقایسه قیمت نمایندگی‌ها</li>
                         <li><i class="fas fa-check text-success me-2"></i>پیش‌بینی تغییرات قیمت</li>
                         <li><i class="fas fa-check text-success me-2"></i>بهترین زمان خرید</li>
                     </ul>
                     <div class="text-end">
-                        <span class="btn btn-outline-success">مشاهده تحلیل</span>
+                        <a href="#" class="btn btn-outline-info">مشاهده تحلیل</a>
                     </div>
                 </div>
             </div>
-        </div>
+    </div>
 
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow-sm hover-shadow">
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="fas fa-handshake fa-3x text-warning"></i>
-                    </div>
-                    <h2 class="h4 text-warning mb-3">مشاوره خرید</h2>
-                    <p>راهنمایی کامل فرآیند خرید خودرو صفر</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>انتخاب نمایندگی معتبر</li>
-                        <li><i class="fas fa-check text-success me-2"></i>مذاکره قیمت</li>
-                        <li><i class="fas fa-check text-success me-2"></i>بررسی قرارداد</li>
-                        <li><i class="fas fa-check text-success me-2"></i>پیگیری تحویل</li>
-                    </ul>
-                    <div class="text-end">
-                        <span class="btn btn-outline-warning">دریافت مشاوره</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow-sm hover-shadow">
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <i class="fas fa-calculator fa-3x text-info"></i>
-                    </div>
-                    <h2 class="h4 text-info mb-3">محاسبه‌گر مالی</h2>
-                    <p>محاسبه دقیق هزینه‌های خرید و نگهداری</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>محاسبه اقساط</li>
-                        <li><i class="fas fa-check text-success me-2"></i>هزینه بیمه</li>
-                        <li><i class="fas fa-check text-success me-2"></i>هزینه نگهداری</li>
-                        <li><i class="fas fa-check text-success me-2"></i>مقایسه گزینه‌های مالی</li>
-                    </ul>
-                    <div class="text-end">
-                        <span class="btn btn-outline-info">محاسبه هزینه</span>
-                    </div>
+    <!-- Additional CTA Section -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-8">
+            <div class="card bg-primary text-white text-center">
+                <div class="card-body py-5">
+                    <h3 class="mb-3">آماده شروع مشاوره هوشمند هستید؟</h3>
+                    <p class="mb-4">با چند کلیک، بهترین خودرو را برای خود پیدا کنید</p>
+                    <a href="#" class="btn btn-light btn-lg px-4">
+                        <i class="fas fa-play me-2"></i>
+                        شروع کنید
+                    </a>
                 </div>
             </div>
         </div>
@@ -120,6 +99,11 @@
     transform: translateY(-5px);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
     transition: all 0.3s ease;
+}
+
+.btn-lg {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 /* Mobile-specific fixes */
@@ -134,6 +118,11 @@
     
     .col-md-6.mb-4:last-child {
         margin-bottom: 0 !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
     }
 }
 </style>
