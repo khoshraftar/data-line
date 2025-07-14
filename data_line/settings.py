@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'resumeyar',
     'ostadkar',
+    'khodroyar',
     'storages',
 ]
 
@@ -141,6 +142,13 @@ OAUTH_APPS_SETTINGS = {
         "oauth_client_secret": os.getenv('RESUMEYAR_OAUTH_CLIENT_SECRET', ''),
         "oauth_redirect_uri": os.getenv('RESUMEYAR_OAUTH_REDIRECT_URI', ''),
         "oauth_scope": os.getenv('RESUMEYAR_OAUTH_SCOPE', 'USER_ID'),
+    },
+    "khodroyar": {
+        "api_key": os.getenv('KHODROYAR_API_KEY', ''),
+        "oauth_client_id": os.getenv('KHODROYAR_OAUTH_CLIENT_ID', ''),
+        "oauth_client_secret": os.getenv('KHODROYAR_OAUTH_CLIENT_SECRET', ''),
+        "oauth_redirect_uri": os.getenv('KHODROYAR_OAUTH_REDIRECT_URI', ''),
+        "oauth_scope": os.getenv('KHODROYAR_OAUTH_SCOPE', 'USER_ID USER_PHONE POST_ADDON_CREATE.{post_token}'),
     }
 }
                   

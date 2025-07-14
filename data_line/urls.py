@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('resumeyar/', include('resumeyar.urls')),
     path('ostadkar/', include('ostadkar.urls')),
+    path('khodroyar/', include('khodroyar.urls')),
 ]
 
 # Serve static files in development
