@@ -5,5 +5,4 @@ app_name = 'khodroyar'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('settings/', views.settings, name='settings'),
 ] 
