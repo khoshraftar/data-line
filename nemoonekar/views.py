@@ -465,12 +465,16 @@ def post_images_preview(request, post_token):
     # Check if this is an edit mode (if images already exist or payment is completed)
     is_edit_mode = PostImage.objects.filter(sample_work=sample_work).exists() or Payment.objects.filter(sample_work=sample_work, status='completed').exists()
     
+    # Check if there's a successful payment
+    has_successful_payment = Payment.objects.filter(sample_work=sample_work, status='completed').exists()
+    
     post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'nemoonekar/post_images_preview.html', {
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
         'is_edit_mode': is_edit_mode,
+        'has_successful_payment': has_successful_payment,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
