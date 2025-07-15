@@ -54,6 +54,7 @@ class SampleWork(models.Model):
     is_archived = models.BooleanField(default=False, verbose_name='آرشیو شده', db_index=True)
     archived_at = models.DateTimeField(blank=True, null=True, verbose_name='تاریخ آرشیو', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد', db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی', db_index=True)
 
     # Use custom manager
     objects = SampleWorkManager()

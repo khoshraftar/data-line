@@ -13,6 +13,13 @@
                 <div class="card-body">
                     <h1 class="card-title mb-4">آپلود تصاویر برای "{{ sample_work.title }}"</h1>
                     
+                    {% if existing_image_count > 0 %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>{{ existing_image_count }}</strong> تصویر قبلاً آپلود شده است. می‌توانید تصاویر جدید اضافه کنید یا تصاویر موجود را حذف کنید.
+                        </div>
+                    {% endif %}
+                    
                     <!-- Upload Progress Section -->
                     <div id="uploadProgress" class="mb-4" style="display: none;">
                         <div class="progress mb-2">
@@ -25,29 +32,41 @@
                     <!-- Image Counter -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">تصاویر آپلود شده</h5>
-                        <span id="imageCounter" class="badge bg-primary">0 / 24</span>
+                        <span id="imageCounter" class="badge bg-primary">{{ existing_image_count }} / 24</span>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="mb-4 d-flex justify-content-end">
-                        <button id="finishUpload" class="btn btn-success" style="display: none;">
+                        <button id="finishUpload" class="btn btn-success" style="display: {% if existing_image_count > 0 %}block{% else %}none{% endif %};">
                             <i class="fas fa-check"></i>تکمیل آپلود
                         </button>
                     </div>
 
                     <!-- Upload Area -->
-                    <div class="upload-area mb-4">
+                    <div class="upload-area mb-4" {% if existing_image_count >= 24 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                         <div class="custom-file-upload" id="uploadArea">
                             <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
                             <div class="file-input-overlay" id="fileOverlay">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <span id="fileText">تصاویر را جداگانه انتخاب کنید</span>
+                                <span id="fileText">
+                                    {% if existing_image_count >= 24 %}
+                                        حداکثر تعداد تصاویر انتخاب شده
+                                    {% else %}
+                                        تصاویر را اینجا بکشید یا کلیک کنید
+                                    {% endif %}
+                                </span>
                                 <small class="d-block text-muted mt-2">
                                     حداکثر ۲۴ تصویر، هر کدام تا ۲.۵ مگابایت
                                 </small>
                                 <small class="d-block text-info mt-1">
                                     <i class="fas fa-info-circle"></i> فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG
                                 </small>
+                                {% if existing_image_count > 0 %}
+                                    <small class="d-block text-warning mt-1">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        می‌توانید حداکثر {{ 24|add:"-"|add:existing_image_count }} تصویر جدید اضافه کنید
+                                    </small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -291,6 +310,7 @@ class ImageUploader {
         this.uploadedImages = [];
         this.maxImages = 24;
         this.workId = '{{ sample_work.uuid }}';
+        this.existingImageCount = {{ existing_image_count }};
         
         this.initializeElements();
         this.bindEvents();
@@ -332,7 +352,9 @@ class ImageUploader {
         });
         
         this.fileOverlay.addEventListener('click', () => {
-            this.fileInput.click();
+            if (this.uploadedImages.length < this.maxImages) {
+                this.fileInput.click();
+            }
         });
         
         this.finishButton.addEventListener('click', () => {
