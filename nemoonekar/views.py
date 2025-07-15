@@ -217,7 +217,8 @@ def add_sample_work(request, post_token):
                 if existing_sample_work.user != request.user_auth:
                     return render(request, 'nemoonekar/permission_denied.html', {
                         'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
-                        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                        'divar_completion_url': settings.DIVAR_COMPLETION_URL,
+                        'post_token': post_token
                     }, status=403)
                 
                 # Update existing sample work
@@ -242,7 +243,8 @@ def add_sample_work(request, post_token):
             if existing_sample_work.user != request.user_auth:
                 return render(request, 'nemoonekar/permission_denied.html', {
                     'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
-                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL,
+                    'post_token': post_token
                 }, status=403)
             
             # Prefill form with existing data
@@ -473,7 +475,8 @@ def post_images_preview(request, post_token):
     if sample_work.user != request.user_auth:
         return render(request, 'nemoonekar/permission_denied.html', {
             'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
-            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL,
+            'post_token': post_token
         }, status=403)
     
     # Check if this is an edit mode (if images already exist or payment is completed)
