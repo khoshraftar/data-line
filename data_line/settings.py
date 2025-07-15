@@ -134,7 +134,7 @@ OAUTH_APPS_SETTINGS = {
         "oauth_client_id": os.getenv('NEMOONEKAR_OAUTH_CLIENT_ID'),
         "oauth_client_secret": os.getenv('NEMOONEKAR_OAUTH_CLIENT_SECRET'),
         "oauth_redirect_uri": os.getenv('NEMOONEKAR_OAUTH_REDIRECT_URI'),
-        "oauth_scope": 'USER_ID USER_PHONE POST_ADDON_CREATE.{post_token}'
+        "oauth_scope": 'USER_ID POST_ADDON_CREATE.{post_token}'
     },
     "resumeyar": {
         "api_key": os.getenv('RESUMEYAR_API_KEY', ''),
