@@ -213,6 +213,13 @@ def add_sample_work(request, post_token):
             existing_sample_work = SampleWork.objects.filter(post_token=post_token).first()
             
             if existing_sample_work:
+                # Check if the current user owns this sample work
+                if existing_sample_work.user != request.user_auth:
+                    return render(request, 'nemoonekar/permission_denied.html', {
+                        'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
+                        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                    }, status=403)
+                
                 # Update existing sample work
                 existing_sample_work.title = form.cleaned_data['title']
                 existing_sample_work.description = form.cleaned_data['description']
@@ -231,6 +238,13 @@ def add_sample_work(request, post_token):
         existing_sample_work = SampleWork.objects.filter(post_token=post_token).first()
         
         if existing_sample_work:
+            # Check if the current user owns this sample work
+            if existing_sample_work.user != request.user_auth:
+                return render(request, 'nemoonekar/permission_denied.html', {
+                    'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                }, status=403)
+            
             # Prefill form with existing data
             form = SampleWorkForm(instance=existing_sample_work)
             # Pass existing sample work to template for context
