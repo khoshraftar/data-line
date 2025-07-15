@@ -51,7 +51,7 @@
         <div class="container">
             {% if request.resolver_match.namespace %}
                 <!-- App-specific navigation -->
-                <a class="navbar-brand" href="{% url request.resolver_match.namespace|add:':home' %}">
+                <a class="navbar-brand" href="{% url request.resolver_match.namespace|add:':home' %}{% if post_token %}{{ post_token }}/{% endif %}">
                     {% if request.resolver_match.namespace == 'ostadkar' %}
                         استادکار
                     {% elif request.resolver_match.namespace == 'khodroyar' %}
@@ -68,7 +68,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url request.resolver_match.namespace|add:':home' %}">خانه</a>
+                            <a class="nav-link" href="{% url request.resolver_match.namespace|add:':home' %}{% if post_token %}{{ post_token }}/{% endif %}">خانه</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'about' %}">درباره ما</a>
