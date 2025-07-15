@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}پیش‌نمایش تصاویر نمونه کار - {{ sample_work.title }} - نمونه کار{% endblock %}
+{% block title %}
+    {% if is_edit_mode %}
+        ویرایش نمونه کار - {{ sample_work.title }} - نمونه کار
+    {% else %}
+        پیش‌نمایش تصاویر نمونه کار - {{ sample_work.title }} - نمونه کار
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4" dir="rtl">
@@ -9,28 +15,101 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h1 class="card-title mb-0">پیش‌نمایش تصاویر نمونه کار</h1>
+                        <h1 class="card-title mb-0">
+                            {% if is_edit_mode %}
+                                ویرایش نمونه کار
+                            {% else %}
+                                پیش‌نمایش تصاویر نمونه کار
+                            {% endif %}
+                        </h1>
                         <div>
                             <a href="{% url 'nemoonekar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> ثبت مجدد تصاویر
+                                <i class="fas fa-edit"></i> 
+                                {% if is_edit_mode %}
+                                    ویرایش تصاویر
+                                {% else %}
+                                    ثبت مجدد تصاویر
+                                {% endif %}
                             </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Separate Publish Button Box - Moved to top -->
-                    <div class="card border-success mb-4">
-                        <div class="card-body text-center py-4">
-                            <h4 class="h5 mb-3 text-success">انتشار نمونه کار در دیوار</h4>
-                            <p class="text-muted mb-4">برای انتشار نمونه کار در قالب افزونه در آگهی دیوار شما و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
-                            <a href="{% url 'nemoonekar:pre_payment' post_token %}" class="btn btn-success">
-                                <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
-                            </a>
-                            <small class="d-block text-muted mt-3">
-                                <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
-                            </small>
+                    {% if has_successful_payment %}
+                        <!-- Has Successful Payment - Show Success Message -->
+                        <div class="card border-success mb-4">
+                            <div class="card-body text-center py-4">
+                                <h4 class="h5 mb-3 text-success">
+                                    <i class="fas fa-check-circle"></i> نمونه کار شما در دیوار فعال است
+                                </h4>
+                                <p class="text-muted mb-4">
+                                    نمونه کار شما با موفقیت در دیوار منتشر شده و در حال حاضر فعال است.
+                                </p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="{{ divar_completion_url }}" class="btn btn-success">
+                                        <i class="fas fa-check"></i> بازگشت به دیوار
+                                    </a>
+                                    <a href="{% url 'nemoonekar:add_sample_work' sample_work.post_token %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> ویرایش نمونه کار
+                                    </a>
+                                </div>
+                                <small class="d-block text-muted mt-3">
+                                    <i class="fas fa-info-circle"></i> نمونه کار شما در حال حاضر در دیوار فعال است.
+                                </small>
+                            </div>
                         </div>
-                    </div>
+                    {% elif is_edit_mode %}
+                        <!-- Edit Mode - Show Success Message -->
+                        <div class="card border-success mb-4">
+                            <div class="card-body text-center py-4">
+                                <h4 class="h5 mb-3 text-success">
+                                    <i class="fas fa-check-circle"></i> ویرایش با موفقیت انجام شد
+                                </h4>
+                                <p class="text-muted mb-4">
+                                    نمونه کار شما با موفقیت ویرایش شد و تغییرات اعمال گردید.
+                                </p>
+                                {% if has_successful_payment %}
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="{{ divar_completion_url }}" class="btn btn-success">
+                                        <i class="fas fa-check"></i> تکمیل و بازگشت به دیوار
+                                    </a>
+                                    <a href="{% url 'nemoonekar:add_sample_work' sample_work.post_token %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> ویرایش بیشتر
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="{% url 'nemoonekar:add_sample_work' sample_work.post_token %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> ویرایش بیشتر
+                                    </a>
+                                </div>
+                                <div class="mt-4 pt-3 border-top">
+                                    <p class="text-muted mb-3">برای انتشار نمونه کار در دیوار:</p>
+                                    <a href="{% url 'nemoonekar:pre_payment' post_token %}" class="btn btn-success">
+                                        <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
+                                    </a>
+                                    <small class="d-block text-muted mt-2">
+                                        <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- New Sample Work - Show Payment Button -->
+                        <div class="card border-success mb-4">
+                            <div class="card-body text-center py-4">
+                                <h4 class="h5 mb-3 text-success">انتشار نمونه کار در دیوار</h4>
+                                <p class="text-muted mb-4">برای انتشار نمونه کار در قالب افزونه در آگهی دیوار شما و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
+                                <a href="{% url 'nemoonekar:pre_payment' post_token %}" class="btn btn-success">
+                                    <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
+                                </a>
+                                <small class="d-block text-muted mt-3">
+                                    <i class="fas fa-info-circle"></i> این فرآیند شامل پرداخت هزینه انتشار خواهد بود.
+                                </small>
+                            </div>
+                        </div>
+                    {% endif %}
                     
                     <h2 class="card-title mb-3">{{ sample_work.title }}</h2>
                     <p class="card-text lead mb-4">{{ sample_work.description }}</p>
@@ -38,7 +117,12 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <small class="text-muted">
-                                <i class="fas fa-calendar"></i> ایجاد شده در: {{ sample_work.created_at|date:"j F Y" }}
+                                <i class="fas fa-calendar"></i> 
+                                {% if is_edit_mode %}
+                                    آخرین ویرایش: {{ sample_work.updated_at|date:"j F Y" }}
+                                {% else %}
+                                    ایجاد شده در: {{ sample_work.created_at|date:"j F Y" }}
+                                {% endif %}
                             </small>
                         </div>
                         <div class="col-md-6">

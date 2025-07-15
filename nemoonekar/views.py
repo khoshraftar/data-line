@@ -209,23 +209,52 @@ def add_sample_work(request, post_token):
     if request.method == 'POST':
         form = SampleWorkForm(request.POST)
         if form.is_valid():
-            # Delete existing sample work with this token if it exists
+            # Check if sample work already exists for this token
             existing_sample_work = SampleWork.objects.filter(post_token=post_token).first()
-            if existing_sample_work:
-                # Delete associated images first (due to foreign key constraint)
-                PostImage.objects.filter(sample_work=existing_sample_work).delete()
-                # Delete the sample work
-                existing_sample_work.delete()
             
-            # Create new sample work
-            sample_work = form.save(commit=False)
-            sample_work.user = request.user_auth
-            sample_work.post_token = post_token
-            sample_work.save()
+            if existing_sample_work:
+                # Check if the current user owns this sample work
+                if existing_sample_work.user != request.user_auth:
+                    return render(request, 'nemoonekar/permission_denied.html', {
+                        'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
+                        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                    }, status=403)
+                
+                # Update existing sample work
+                existing_sample_work.title = form.cleaned_data['title']
+                existing_sample_work.description = form.cleaned_data['description']
+                existing_sample_work.save()
+                sample_work = existing_sample_work
+            else:
+                # Create new sample work
+                sample_work = form.save(commit=False)
+                sample_work.user = request.user_auth
+                sample_work.post_token = post_token
+                sample_work.save()
             
             return redirect('nemoonekar:upload_sample_work_images', work_id=sample_work.uuid)
     else:
-        form = SampleWorkForm()
+        # Check if sample work already exists for this token
+        existing_sample_work = SampleWork.objects.filter(post_token=post_token).first()
+        
+        if existing_sample_work:
+            # Check if the current user owns this sample work
+            if existing_sample_work.user != request.user_auth:
+                return render(request, 'nemoonekar/permission_denied.html', {
+                    'message': 'شما اجازه ویرایش این نمونه کار را ندارید.',
+                    'divar_completion_url': settings.DIVAR_COMPLETION_URL
+                }, status=403)
+            
+            # Prefill form with existing data
+            form = SampleWorkForm(instance=existing_sample_work)
+            # Pass existing sample work to template for context
+            return render(request, 'nemoonekar/add_sample_work.html', {
+                'form': form,
+                'existing_sample_work': existing_sample_work,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            })
+        else:
+            form = SampleWorkForm()
     
     return render(request, 'nemoonekar/add_sample_work.html', {
         'form': form,
@@ -236,17 +265,23 @@ def add_sample_work(request, post_token):
 def upload_sample_work_images(request, work_id):
     sample_work = get_object_or_404(SampleWork, uuid=work_id, user=request.user_auth)
     
+    # Get existing images for this sample work
+    existing_images = PostImage.objects.filter(sample_work=sample_work).order_by('created_at')
+    existing_image_count = existing_images.count()
+    
     if request.method == 'POST':
         form = SampleWorkImageForm(request.POST, request.FILES)
         if form.is_valid():
             files = request.FILES.getlist('images')
             
-            # Additional validation for maximum 24 images
-            if len(files) > 24:
-                messages.error(request, 'حداکثر ۲۴ تصویر می‌توانید آپلود کنید.')
+            # Check if adding new images would exceed the maximum of 24
+            if existing_image_count + len(files) > 24:
+                messages.error(request, f'با {existing_image_count} تصویر موجود، حداکثر {24 - existing_image_count} تصویر جدید می‌توانید اضافه کنید.')
                 return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
+                    'existing_images': existing_images,
+                    'existing_image_count': existing_image_count,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
             
@@ -257,6 +292,8 @@ def upload_sample_work_images(request, work_id):
                 return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
+                    'existing_images': existing_images,
+                    'existing_image_count': existing_image_count,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
             
@@ -267,6 +304,7 @@ def upload_sample_work_images(request, work_id):
                         image=image_file
                     )
                 
+                # Always redirect to preview page, which will handle edit vs new mode
                 return redirect('nemoonekar:post_images_preview', post_token=sample_work.post_token)
                 
             except Exception as e:
@@ -274,6 +312,8 @@ def upload_sample_work_images(request, work_id):
                 return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
+                    'existing_images': existing_images,
+                    'existing_image_count': existing_image_count,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
                 })
     else:
@@ -282,6 +322,8 @@ def upload_sample_work_images(request, work_id):
     return render(request, 'nemoonekar/upload_sample_work_images.html', {
         'form': form,
         'sample_work': sample_work,
+        'existing_images': existing_images,
+        'existing_image_count': existing_image_count,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
@@ -434,11 +476,19 @@ def post_images_preview(request, post_token):
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
+    # Check if this is an edit mode (if images already exist or payment is completed)
+    is_edit_mode = PostImage.objects.filter(sample_work=sample_work).exists() or Payment.objects.filter(sample_work=sample_work, status='completed').exists()
+    
+    # Check if there's a successful payment
+    has_successful_payment = Payment.objects.filter(sample_work=sample_work, status='completed').exists()
+    
     post_images = PostImage.objects.filter(sample_work=sample_work)
     return render(request, 'nemoonekar/post_images_preview.html', {
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
+        'is_edit_mode': is_edit_mode,
+        'has_successful_payment': has_successful_payment,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 

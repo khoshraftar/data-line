@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}ایجاد نمونه کار جدید - نمونه کار{% endblock %}
+{% block title %}
+    {% if existing_sample_work %}
+        ویرایش نمونه کار - نمونه کار
+    {% else %}
+        ایجاد نمونه کار جدید - نمونه کار
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container mt-5" dir="rtl">
@@ -8,9 +14,22 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="text-center">ایجاد نمونه کار جدید</h2>
+                    <h2 class="text-center">
+                        {% if existing_sample_work %}
+                            ویرایش نمونه کار
+                        {% else %}
+                            ایجاد نمونه کار جدید
+                        {% endif %}
+                    </h2>
                 </div>
                 <div class="card-body">
+                    {% if existing_sample_work %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            نمونه کار با توکن <strong>{{ existing_sample_work.post_token }}</strong> یافت شد. می‌توانید اطلاعات آن را ویرایش کنید.
+                        </div>
+                    {% endif %}
+                    
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -27,7 +46,11 @@
                         </div>
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">
-                                ایجاد نمونه کار جدید
+                                {% if existing_sample_work %}
+                                    <i class="fas fa-save"></i> ذخیره تغییرات
+                                {% else %}
+                                    <i class="fas fa-plus"></i> ایجاد نمونه کار جدید
+                                {% endif %}
                             </button>
                         </div>
                     </form>
