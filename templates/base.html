@@ -47,6 +47,7 @@
 </head>
 <body>
     <!-- Navigation -->
+    {% if not hide_navigation %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             {% if request.resolver_match.namespace %}
@@ -94,6 +95,7 @@
             {% endif %}
         </div>
     </nav>
+    {% endif %}
 
     <!-- Main Content -->
     <main class="container my-4">

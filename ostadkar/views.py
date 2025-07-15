@@ -408,6 +408,7 @@ def post_images(request, post_token):
             'post_images': [],
             'post_token': post_token,
             'is_archived': True,
+            'hide_navigation': True,
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         })
     
@@ -417,6 +418,7 @@ def post_images(request, post_token):
         'post_images': post_images,
         'post_token': post_token,
         'is_archived': False,
+        'hide_navigation': True,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
