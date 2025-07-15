@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}پیش‌نمایش تصاویر نمونه کار - {{ sample_work.title }} - استادکار{% endblock %}
+{% block title %}پیش‌نمایش تصاویر نمونه کار - {{ sample_work.title }} - نمونه کار{% endblock %}
 
 {% block content %}
 <div class="container mt-4" dir="rtl">
@@ -11,7 +11,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h1 class="card-title mb-0">پیش‌نمایش تصاویر نمونه کار</h1>
                         <div>
-                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary btn-sm">
+                            <a href="{% url 'nemoonekar:upload_sample_work_images' sample_work.uuid %}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> ثبت مجدد تصاویر
                             </a>
                         </div>
@@ -23,7 +23,7 @@
                         <div class="card-body text-center py-4">
                             <h4 class="h5 mb-3 text-success">انتشار نمونه کار در دیوار</h4>
                             <p class="text-muted mb-4">برای انتشار نمونه کار در قالب افزونه در آگهی دیوار شما و دسترسی به مشتریان بیشتر، روی دکمه زیر کلیک کنید.</p>
-                            <a href="{% url 'ostadkar:pre_payment' post_token %}" class="btn btn-success">
+                            <a href="{% url 'nemoonekar:pre_payment' post_token %}" class="btn btn-success">
                                 <i class="fas fa-rocket"></i> انتشار نمونه کار در دیوار
                             </a>
                             <small class="d-block text-muted mt-3">
@@ -68,7 +68,7 @@
                     {% else %}
                         <div class="alert alert-info">
                             هنوز تصویری اضافه نشده است.
-                            <a href="{% url 'ostadkar:upload_sample_work_images' sample_work.uuid %}" class="alert-link">افزودن تصاویر</a>
+                            <a href="{% url 'nemoonekar:upload_sample_work_images' sample_work.uuid %}" class="alert-link">افزودن تصاویر</a>
                         </div>
                     {% endif %}
                 </div>

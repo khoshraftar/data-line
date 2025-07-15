@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}دسترسی غیرمجاز - استادکار{% endblock %}
+{% block title %}دسترسی غیرمجاز - نمونه کار{% endblock %}
 
 {% block content %}
 <div class="container mt-5" dir="rtl">
@@ -21,10 +21,10 @@
                     <p class="lead">{{ message|default:"شما اجازه دسترسی به این صفحه را ندارید." }}</p>
                     
                     <div class="mt-4">
-                        <a href="{% url 'ostadkar:home' %}" class="btn btn-primary">
+                        <a href="{% url 'nemoonekar:home' %}" class="btn btn-primary">
                             <i class="fas fa-home"></i> بازگشت به صفحه اصلی
                         </a>
-                        <a href="{% url 'ostadkar:add_sample_work' %}" class="btn btn-secondary">
+                        <a href="{% url 'nemoonekar:add_sample_work' %}" class="btn btn-secondary">
                             <i class="fas fa-plus"></i> ایجاد نمونه کار جدید
                         </a>
                     </div>

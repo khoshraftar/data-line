@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'resumeyar',
-    'ostadkar',
+    'nemoonekar',
     'khodroyar',
     'storages',
 ]
@@ -129,11 +129,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 OAUTH_APPS_SETTINGS = {
-    "ostadkar": {
-        "api_key": os.getenv('OSTADKAR_API_KEY'),
-        "oauth_client_id": os.getenv('OSTADKAR_OAUTH_CLIENT_ID'),
-        "oauth_client_secret": os.getenv('OSTADKAR_OAUTH_CLIENT_SECRET'),
-        "oauth_redirect_uri": os.getenv('OSTADKAR_OAUTH_REDIRECT_URI'),
+    "nemoonekar": {
+        "api_key": os.getenv('NEMOONEKAR_API_KEY'),
+        "oauth_client_id": os.getenv('NEMOONEKAR_OAUTH_CLIENT_ID'),
+        "oauth_client_secret": os.getenv('NEMOONEKAR_OAUTH_CLIENT_SECRET'),
+        "oauth_redirect_uri": os.getenv('NEMOONEKAR_OAUTH_REDIRECT_URI'),
         "oauth_scope": 'USER_ID USER_PHONE POST_ADDON_CREATE.{post_token}'
     },
     "resumeyar": {
@@ -158,7 +158,7 @@ OAUTH_USER_INFO_URL = 'https://open-api.divar.ir/v1/open-platform/users'
 
 # ZarinPal Payment Gateway Configuration
 ZARINPAL_MERCHANT_ID = os.getenv('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
-ZARINPAL_CALLBACK_URL = 'https://data-lines.ir/ostadkar/payment/callback/'
+ZARINPAL_CALLBACK_URL = 'https://data-lines.ir/nemoonekar/payment/callback/'
 ZARINPAL_VERIFY_URL =  'https://payment.zarinpal.com/pg/v4/payment/verify.json'
 ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'
 ZARINPAL_GATEWAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
@@ -224,7 +224,7 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_ADDRESSING_STYLE = 'virtual'
 
 # Login URL for @login_required
-LOGIN_URL = '/ostadkar/login/'
+LOGIN_URL = '/nemoonekar/login/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

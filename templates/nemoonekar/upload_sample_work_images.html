@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}آپلود تصاویر - {{ sample_work.title }} - استادکار{% endblock %}
+{% block title %}آپلود تصاویر - {{ sample_work.title }} - نمونه کار{% endblock %}
 
 {% block content %}
 <!-- CSRF Token for AJAX requests -->
@@ -336,13 +336,13 @@ class ImageUploader {
         });
         
         this.finishButton.addEventListener('click', () => {
-            window.location.href = '{% url "ostadkar:post_images_preview" sample_work.post_token %}';
+            window.location.href = '{% url "nemoonekar:post_images_preview" sample_work.post_token %}';
         });
     }
     
     async loadExistingImages() {
         try {
-            const response = await fetch(`/ostadkar/sample-work/get-images/${this.workId}/`);
+            const response = await fetch(`/nemoonekar/sample-work/get-images/${this.workId}/`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -396,7 +396,7 @@ class ImageUploader {
             const formData = new FormData();
             formData.append('image', file);
             
-            const response = await fetch(`/ostadkar/sample-work/upload-single-image/${this.workId}/`, {
+            const response = await fetch(`/nemoonekar/sample-work/upload-single-image/${this.workId}/`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -486,7 +486,7 @@ class ImageUploader {
     
     async deleteImage(imageId, imageDbId) {
         try {
-            const response = await fetch(`/ostadkar/sample-work/delete-image/${this.workId}/${imageDbId}/`, {
+            const response = await fetch(`/nemoonekar/sample-work/delete-image/${this.workId}/${imageDbId}/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': this.getCSRFToken()

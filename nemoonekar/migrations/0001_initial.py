@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('image', models.ImageField(upload_to='sample_works/images/')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('sample_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ostadkar.samplework')),
+                ('sample_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nemoonekar.samplework')),
             ],
             options={
                 'ordering': ['-created_at'],
@@ -52,6 +52,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='samplework',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ostadkar.userauth'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nemoonekar.userauth'),
         ),
     ]

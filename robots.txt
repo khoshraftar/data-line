@@ -5,7 +5,7 @@ Allow: /
 Allow: /$
 Allow: /about/$
 Allow: /resumeyar/$
-Allow: /ostadkar/$
+Allow: /nemoonekar/$
 
 # Allow access to static files
 Allow: /static/

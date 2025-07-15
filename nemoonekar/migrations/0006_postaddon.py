@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ostadkar', '0005_userauth_phone'),
+        ('nemoonekar', '0005_userauth_phone'),
     ]
 
     operations = [
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('error_message', models.TextField(blank=True, null=True, verbose_name='پیام خطا')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')),
-                ('sample_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ostadkar.samplework', verbose_name='نمونه کار')),
+                ('sample_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nemoonekar.samplework', verbose_name='نمونه کار')),
             ],
             options={
                 'verbose_name': 'افزونه پست',

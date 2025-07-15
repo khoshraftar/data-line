@@ -24,10 +24,10 @@ from .views import home, about
 urlpatterns = [
     path('', home, name='home'),
     path('about/', about, name='about'),
-    path('admin/review/', include('ostadkar.review_urls')),
+    path('admin/review/', include('nemoonekar.review_urls')),
     path('admin/', admin.site.urls),
     path('resumeyar/', include('resumeyar.urls')),
-    path('ostadkar/', include('ostadkar.urls')),
+    path('nemoonekar/', include('nemoonekar.urls')),
     path('khodroyar/', include('khodroyar.urls')),
 ]
 

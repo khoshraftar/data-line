@@ -53,8 +53,8 @@
             {% if request.resolver_match.namespace %}
                 <!-- App-specific navigation -->
                 <a class="navbar-brand" href="{% url request.resolver_match.namespace|add:':home' %}{% if post_token %}{{ post_token }}/{% endif %}">
-                    {% if request.resolver_match.namespace == 'ostadkar' %}
-                        استادکار
+                    {% if request.resolver_match.namespace == 'nemoonekar' %}
+                        نمونه کار
                     {% elif request.resolver_match.namespace == 'khodroyar' %}
                         خودرویار
                     {% elif request.resolver_match.namespace == 'resumeyar' %}

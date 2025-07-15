@@ -50,7 +50,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
             return self.show_sample_work_detail(request, sample_work)
         else:
             messages.info(request, 'هیچ نمونه کار بررسی نشده‌ای وجود ندارد.')
-            return HttpResponseRedirect(reverse('admin:ostadkar_samplework_changelist'))
+            return HttpResponseRedirect(reverse('admin:nemoonekar_samplework_changelist'))
     
     def show_sample_work_detail(self, request, sample_work):
         """Show detailed view of a sample work for review"""
@@ -67,7 +67,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
             'opts': self.model._meta,
             'has_change_permission': self.has_change_permission(request),
         }
-        return render(request, 'admin/ostadkar/samplework/review_detail.html', context)
+        return render(request, 'admin/nemoonekar/samplework/review_detail.html', context)
     
     def accept_sample_work(self, request):
         """Accept and mark sample work as reviewed, then reload page"""
@@ -81,7 +81,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         sample_work.save()
         
         messages.success(request, f'نمونه کار "{title}" پذیرفته و بررسی شد.')
-        return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
+        return HttpResponseRedirect('/admin/review/nemoonekar/samplework/')
     
     def reject_sample_work(self, request):
         """Reject and archive sample work, then reload page"""
@@ -96,7 +96,7 @@ class SampleWorkReviewAdmin(admin.ModelAdmin):
         sample_work.archive()  # Then archive it
         
         messages.success(request, f'نمونه کار "{title}" رد و آرشیو شد.')
-        return HttpResponseRedirect('/admin/review/ostadkar/samplework/')
+        return HttpResponseRedirect('/admin/review/nemoonekar/samplework/')
 
 # Register the review admin view with the review site
 review_site.register(SampleWork, SampleWorkReviewAdmin)

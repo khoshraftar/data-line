@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ostadkar', '0008_add_archive_fields'),
+        ('nemoonekar', '0008_add_archive_fields'),
     ]
 
     operations = [
@@ -92,34 +92,34 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='payment',
-            index=models.Index(fields=['sample_work', 'status'], name='ostadkar_pa_sample__de1e85_idx'),
+            index=models.Index(fields=['sample_work', 'status'], name='nemoonekar_pa_sample__de1e85_idx'),
         ),
         migrations.AddIndex(
             model_name='payment',
-            index=models.Index(fields=['status', 'created_at'], name='ostadkar_pa_status_a8501e_idx'),
+            index=models.Index(fields=['status', 'created_at'], name='nemoonekar_pa_status_a8501e_idx'),
         ),
         migrations.AddIndex(
             model_name='payment',
-            index=models.Index(fields=['authority'], name='ostadkar_pa_authori_35632d_idx'),
+            index=models.Index(fields=['authority'], name='nemoonekar_pa_authori_35632d_idx'),
         ),
         migrations.AddIndex(
             model_name='postaddon',
-            index=models.Index(fields=['sample_work', 'status'], name='ostadkar_po_sample__e76d66_idx'),
+            index=models.Index(fields=['sample_work', 'status'], name='nemoonekar_po_sample__e76d66_idx'),
         ),
         migrations.AddIndex(
             model_name='postaddon',
-            index=models.Index(fields=['status', 'created_at'], name='ostadkar_po_status_68e27b_idx'),
+            index=models.Index(fields=['status', 'created_at'], name='nemoonekar_po_status_68e27b_idx'),
         ),
         migrations.AddIndex(
             model_name='samplework',
-            index=models.Index(fields=['user', 'is_archived'], name='ostadkar_sa_user_id_0d6780_idx'),
+            index=models.Index(fields=['user', 'is_archived'], name='nemoonekar_sa_user_id_0d6780_idx'),
         ),
         migrations.AddIndex(
             model_name='samplework',
-            index=models.Index(fields=['is_reviewed', 'is_archived'], name='ostadkar_sa_is_revi_49e25f_idx'),
+            index=models.Index(fields=['is_reviewed', 'is_archived'], name='nemoonekar_sa_is_revi_49e25f_idx'),
         ),
         migrations.AddIndex(
             model_name='samplework',
-            index=models.Index(fields=['created_at', 'is_archived'], name='ostadkar_sa_created_28a665_idx'),
+            index=models.Index(fields=['created_at', 'is_archived'], name='nemoonekar_sa_created_28a665_idx'),
         ),
     ]

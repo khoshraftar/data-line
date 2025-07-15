@@ -18,9 +18,9 @@ def session_auth_required(view_func):
             # Check if we have post_token in kwargs to pass to login
             post_token = kwargs.get('post_token')
             if post_token:
-                return redirect('ostadkar:login_with_token', post_token=post_token)
+                return redirect('nemoonekar:login_with_token', post_token=post_token)
             else:
-                return redirect('ostadkar:login')
+                return redirect('nemoonekar:login')
         
         # Get user auth from database
         try:
@@ -32,9 +32,9 @@ def session_auth_required(view_func):
             # Check if we have post_token in kwargs to pass to login
             post_token = kwargs.get('post_token')
             if post_token:
-                return redirect('ostadkar:login_with_token', post_token=post_token)
+                return redirect('nemoonekar:login_with_token', post_token=post_token)
             else:
-                return redirect('ostadkar:login')
+                return redirect('nemoonekar:login')
             
         return view_func(request, *args, **kwargs)
     return _wrapped_view
@@ -49,7 +49,7 @@ def home(request, post_token=None):
     if not post_token and 'post_token' in request.GET:
         post_token = request.GET['post_token'].strip()
         if post_token:  # Only redirect if post_token is not empty
-            return redirect('ostadkar:home_with_token', post_token=post_token)
+            return redirect('nemoonekar:home_with_token', post_token=post_token)
     
     # Clean up post_token if it exists
     if post_token:
@@ -57,7 +57,7 @@ def home(request, post_token=None):
         # Decode URL-encoded characters in post_token if present
         post_token = unquote(post_token)
     
-    return render(request, 'ostadkar/home.html', {
+    return render(request, 'nemoonekar/home.html', {
         'post_token': post_token,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
@@ -69,20 +69,20 @@ def login(request, post_token=None):
         try:
             UserAuth.objects.get(user_id=request.session['user_id'])
             if post_token:
-                return redirect('ostadkar:add_sample_work', post_token=post_token)
+                return redirect('nemoonekar:add_sample_work', post_token=post_token)
             else:
-                return redirect('ostadkar:post_images', post_token='default1')
+                return redirect('nemoonekar:post_images', post_token='default1')
         except UserAuth.DoesNotExist:
             request.session.flush()
     
-    return render(request, 'ostadkar/login.html', {
+    return render(request, 'nemoonekar/login.html', {
         'post_token': post_token,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 
 def oauth_login(request, post_token):
     """Initiate OAuth login process"""
-    oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
+    oauth_settings = settings.OAUTH_APPS_SETTINGS['nemoonekar']
     post_token = post_token.strip()
     
     # Decode URL-encoded characters in post_token if present
@@ -111,13 +111,13 @@ def oauth_login(request, post_token):
 def oauth_callback(request):
     """Handle OAuth callback"""
     if 'code' not in request.GET:
-        return render(request, 'ostadkar/error.html', {
+        return render(request, 'nemoonekar/error.html', {
             'error': 'Authorization code not received',
             'post_token': request.GET.get('state', ''),
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         })
     
-    oauth_settings = settings.OAUTH_APPS_SETTINGS['ostadkar']
+    oauth_settings = settings.OAUTH_APPS_SETTINGS['nemoonekar']
     code = request.GET['code']
     
     # Get post_token from state parameter
@@ -142,7 +142,7 @@ def oauth_callback(request):
         
         access_token = token_info.get('access_token')
         if not access_token:
-            return render(request, 'ostadkar/error.html', {
+            return render(request, 'nemoonekar/error.html', {
                 'error': 'Access token not received from OAuth provider',
                 'post_token': post_token,
                 'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -163,7 +163,7 @@ def oauth_callback(request):
             
             user_id = user_info.get('user_id')
             if not user_id:
-                return render(request, 'ostadkar/error.html', {
+                return render(request, 'nemoonekar/error.html', {
                     'error': 'User ID not found in user info response',
                     'post_token': post_token,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -188,17 +188,17 @@ def oauth_callback(request):
             request.session.set_expiry(1200)  # 20 minutes
             
             # Redirect to add post image page with post_token
-            return redirect('ostadkar:add_sample_work', post_token=post_token)
+            return redirect('nemoonekar:add_sample_work', post_token=post_token)
             
         except requests.RequestException as e:
-            return render(request, 'ostadkar/error.html', {
+            return render(request, 'nemoonekar/error.html', {
                 'error': f'Failed to get user info: {str(e)}',
                 'post_token': post_token,
                 'divar_completion_url': settings.DIVAR_COMPLETION_URL
             })
             
     except requests.RequestException as e:
-        return render(request, 'ostadkar/error.html', {
+        return render(request, 'nemoonekar/error.html', {
             'error': f'Failed to get access token: {str(e)}',
             'post_token': post_token,
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -223,11 +223,11 @@ def add_sample_work(request, post_token):
             sample_work.post_token = post_token
             sample_work.save()
             
-            return redirect('ostadkar:upload_sample_work_images', work_id=sample_work.uuid)
+            return redirect('nemoonekar:upload_sample_work_images', work_id=sample_work.uuid)
     else:
         form = SampleWorkForm()
     
-    return render(request, 'ostadkar/add_sample_work.html', {
+    return render(request, 'nemoonekar/add_sample_work.html', {
         'form': form,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
@@ -244,7 +244,7 @@ def upload_sample_work_images(request, work_id):
             # Additional validation for maximum 24 images
             if len(files) > 24:
                 messages.error(request, 'حداکثر ۲۴ تصویر می‌توانید آپلود کنید.')
-                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -254,7 +254,7 @@ def upload_sample_work_images(request, work_id):
             total_size = sum(file.size for file in files)
             if total_size > 62914560:  # 60MB in bytes
                 messages.error(request, 'حجم کل فایل‌ها بیش از ۶۰ مگابایت است.')
-                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -267,11 +267,11 @@ def upload_sample_work_images(request, work_id):
                         image=image_file
                     )
                 
-                return redirect('ostadkar:post_images_preview', post_token=sample_work.post_token)
+                return redirect('nemoonekar:post_images_preview', post_token=sample_work.post_token)
                 
             except Exception as e:
                 messages.error(request, f'خطا در آپلود تصاویر: {str(e)}')
-                return render(request, 'ostadkar/upload_sample_work_images.html', {
+                return render(request, 'nemoonekar/upload_sample_work_images.html', {
                     'form': form,
                     'sample_work': sample_work,
                     'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -279,7 +279,7 @@ def upload_sample_work_images(request, work_id):
     else:
         form = SampleWorkImageForm()
     
-    return render(request, 'ostadkar/upload_sample_work_images.html', {
+    return render(request, 'nemoonekar/upload_sample_work_images.html', {
         'form': form,
         'sample_work': sample_work,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -403,7 +403,7 @@ def post_images(request, post_token):
     
     # Check if the sample work is archived
     if sample_work.is_archived:
-        return render(request, 'ostadkar/post_images.html', {
+        return render(request, 'nemoonekar/post_images.html', {
             'sample_work': sample_work,
             'post_images': [],
             'post_token': post_token,
@@ -413,7 +413,7 @@ def post_images(request, post_token):
         })
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
-    return render(request, 'ostadkar/post_images.html', {
+    return render(request, 'nemoonekar/post_images.html', {
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
@@ -429,13 +429,13 @@ def post_images_preview(request, post_token):
     
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
-        return render(request, 'ostadkar/permission_denied.html', {
+        return render(request, 'nemoonekar/permission_denied.html', {
             'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
-    return render(request, 'ostadkar/post_images_preview.html', {
+    return render(request, 'nemoonekar/post_images_preview.html', {
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
@@ -450,13 +450,13 @@ def pre_payment(request, post_token):
     
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
-        return render(request, 'ostadkar/permission_denied.html', {
+        return render(request, 'nemoonekar/permission_denied.html', {
             'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
     
     post_images = PostImage.objects.filter(sample_work=sample_work)
-    return render(request, 'ostadkar/pre_payment.html', {
+    return render(request, 'nemoonekar/pre_payment.html', {
         'sample_work': sample_work,
         'post_images': post_images,
         'post_token': post_token,
@@ -470,7 +470,7 @@ def initiate_payment(request, post_token):
     
     # Check if the current user owns this sample work
     if sample_work.user != request.user_auth:
-        return render(request, 'ostadkar/permission_denied.html', {
+        return render(request, 'nemoonekar/permission_denied.html', {
             'message': 'شما اجازه دسترسی به این نمونه کار را ندارید.',
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         }, status=403)
@@ -478,7 +478,7 @@ def initiate_payment(request, post_token):
     # Check if ZarinPal merchant ID is configured
     if not settings.ZARINPAL_MERCHANT_ID:
         messages.error(request, 'خطا در پیکربندی درگاه پرداخت. لطفاً با پشتیبانی تماس بگیرید.')
-        return redirect('ostadkar:pre_payment', post_token=post_token)
+        return redirect('nemoonekar:pre_payment', post_token=post_token)
     
     # Check if payment already exists and is pending
     existing_payment = Payment.objects.filter(
@@ -490,7 +490,7 @@ def initiate_payment(request, post_token):
         # If there's a pending payment, redirect to ZarinPal with existing authority
         if existing_payment.authority:
             payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{existing_payment.authority}"
-            return render(request, 'ostadkar/payment_loading.html', {
+            return render(request, 'nemoonekar/payment_loading.html', {
                 'payment_url': payment_url,
                 'sample_work': sample_work,
                 'post_token': post_token,
@@ -533,7 +533,7 @@ def initiate_payment(request, post_token):
             
             # Show loading page with redirect to ZarinPal payment gateway
             payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{authority}"
-            return render(request, 'ostadkar/payment_loading.html', {
+            return render(request, 'nemoonekar/payment_loading.html', {
                 'payment_url': payment_url,
                 'sample_work': sample_work,
                 'post_token': post_token,
@@ -546,18 +546,18 @@ def initiate_payment(request, post_token):
             payment.save()
             error_message = result.get('errors', {}).get('message', 'خطای نامشخص')
             messages.error(request, f'خطا در ایجاد درخواست پرداخت: {error_message}')
-            return redirect('ostadkar:pre_payment', post_token=post_token)
+            return redirect('nemoonekar:pre_payment', post_token=post_token)
             
     except requests.RequestException as e:
         payment.status = 'failed'
         payment.save()
         messages.error(request, f'خطا در ارتباط با درگاه پرداخت: {str(e)}')
-        return redirect('ostadkar:pre_payment', post_token=post_token)
+        return redirect('nemoonekar:pre_payment', post_token=post_token)
     except Exception as e:
         payment.status = 'failed'
         payment.save()
         messages.error(request, f'خطای غیرمنتظره: {str(e)}')
-        return redirect('ostadkar:pre_payment', post_token=post_token)
+        return redirect('nemoonekar:pre_payment', post_token=post_token)
 
 def payment_callback(request):
     """Handle ZarinPal payment callback"""
@@ -566,13 +566,13 @@ def payment_callback(request):
     
     if not authority:
         messages.error(request, 'کد مرجع پرداخت یافت نشد.')
-        return redirect('ostadkar:home')
+        return redirect('nemoonekar:home')
     
     try:
         payment = Payment.objects.get(authority=authority)
     except Payment.DoesNotExist:
         messages.error(request, 'پرداخت یافت نشد.')
-        return redirect('ostadkar:home')
+        return redirect('nemoonekar:home')
     
     if status == 'OK':
         # Payment was successful, verify with ZarinPal
@@ -594,25 +594,25 @@ def payment_callback(request):
                 payment.save()
                 
                 messages.success(request, f'پرداخت با موفقیت انجام شد. شماره پیگیری: {payment.ref_id}')
-                return redirect('ostadkar:payment_success', post_token=payment.sample_work.post_token)
+                return redirect('nemoonekar:payment_success', post_token=payment.sample_work.post_token)
             else:
                 # Payment verification failed
                 payment.status = 'failed'
                 payment.save()
                 messages.error(request, f'تایید پرداخت ناموفق بود: {result["errors"]["message"]}')
-                return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+                return redirect('nemoonekar:payment_failed', post_token=payment.sample_work.post_token)
                 
         except requests.RequestException as e:
             payment.status = 'failed'
             payment.save()
             messages.error(request, f'خطا در تایید پرداخت: {str(e)}')
-            return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+            return redirect('nemoonekar:payment_failed', post_token=payment.sample_work.post_token)
     else:
         # Payment was cancelled or failed
         payment.status = 'cancelled'
         payment.save()
         messages.warning(request, 'پرداخت لغو شد.')
-        return redirect('ostadkar:payment_failed', post_token=payment.sample_work.post_token)
+        return redirect('nemoonekar:payment_failed', post_token=payment.sample_work.post_token)
 
 def payment_success(request, post_token):
     """Show payment success page"""
@@ -627,7 +627,7 @@ def payment_success(request, post_token):
         else:
             messages.warning(request, f'خطا در ایجاد افزونه پست: {addon_result.get("error", "خطای نامشخص")}')
     
-    return render(request, 'ostadkar/payment_success.html', {
+    return render(request, 'nemoonekar/payment_success.html', {
         'sample_work': sample_work,
         'payment': payment,
         'post_token': post_token,
@@ -667,13 +667,13 @@ def create_post_addon(sample_work):
                     "description_row": {
                         "expandable": False,
                         "has_divider": True,
-                        "text": "مشاهده آلبوم کامل تصاویر نمونه کار های تایید شده در سایت استادکار"
+                        "text": "مشاهده آلبوم کامل تصاویر نمونه کار های تایید شده در سایت نمونه کار"
                 }},
                 {
                     "button_bar": {
                         "title": "آلبوم نمونه کار",
                         "action": {
-                            "open_direct_link": f"https://data-lines.ir/ostadkar/sample-work/post-images/{sample_work.post_token}"
+                            "open_direct_link": f"https://data-lines.ir/nemoonekar/sample-work/post-images/{sample_work.post_token}"
                         }
                     }
                 }
@@ -689,7 +689,7 @@ def create_post_addon(sample_work):
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {access_token}',
-            'X-API-Key': settings.OAUTH_APPS_SETTINGS['ostadkar']['api_key']
+            'X-API-Key': settings.OAUTH_APPS_SETTINGS['nemoonekar']['api_key']
         }
         
         # Make API request to create addon
@@ -755,7 +755,7 @@ def payment_failed(request, post_token):
     sample_work = get_object_or_404(SampleWork, post_token=post_token)
     payment = Payment.objects.filter(sample_work=sample_work).order_by('-created_at').first()
     
-    return render(request, 'ostadkar/payment_failed.html', {
+    return render(request, 'nemoonekar/payment_failed.html', {
         'sample_work': sample_work,
         'payment': payment,
         'post_token': post_token,
