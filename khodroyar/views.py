@@ -140,7 +140,7 @@ def receive_message(request):
     """API endpoint to receive messages from users"""
     try:
         data = json.loads(request.body)
-        
+        print(data)
         # Extract required fields
         user_id = data.get('user_id')
         message_content = data.get('message')
