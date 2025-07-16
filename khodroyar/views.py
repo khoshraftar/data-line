@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.urls import reverse
 import requests
@@ -9,8 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 import uuid
-from datetime import datetime
-from .models import UserAuth, Conversation, Message
+from datetime import datetime, timedelta
+from .models import UserAuth, Conversation, Message, Payment
 
 # Create your views here.
 
@@ -140,9 +140,12 @@ def oauth_callback(request):
                 }
             )
             
-            # Show success message and redirect to home
+            # Store user_auth in session for payment flow
+            request.session['user_auth_id'] = user_auth.id
+            
+            # Show success message and redirect to pre-payment page
             messages.success(request, 'ورود با موفقیت انجام شد!')
-            return redirect('khodroyar:home')
+            return redirect('khodroyar:pre_payment')
             
         except requests.RequestException as e:
             return render(request, 'khodroyar/error.html', {
@@ -156,13 +159,208 @@ def oauth_callback(request):
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         })
 
-def dashboard(request):
-    """Dashboard view - shows user's stored tokens"""
-    # Get all user auth records (in a real app, you might want to filter by some criteria)
-    user_auths = UserAuth.objects.all().order_by('-created_at')
+def pre_payment(request):
+    """Pre-payment page - describes Khodroyar and offers 7-day subscription"""
+    # Get user_auth from session
+    user_auth_id = request.session.get('user_auth_id')
+    if not user_auth_id:
+        return redirect('khodroyar:login')
     
-    return render(request, 'khodroyar/dashboard.html', {
-        'user_auths': user_auths,
+    try:
+        user_auth = UserAuth.objects.get(id=user_auth_id)
+    except UserAuth.DoesNotExist:
+        return redirect('khodroyar:login')
+    
+    return render(request, 'khodroyar/pre_payment.html', {
+        'user_auth': user_auth,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
+
+def initiate_payment(request):
+    """Initiate ZarinPal payment for Khodroyar subscription"""
+    # Get user_auth from session
+    user_auth_id = request.session.get('user_auth_id')
+    if not user_auth_id:
+        return redirect('khodroyar:login')
+    
+    try:
+        user_auth = UserAuth.objects.get(id=user_auth_id)
+    except UserAuth.DoesNotExist:
+        return redirect('khodroyar:login')
+    
+    # Check if ZarinPal merchant ID is configured
+    if not settings.ZARINPAL_MERCHANT_ID:
+        messages.error(request, 'خطا در پیکربندی درگاه پرداخت. لطفاً با پشتیبانی تماس بگیرید.')
+        return redirect('khodroyar:pre_payment')
+    
+    # Check if payment already exists and is pending
+    existing_payment = Payment.objects.filter(
+        user_auth=user_auth, 
+        status='pending'
+    ).first()
+    
+    if existing_payment:
+        # If there's a pending payment, redirect to ZarinPal with existing authority
+        if existing_payment.authority:
+            payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{existing_payment.authority}"
+            return render(request, 'khodroyar/payment_loading.html', {
+                'payment_url': payment_url,
+                'user_auth': user_auth,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            })
+    
+    # Create new payment record
+    payment = Payment.objects.create(
+        user_auth=user_auth,
+        amount=settings.KHODROYAR_PAYMENT_AMOUNT
+    )
+    
+    # Prepare payment request data
+    payment_data = {
+        'merchant_id': settings.ZARINPAL_MERCHANT_ID,
+        'amount': str(payment.amount),
+        'description': f'اشتراک ۷ روزه خودرویار - {user_auth.user_id}',
+        'callback_url': 'https://data-lines.ir/khodroyar/payment/callback/',
+        'metadata': {
+            'mobile': user_auth.phone or '09199187529',
+            'email': ''
+        }
+    }
+    
+    try:
+        # Send payment request to ZarinPal
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        response = requests.post(settings.ZARINPAL_REQUEST_URL, json=payment_data, headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        
+        if result['data']['code'] == 100:
+            # Payment request successful
+            authority = result['data']['authority']
+            payment.authority = authority
+            payment.save()
+            
+            # Show loading page with redirect to ZarinPal payment gateway
+            payment_url = f"{settings.ZARINPAL_GATEWAY_URL}{authority}"
+            return render(request, 'khodroyar/payment_loading.html', {
+                'payment_url': payment_url,
+                'user_auth': user_auth,
+                'divar_completion_url': settings.DIVAR_COMPLETION_URL
+            })
+        else:
+            # Payment request failed
+            payment.status = 'failed'
+            payment.save()
+            error_message = result.get('errors', {}).get('message', 'خطای نامشخص')
+            messages.error(request, f'خطا در ایجاد درخواست پرداخت: {error_message}')
+            return redirect('khodroyar:pre_payment')
+            
+    except requests.RequestException as e:
+        payment.status = 'failed'
+        payment.save()
+        messages.error(request, f'خطا در ارتباط با درگاه پرداخت: {str(e)}')
+        return redirect('khodroyar:pre_payment')
+    except Exception as e:
+        payment.status = 'failed'
+        payment.save()
+        messages.error(request, f'خطای غیرمنتظره: {str(e)}')
+        return redirect('khodroyar:pre_payment')
+
+def payment_callback(request):
+    """Handle ZarinPal payment callback"""
+    authority = request.GET.get('Authority')
+    status = request.GET.get('Status')
+    
+    if not authority:
+        messages.error(request, 'کد مرجع پرداخت یافت نشد.')
+        return redirect('khodroyar:home')
+    
+    try:
+        payment = Payment.objects.get(authority=authority)
+    except Payment.DoesNotExist:
+        messages.error(request, 'پرداخت یافت نشد.')
+        return redirect('khodroyar:home')
+    
+    if status == 'OK':
+        # Payment was successful, verify with ZarinPal
+        verify_data = {
+            'merchant_id': settings.ZARINPAL_MERCHANT_ID,
+            'amount': payment.amount,
+            'authority': authority
+        }
+        
+        try:
+            response = requests.post(settings.ZARINPAL_VERIFY_URL, json=verify_data)
+            response.raise_for_status()
+            result = response.json()
+            
+            if result['data']['code'] == 100:
+                # Payment verified successfully
+                payment.status = 'completed'
+                payment.ref_id = result['data']['ref_id']
+                payment.subscription_start = datetime.now()
+                payment.subscription_end = datetime.now() + timedelta(days=7)
+                payment.save()
+                
+                messages.success(request, f'پرداخت با موفقیت انجام شد. شماره پیگیری: {payment.ref_id}')
+                return redirect('khodroyar:payment_success')
+            else:
+                # Payment verification failed
+                payment.status = 'failed'
+                payment.save()
+                messages.error(request, f'تایید پرداخت ناموفق بود: {result["errors"]["message"]}')
+                return redirect('khodroyar:payment_failed')
+                
+        except requests.RequestException as e:
+            payment.status = 'failed'
+            payment.save()
+            messages.error(request, f'خطا در تایید پرداخت: {str(e)}')
+            return redirect('khodroyar:payment_failed')
+    else:
+        # Payment was cancelled or failed
+        payment.status = 'cancelled'
+        payment.save()
+        messages.error(request, 'پرداخت لغو شد.')
+        return redirect('khodroyar:payment_failed')
+
+def payment_success(request):
+    """Show payment success page"""
+    # Get user_auth from session
+    user_auth_id = request.session.get('user_auth_id')
+    if not user_auth_id:
+        return redirect('khodroyar:login')
+    
+    try:
+        user_auth = UserAuth.objects.get(id=user_auth_id)
+        payment = Payment.objects.filter(user_auth=user_auth, status='completed').first()
+    except UserAuth.DoesNotExist:
+        return redirect('khodroyar:login')
+    
+    return render(request, 'khodroyar/payment_success.html', {
+        'user_auth': user_auth,
+        'payment': payment,
+        'divar_completion_url': settings.DIVAR_COMPLETION_URL
+    })
+
+def payment_failed(request):
+    """Show payment failed page"""
+    # Get user_auth from session
+    user_auth_id = request.session.get('user_auth_id')
+    if not user_auth_id:
+        return redirect('khodroyar:login')
+    
+    try:
+        user_auth = UserAuth.objects.get(id=user_auth_id)
+        payment = Payment.objects.filter(user_auth=user_auth).order_by('-created_at').first()
+    except UserAuth.DoesNotExist:
+        return redirect('khodroyar:login')
+    
+    return render(request, 'khodroyar/payment_failed.html', {
+        'user_auth': user_auth,
+        'payment': payment,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
     })
 

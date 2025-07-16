@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}پرداخت موفق - خودرویار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Card -->
+            <div class="card border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h1 class="card-title mb-0">
+                        <i class="fas fa-check-circle"></i> پرداخت با موفقیت انجام شد
+                    </h1>
+                </div>
+                <div class="card-body text-center">
+                    <div class="success-icon mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h3 class="text-success mb-3">تبریک! اشتراک خودرویار شما فعال شد</h3>
+                    
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-info-circle"></i> اطلاعات پرداخت:</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p><strong>شناسه کاربر:</strong> {{ user_auth.user_id|truncatechars:20 }}</p>
+                                <p><strong>مبلغ پرداختی:</strong> {{ payment.amount|floatformat:0 }} ریال</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>شماره پیگیری:</strong> {{ payment.ref_id }}</p>
+                                <p><strong>تاریخ پرداخت:</strong> {{ payment.updated_at|date:"j F Y - H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-calendar-alt"></i> اطلاعات اشتراک:</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p><strong>شروع اشتراک:</strong> {{ payment.subscription_start|date:"j F Y - H:i" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>پایان اشتراک:</strong> {{ payment.subscription_end|date:"j F Y - H:i" }}</p>
+                            </div>
+                        </div>
+                        <p class="mb-0 mt-2"><i class="fas fa-clock text-info"></i> اشتراک شما به مدت ۷ روز فعال خواهد بود.</p>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-robot"></i> مراحل بعدی:</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-check text-success"></i> ربات خودرویار شما آماده استفاده است</li>
+                            <li><i class="fas fa-comments text-primary"></i> می‌توانید از طریق دیوار با ربات چت کنید</li>
+                            <li><i class="fas fa-search text-info"></i> جستجو و تحلیل خودروها در دسترس است</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a href="{{ divar_completion_url }}" class="btn btn-success btn-lg w-100" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> بازگشت به دیوار
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> 
+                            تمامی اطلاعات پرداخت شما در سیستم ذخیره شده و قابل پیگیری است.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    animation: bounce 1s ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+</style>
+{% endblock %} 

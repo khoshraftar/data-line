@@ -18,6 +18,38 @@ class UserAuth(models.Model):
         verbose_name_plural = 'احراز هویت کاربران'
 
 
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'در انتظار پرداخت'),
+        ('completed', 'پرداخت شده'),
+        ('failed', 'ناموفق'),
+        ('cancelled', 'لغو شده'),
+    ]
+    
+    user_auth = models.ForeignKey(UserAuth, on_delete=models.CASCADE, verbose_name='کاربر', db_index=True)
+    amount = models.IntegerField(verbose_name='مبلغ (ریال)')
+    authority = models.CharField(max_length=255, blank=True, null=True, verbose_name='کد مرجع', db_index=True)
+    ref_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='شماره پیگیری', db_index=True)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending', verbose_name='وضعیت', db_index=True)
+    subscription_start = models.DateTimeField(blank=True, null=True, verbose_name='شروع اشتراک')
+    subscription_end = models.DateTimeField(blank=True, null=True, verbose_name='پایان اشتراک')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد', db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
+    
+    def __str__(self):
+        return f"Payment for {self.user_auth.user_id} - {self.get_status_display()}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'پرداخت'
+        verbose_name_plural = 'پرداخت‌ها'
+        indexes = [
+            models.Index(fields=['user_auth', 'status']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['authority']),
+        ]
+
+
 class Conversation(models.Model):
     """Model to store chatbot conversations"""
     user_auth = models.ForeignKey(UserAuth, on_delete=models.CASCADE, verbose_name='کاربر')

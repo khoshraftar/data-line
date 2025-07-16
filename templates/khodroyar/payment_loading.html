@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}انتقال به درگاه پرداخت - خودرویار{% endblock %}
+
+{% block content %}
+<div class="container mt-4" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-spinner fa-spin"></i> انتقال به درگاه پرداخت
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="loading-spinner mb-4">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">در حال بارگذاری...</span>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-primary mb-3">در حال انتقال به درگاه پرداخت زرین‌پال</h4>
+                    
+                    <div class="alert alert-info">
+                        <p class="mb-2"><i class="fas fa-info-circle"></i> لطفاً صبر کنید...</p>
+                        <p class="mb-0">شما در حال انتقال به درگاه پرداخت امن زرین‌پال برای اشتراک خودرویار هستید.</p>
+                    </div>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: 100%" 
+                             aria-valuenow="100" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt"></i> 
+                        تمامی پرداخت‌ها با استفاده از درگاه‌های امن بانکی انجام می‌شود.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.loading-spinner {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 10px;
+}
+</style>
+
+<script>
+// Auto-redirect to ZarinPal payment gateway
+setTimeout(function() {
+    window.location.href = '{{ payment_url }}';
+}, 2000);
+</script>
+{% endblock %} 
