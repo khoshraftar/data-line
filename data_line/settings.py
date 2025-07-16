@@ -148,7 +148,7 @@ OAUTH_APPS_SETTINGS = {
         "oauth_client_id": os.getenv('KHODROYAR_OAUTH_CLIENT_ID', ''),
         "oauth_client_secret": os.getenv('KHODROYAR_OAUTH_CLIENT_SECRET', ''),
         "oauth_redirect_uri": os.getenv('KHODROYAR_OAUTH_REDIRECT_URI', ''),
-        "oauth_scope": os.getenv('KHODROYAR_OAUTH_SCOPE', 'USER_ID USER_PHONE POST_ADDON_CREATE.{post_token}'),
+        "oauth_scope": 'USER_ID CHAT_BOT_USER_MESSAGE_SEND',
     }
 }
                   
