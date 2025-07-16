@@ -305,6 +305,13 @@ def payment_callback(request):
                 payment.subscription_end = datetime.now() + timedelta(days=7)
                 payment.save()
                 
+                # Send welcome message to user after successful payment
+                try:
+                    send_welcome_message_after_payment(payment.user_auth, payment)
+                except Exception as e:
+                    print(f"Failed to send welcome message after payment: {str(e)}")
+                    # Don't fail the payment process if message sending fails
+                
                 messages.success(request, f'پرداخت با موفقیت انجام شد. شماره پیگیری: {payment.ref_id}')
                 return redirect('khodroyar:payment_success')
             else:
@@ -489,4 +496,86 @@ def generate_response(message, user_auth):
             
     except Exception as e:
         return f"متأسفانه مشکلی در پردازش پیام شما پیش آمد: {str(e)}"
+
+
+def send_welcome_message_after_payment(user_auth, payment):
+    """
+    Send a welcome message to the user after successful payment using Divar Chat API
+    """
+    try:
+        # Get user's access token
+        access_token = user_auth.access_token
+        oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
+        
+        # Prepare headers for Divar API calls
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'X-API-Key': oauth_settings['api_key'],
+            'Content-Type': 'application/json'
+        }
+        
+        # Create a new conversation for the user
+        conversation_id = str(uuid.uuid4())
+        conversation = Conversation.objects.create(
+            user_auth=user_auth,
+            conversation_id=conversation_id,
+            title='خودرویار - اشتراک جدید',
+            is_active=True
+        )
+        
+        # Prepare welcome message
+        welcome_message = f"""🎉 تبریک! اشتراک خودرویار شما با موفقیت فعال شد!
+
+✅ پرداخت شما تایید شد
+💰 مبلغ: {payment.amount:,} ریال
+📅 شروع اشتراک: {payment.subscription_start.strftime('%Y/%m/%d')}
+📅 پایان اشتراک: {payment.subscription_end.strftime('%Y/%m/%d')}
+🔢 شماره پیگیری: {payment.ref_id}
+
+🚗 حالا می‌توانید از خدمات خودرویار استفاده کنید:
+• جستجوی خودرو
+• اطلاعات قیمت
+• مقایسه خودروها
+• راهنمای خرید
+
+برای شروع، پیام خود را بنویسید!"""
+
+        # Prepare the message data for Divar Chat API
+        message_data = {
+            "conversation_id": conversation_id,
+            "text": welcome_message
+        }
+        
+        # Send message using Divar Chat API
+        chat_api_url = settings.DIVAR_CHAT_API_URL
+        
+        response = requests.post(
+            chat_api_url,
+            headers=headers,
+            json=message_data
+        )
+        
+        if response.status_code == 200:
+            # Save the bot message to our database
+            Message.objects.create(
+                conversation=conversation,
+                message_type='bot',
+                content=welcome_message,
+                metadata={
+                    'sent_at': datetime.now().isoformat(),
+                    'timestamp': datetime.now().isoformat(),
+                    'payment_ref_id': payment.ref_id,
+                    'subscription_start': payment.subscription_start.isoformat(),
+                    'subscription_end': payment.subscription_end.isoformat()
+                }
+            )
+            print(f"Welcome message sent successfully to user {user_auth.user_id}")
+            return True
+        else:
+            print(f"Failed to send welcome message. Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"Error sending welcome message: {str(e)}")
+        return False
 
