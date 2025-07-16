@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserAuth, Conversation, Message
+from .models import UserAuth, Conversation, Message, Payment
 
 # Register your models here.
 
@@ -29,3 +29,28 @@ class MessageAdmin(admin.ModelAdmin):
     def content_preview(self, obj):
         return obj.content[:100] + '...' if len(obj.content) > 100 else obj.content
     content_preview.short_description = 'محتوای پیام'
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['user_auth', 'amount', 'status', 'authority', 'ref_id', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['user_auth__user_id', 'authority', 'ref_id']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('اطلاعات پرداخت', {
+            'fields': ('user_auth', 'amount', 'status')
+        }),
+        ('اطلاعات ZarinPal', {
+            'fields': ('authority', 'ref_id')
+        }),
+        ('اطلاعات اشتراک', {
+            'fields': ('subscription_start', 'subscription_end'),
+            'classes': ('collapse',)
+        }),
+        ('تاریخ‌ها', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
