@@ -28,12 +28,19 @@ def oauth_login(request):
     """Initiate OAuth login process"""
     oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
     
+    # Generate a random state parameter (at least 8 characters)
+    state = str(uuid.uuid4())
+    
+    # Store state in session for validation in callback
+    request.session['oauth_state'] = state
+    
     # Prepare OAuth parameters
     params = {
         'client_id': oauth_settings['oauth_client_id'],
         'redirect_uri': oauth_settings['oauth_redirect_uri'],
         'response_type': 'code',
         'scope': oauth_settings['oauth_scope'],
+        'state': state,
     }
     
     # Construct authorization URL
@@ -47,6 +54,33 @@ def oauth_callback(request):
             'error': 'Authorization code not received',
             'divar_completion_url': settings.DIVAR_COMPLETION_URL
         })
+    
+    # Validate state parameter
+    if 'state' not in request.GET:
+        return render(request, 'khodroyar/error.html', {
+            'error': 'State parameter not received',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+        })
+    
+    # Get stored state from session
+    stored_state = request.session.get('oauth_state')
+    if not stored_state:
+        return render(request, 'khodroyar/error.html', {
+            'error': 'No stored state found in session',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+        })
+    
+    # Validate state parameter
+    received_state = request.GET['state']
+    if received_state != stored_state:
+        return render(request, 'khodroyar/error.html', {
+            'error': 'State parameter validation failed',
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL
+        })
+    
+    # Clear the state from session after successful validation
+    if 'oauth_state' in request.session:
+        del request.session['oauth_state']
     
     oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
     code = request.GET['code']
