@@ -140,75 +140,73 @@ def receive_message(request):
     """API endpoint to receive messages from users"""
     try:
         data = json.loads(request.body)
-        print(data)
-        # Extract required fields
-        user_id = data.get('user_id')
-        message_content = data.get('message')
-        conversation_id = data.get('conversation_id')
+        print(f"Received message: {data}")
         
-        if not user_id or not message_content:
+        # Handle the new message format
+        new_message = data.get('new_chatbot_message', {})
+        
+        # Extract fields from the new message format
+        message_id = new_message.get('id')
+        conversation_data = new_message.get('conversation', {})
+        conversation_id = conversation_data.get('id')
+        sender = new_message.get('sender', {})
+        message_type = new_message.get('type')
+        sent_at = new_message.get('sent_at')
+        text = new_message.get('text')
+        
+        # Validate required fields
+        if not text:
             return JsonResponse({
                 'success': False,
-                'error': 'user_id and message are required'
+                'error': 'Message text is required'
             }, status=400)
         
-        # Get or create user auth
-        try:
-            user_auth = UserAuth.objects.get(user_id=user_id)
-        except UserAuth.DoesNotExist:
+        if not conversation_id:
             return JsonResponse({
                 'success': False,
-                'error': 'User not authenticated'
-            }, status=401)
+                'error': 'Conversation ID is required'
+            }, status=400)
         
-        # Get or create conversation
-        if conversation_id:
-            try:
-                conversation = Conversation.objects.get(
-                    conversation_id=conversation_id,
-                    user_auth=user_auth
-                )
-            except Conversation.DoesNotExist:
-                conversation = Conversation.objects.create(
-                    user_auth=user_auth,
-                    conversation_id=conversation_id,
-                    title=message_content[:100]  # Use first 100 chars as title
-                )
-        else:
-            # Create new conversation
-            conversation = Conversation.objects.create(
-                user_auth=user_auth,
-                conversation_id=str(uuid.uuid4()),
-                title=message_content[:100]
-            )
+        # Get existing conversation (assume it exists)
+        try:
+            conversation = Conversation.objects.get(conversation_id=conversation_id)
+            user_auth = conversation.user_auth
+        except Conversation.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': f'Conversation with ID {conversation_id} not found'
+            }, status=404)
         
-        # Save user message
+        # Save user message with metadata from the new format
         user_message = Message.objects.create(
             conversation=conversation,
             message_type='user',
-            content=message_content,
-            metadata={'timestamp': datetime.now().isoformat()}
+            content=text,
+            metadata={
+                'message_id': message_id,
+                'sent_at': sent_at,
+                'message_type': message_type,
+                'sender_type': sender.get('type'),
+                'conversation_type': conversation_data.get('type'),
+                'timestamp': datetime.now().isoformat()
+            }
         )
         
         # Process message and generate bot response
-        bot_response = generate_response(message_content, user_auth)
+        bot_response = generate_response(text, user_auth)
         
         # Save bot response
         bot_message = Message.objects.create(
             conversation=conversation,
             message_type='bot',
             content=bot_response,
-            metadata={'timestamp': datetime.now().isoformat()}
+            metadata={
+                'sent_at': datetime.now().isoformat(),
+                'timestamp': datetime.now().isoformat()
+            }
         )
         
-        return JsonResponse({
-            'success': True,
-            'data': {
-                'conversation_id': conversation.conversation_id,
-                'bot_response': bot_response,
-                'message_id': bot_message.id
-            }
-        })
+        return JsonResponse({'success': True}, status=200)
         
     except json.JSONDecodeError:
         return JsonResponse({
