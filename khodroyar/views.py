@@ -28,9 +28,10 @@ def oauth_login(request):
     """Initiate OAuth login process"""
     oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
     
+    request.session.flush()
     # Generate a random state parameter (at least 8 characters)
     state = str(uuid.uuid4())
-    
+ 
     # Store state in session for validation in callback
     request.session['oauth_state'] = state
     
