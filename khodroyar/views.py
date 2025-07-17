@@ -612,7 +612,7 @@ def send_welcome_message_after_payment(user_auth, payment):
         # Use a different endpoint that accepts user_id instead of conversation_id
         initial_message_data = {
             "user_id": user_auth.user_id,
-            "text": welcome_message
+            "text_message": welcome_message
         }
         
         # Use the experimental endpoint for initial message with user_id
