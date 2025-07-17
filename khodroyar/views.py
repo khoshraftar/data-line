@@ -459,7 +459,7 @@ def receive_message(request):
         )
         
         # Process message and generate bot response
-        bot_response = generate_response(text, user_auth)
+        bot_response = generate_response(text, user_auth, conversation_id)
         
         # Save bot response
         bot_message = Message.objects.create(
@@ -486,8 +486,8 @@ def receive_message(request):
         }, status=500)
 
 
-def generate_response(message, user_auth):
-    """Process user message using Divar APIs"""
+def generate_response(message, user_auth, conversation_id=None):
+    """Process user message using Divar APIs and send bot response"""
     try:
         # Get user's access token
         access_token = user_auth.access_token
@@ -507,27 +507,34 @@ def generate_response(message, user_auth):
         message_lower = message.lower()
         
         if 'help' in message_lower or 'راهنما' in message_lower:
-            return "سلام! من ربات خودرویار هستم. می‌توانم در موارد زیر به شما کمک کنم:\n- جستجوی خودرو\n- اطلاعات قیمت\n- مقایسه خودروها\n\n چه کمکی از دستم بر می‌آید؟"
+            bot_response = "سلام! من ربات خودرویار هستم. می‌توانم در موارد زیر به شما کمک کنم:\n- جستجوی خودرو\n- اطلاعات قیمت\n- مقایسه خودروها\n\n چه کمکی از دستم بر می‌آید؟"
         
         elif 'search' in message_lower or 'جستجو' in message_lower:
             # Here you would integrate with Divar's search API
-            return "برای جستجوی خودرو، لطفاً مشخصات مورد نظر خود را وارد کنید (مثل: برند، مدل، سال ساخت)"
+            bot_response = "برای جستجوی خودرو، لطفاً مشخصات مورد نظر خود را وارد کنید (مثل: برند، مدل، سال ساخت)"
         
         elif 'price' in message_lower or 'قیمت' in message_lower:
-            return "برای دریافت اطلاعات قیمت، لطفاً مدل خودروی مورد نظر را مشخص کنید."
+            bot_response = "برای دریافت اطلاعات قیمت، لطفاً مدل خودروی مورد نظر را مشخص کنید."
         
         else:
             # Default response - you can integrate with AI services here
-            return "متوجه پیام شما شدم. لطفاً بفرمایید چه کمکی از دستم بر می‌آید؟"
+            bot_response = "متوجه پیام شما شدم. لطفاً بفرمایید چه کمکی از دستم بر می‌آید؟"
+        
+        # Send bot response using conversation_id if available
+        if conversation_id:
+            send_bot_message(user_auth, conversation_id, bot_response)
+            
+        return bot_response
             
     except Exception as e:
-        return f"متأسفانه مشکلی در پردازش پیام شما پیش آمد: {str(e)}"
+        error_response = f"متأسفانه مشکلی در پردازش پیام شما پیش آمد: {str(e)}"
+        if conversation_id:
+            send_bot_message(user_auth, conversation_id, error_response)
+        return error_response
 
 
-def send_welcome_message_after_payment(user_auth, payment):
-    """
-    Send a welcome message to the user after successful payment using Divar Chat API
-    """
+def send_bot_message(user_auth, conversation_id, message_text):
+    """Send a bot message using the conversation_id"""
     try:
         # Get user's access token
         access_token = user_auth.access_token
@@ -540,14 +547,49 @@ def send_welcome_message_after_payment(user_auth, payment):
             'Content-Type': 'application/json'
         }
         
-        # Create a new conversation for the user
-        conversation_id = str(uuid.uuid4())
-        conversation = Conversation.objects.create(
-            user_auth=user_auth,
-            conversation_id=conversation_id,
-            title='خودرویار - اشتراک جدید',
-            is_active=True
+        # Prepare message data for Divar Chat API
+        message_data = {
+            "conversation_id": conversation_id,
+            "text": message_text
+        }
+        
+        # Send message using Divar Chat API
+        chat_api_url = settings.DIVAR_CHAT_API_URL.format(conversation_id=conversation_id)
+        
+        response = requests.post(
+            chat_api_url,
+            headers=headers,
+            json=message_data
         )
+        
+        if response.status_code == 200:
+            print(f"Bot message sent successfully to conversation {conversation_id}")
+            return True
+        else:
+            print(f"Failed to send bot message. Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"Error sending bot message: {str(e)}")
+        return False
+
+
+def send_welcome_message_after_payment(user_auth, payment):
+    """
+    Send a welcome message to the user after successful payment using Divar Chat API
+    First sends message using user_id to get conversation_id, then creates conversation in database
+    """
+    try:
+        # Get user's access token
+        access_token = user_auth.access_token
+        oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
+        
+        # Prepare headers for Divar API calls
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'X-API-Key': oauth_settings['api_key'],
+            'Content-Type': 'application/json'
+        }
         
         # Prepare welcome message
         welcome_message = f"""🎉 تبریک! اشتراک خودرویار شما با موفقیت فعال شد!
@@ -566,37 +608,57 @@ def send_welcome_message_after_payment(user_auth, payment):
 
 برای شروع، پیام خود را بنویسید!"""
 
-        # Prepare the message data for Divar Chat API
-        message_data = {
-            "conversation_id": conversation_id,
+        # First, send welcome message using user_id to get conversation_id
+        # Use a different endpoint that accepts user_id instead of conversation_id
+        initial_message_data = {
+            "user_id": user_auth.user_id,
             "text": welcome_message
         }
         
-        # Send message using Divar Chat API
-        chat_api_url = settings.DIVAR_CHAT_API_URL
+        # Use the experimental endpoint for initial message with user_id
+        initial_chat_api_url = 'https://open-api.divar.ir/v1/open-platform/chat/bot/users/{user_id}/messages'
         
         response = requests.post(
-            chat_api_url,
+            initial_chat_api_url,
             headers=headers,
-            json=message_data
+            json=initial_message_data
         )
         
         if response.status_code == 200:
-            # Save the bot message to our database
-            Message.objects.create(
-                conversation=conversation,
-                message_type='bot',
-                content=welcome_message,
-                metadata={
-                    'sent_at': datetime.now().isoformat(),
-                    'timestamp': datetime.now().isoformat(),
-                    'payment_ref_id': payment.ref_id,
-                    'subscription_start': payment.subscription_start.isoformat(),
-                    'subscription_end': payment.subscription_end.isoformat()
-                }
-            )
-            print(f"Welcome message sent successfully to user {user_auth.user_id}")
-            return True
+            response_data = response.json()
+            
+            # Extract conversation_id from the response
+            conversation_id = response_data.get('conversation_id')
+            
+            if conversation_id:
+                # Create conversation in our database with the received conversation_id
+                conversation = Conversation.objects.create(
+                    user_auth=user_auth,
+                    conversation_id=conversation_id,
+                    title='خودرویار - اشتراک جدید',
+                    is_active=True
+                )
+                
+                # Save the bot message to our database
+                Message.objects.create(
+                    conversation=conversation,
+                    message_type='bot',
+                    content=welcome_message,
+                    metadata={
+                        'sent_at': datetime.now().isoformat(),
+                        'timestamp': datetime.now().isoformat(),
+                        'payment_ref_id': payment.ref_id,
+                        'subscription_start': payment.subscription_start.isoformat(),
+                        'subscription_end': payment.subscription_end.isoformat(),
+                        'conversation_id': conversation_id
+                    }
+                )
+                
+                print(f"Welcome message sent successfully to user {user_auth.user_id} with conversation_id: {conversation_id}")
+                return True
+            else:
+                print(f"Failed to get conversation_id from response: {response_data}")
+                return False
         else:
             print(f"Failed to send welcome message. Status: {response.status_code}, Response: {response.text}")
             return False

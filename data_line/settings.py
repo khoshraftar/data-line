@@ -218,7 +218,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v2/open-platform/'
 DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}addons/post/'+'{post_token}'
 DIVAR_COMPLETION_URL = 'https://open-platform-redirect.divar.ir/completion'
-DIVAR_CHAT_API_URL = 'https://open-api.divar.ir/v1/open-platform/chatbot/send-message'
+DIVAR_CHAT_API_URL = 'https://open-api.divar.ir/experimental/open-platform/chatbot-conversations/{conversation_id}/messages'
 
 AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_FILE_OVERWRITE = False
