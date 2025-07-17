@@ -188,6 +188,19 @@ def initiate_payment(request):
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
     
+    # Get plan from query parameters
+    plan = request.GET.get('plan', 'golden')  # Default to golden plan
+    
+    # Set payment amount and description based on plan
+    if plan == 'diamond':
+        payment_amount = settings.KHODROYAR_DIAMOND_PAYMENT_AMOUNT
+        plan_name = 'اشتراک الماس ۳۰ روزه'
+        subscription_days = 30
+    else:
+        payment_amount = settings.KHODROYAR_PAYMENT_AMOUNT
+        plan_name = 'اشتراک طلایی ۷ روزه'
+        subscription_days = 7
+    
     # Check if ZarinPal merchant ID is configured
     if not settings.ZARINPAL_MERCHANT_ID:
         messages.error(request, 'خطا در پیکربندی درگاه پرداخت. لطفاً با پشتیبانی تماس بگیرید.')
@@ -212,18 +225,28 @@ def initiate_payment(request):
     # Create new payment record
     payment = Payment.objects.create(
         user_auth=user_auth,
-        amount=settings.KHODROYAR_PAYMENT_AMOUNT
+        amount=payment_amount
     )
+    
+    # Store plan information in payment metadata
+    payment.metadata = {
+        'plan': plan,
+        'subscription_days': subscription_days,
+        'plan_name': plan_name
+    }
+    payment.save()
     
     # Prepare payment request data
     payment_data = {
         'merchant_id': settings.ZARINPAL_MERCHANT_ID,
         'amount': str(payment.amount),
-        'description': f'اشتراک ۷ روزه خودرویار - {user_auth.user_id}',
+        'description': f'{plan_name} خودرویار - {user_auth.user_id}',
         'callback_url': 'https://data-lines.ir/khodroyar/payment/callback/',
         'metadata': {
             'mobile': user_auth.phone or '09199187529',
-            'email': ''
+            'email': '',
+            'plan': plan,
+            'subscription_days': subscription_days
         }
     }
     
@@ -302,7 +325,10 @@ def payment_callback(request):
                 payment.status = 'completed'
                 payment.ref_id = result['data']['ref_id']
                 payment.subscription_start = datetime.now()
-                payment.subscription_end = datetime.now() + timedelta(days=7)
+                
+                # Get subscription days from payment metadata
+                subscription_days = payment.metadata.get('subscription_days', 7) if payment.metadata else 7
+                payment.subscription_end = datetime.now() + timedelta(days=subscription_days)
                 payment.save()
                 
                 # Send welcome message to user after successful payment

@@ -73,24 +73,25 @@
             <div class="card shadow-lg border-0 mb-5">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <h2 class="h3 mb-3">طرح اشتراک ۷ روزه</h2>
-                        <p class="text-muted">دسترسی کامل به تمام امکانات خودرویار</p>
+                        <h2 class="h3 mb-3">طرح‌های اشتراک</h2>
+                        <p class="text-muted">انتخاب کنید و از امکانات خودرویار بهره‌مند شوید</p>
                     </div>
                     
                     <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary text-white text-center py-4">
+                        <!-- Golden Plan - 7 Days -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white text-center py-3">
                                     <h4 class="mb-0">اشتراک طلایی</h4>
                                 </div>
-                                <div class="card-body p-4">
+                                <div class="card-body p-4 d-flex flex-column">
                                     <div class="text-center mb-4">
                                         <div class="display-6 fw-bold text-primary">۵,۰۰۰</div>
                                         <div class="text-muted">تومان</div>
                                         <div class="small text-muted">برای ۷ روز</div>
                                     </div>
                                     
-                                    <ul class="list-unstyled">
+                                    <ul class="list-unstyled flex-grow-1">
                                         <li class="mb-3">
                                             <i class="fas fa-check text-success me-2"></i>
                                             دسترسی نامحدود به ربات هوشمند
@@ -108,7 +109,71 @@
                                             مقایسه خودروها و پیشنهاد برند و مدل مناسب شما
                                         </li>
                                     </ul>
-                                
+                                    
+                                    <div class="text-center mt-auto">
+                                        <a href="{% url 'khodroyar:initiate_payment' %}?plan=golden" class="btn btn-outline-primary btn-lg w-100">
+                                            <i class="fas fa-credit-card me-2"></i>
+                                            انتخاب اشتراک طلایی
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diamond Plan - Monthly -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-warning h-100 position-relative" style="border-width: 3px;">
+                                <div class="position-absolute top-0 start-50 translate-middle-x" style="margin-top: -15px;">
+                                    <span class="badge bg-warning text-dark px-3 py-2">
+                                        <i class="fas fa-star me-1"></i>پیشنهاد ویژه
+                                    </span>
+                                </div>
+                                <div class="card-header bg-warning text-dark text-center py-3">
+                                    <h4 class="mb-0">
+                                        <i class="fas fa-gem me-2"></i>اشتراک الماس
+                                    </h4>
+                                </div>
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <div class="text-center mb-4">
+                                        <div class="display-6 fw-bold text-warning">۹۷,۰۰۰</div>
+                                        <div class="text-muted">تومان</div>
+                                        <div class="small text-muted">برای ۳۰ روز</div>
+                                        <div class="badge bg-success mt-2">صرفه‌جویی ۴۰٪</div>
+                                    </div>
+                                    
+                                    <ul class="list-unstyled flex-grow-1">
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            تمام امکانات اشتراک طلایی
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <strong>دسترسی نامحدود ۳۰ روزه</strong>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <strong>پشتیبانی VIP</strong>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <strong>گزارش‌های تحلیلی پیشرفته</strong>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <strong>اولویت در پاسخگویی</strong>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <strong>امکان تمدید خودکار</strong>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="text-center mt-auto">
+                                        <a href="{% url 'khodroyar:initiate_payment' %}?plan=diamond" class="btn btn-warning btn-lg w-100 payment-btn">
+                                            <i class="fas fa-gem me-2"></i>
+                                            انتخاب اشتراک الماس
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -33,6 +33,7 @@ class Payment(models.Model):
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending', verbose_name='وضعیت', db_index=True)
     subscription_start = models.DateTimeField(blank=True, null=True, verbose_name='شروع اشتراک')
     subscription_end = models.DateTimeField(blank=True, null=True, verbose_name='پایان اشتراک')
+    metadata = models.JSONField(default=dict, blank=True, verbose_name='متادیتا')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد', db_index=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ بروزرسانی')
     
