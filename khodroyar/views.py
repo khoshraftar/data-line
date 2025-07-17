@@ -555,7 +555,7 @@ def send_bot_message(user_auth, conversation_id, message_text):
         # Prepare message data for Divar Chat API
         message_data = {
             "conversation_id": conversation_id,
-            "text": message_text
+            "text_message": message_text
         }
         
         # Send message using Divar Chat API
