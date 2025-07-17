@@ -19,10 +19,20 @@ class KhodroyarAIAgent:
             raise ValueError("AVAL_AI_API_KEY is not configured in environment variables")
         
         # Configure OpenAI client for Aval AI
-        self.client = openai.OpenAI(
-            api_key=self.api_key,
-            base_url=self.base_url
-        )
+        # Try different initialization approaches
+        try:
+            # First try with minimal configuration
+            self.client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url
+            )
+        except Exception as e:
+            print(f"Failed to initialize OpenAI client with base_url: {e}")
+            # Fallback to standard OpenAI client
+            self.client = openai.OpenAI(
+                api_key=self.api_key
+            )
+            print("Using standard OpenAI client as fallback")
     
     def get_conversation_history(self, conversation: Conversation, max_messages: int = 10) -> List[Dict]:
         """
@@ -76,14 +86,28 @@ class KhodroyarAIAgent:
             messages.extend(conversation_history)
             messages.append({"role": "user", "content": user_message})
             
-            # Call Aval AI API
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",  # You can change this based on available models
-                messages=messages,
-                max_tokens=1000,
-                temperature=0.7,
-                stream=False
-            )
+            print(f"Calling Aval AI API with base_url: {self.base_url}")
+            print(f"Messages to send: {messages}")
+            
+            # Call Aval AI API - try different model names
+            try:
+                response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",  # Try standard model name
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.7,
+                    stream=False
+                )
+            except Exception as model_error:
+                print(f"Failed with gpt-3.5-turbo, trying gpt-3.5-turbo-16k: {model_error}")
+                # Try alternative model name
+                response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo-16k",
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.7,
+                    stream=False
+                )
             
             ai_response = response.choices[0].message.content.strip()
             
@@ -95,6 +119,9 @@ class KhodroyarAIAgent:
         except Exception as e:
             error_msg = f"متأسفانه مشکلی در پردازش پیام شما پیش آمد. لطفاً دوباره تلاش کنید."
             print(f"AI Agent Error: {str(e)}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
             return error_msg
     
     def _build_system_prompt(self, user_context: Optional[Dict] = None) -> str:
