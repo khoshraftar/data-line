@@ -8,7 +8,7 @@ from .models import Conversation, Message
 
 
 class KhodroyarAIAgent:
-    """AI Agent for Khodroyar chatbot using Aval AI API"""
+    """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
     
     def __init__(self):
         """Initialize the AI agent with Aval AI configuration"""
@@ -64,7 +64,7 @@ class KhodroyarAIAgent:
         user_context: Optional[Dict] = None
     ) -> str:
         """
-        Generate AI response for user message
+        Generate AI response for user message using GPT-4.1
         
         Args:
             user_message: The user's message
@@ -89,30 +89,42 @@ class KhodroyarAIAgent:
             print(f"Calling Aval AI API with base_url: {self.base_url}")
             print(f"Messages to send: {messages}")
             
-            # Call Aval AI API - try different model names
-            try:
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # Try standard model name
-                    messages=messages,
-                    max_tokens=1000,
-                    temperature=0.7,
-                    stream=False
-                )
-            except Exception as model_error:
-                print(f"Failed with gpt-3.5-turbo, trying gpt-3.5-turbo-16k: {model_error}")
-                # Try alternative model name
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo-16k",
-                    messages=messages,
-                    max_tokens=1000,
-                    temperature=0.7,
-                    stream=False
-                )
+            # Try GPT-4.1 models in order of preference
+            gpt4_models = [
+                "gpt-4.1",  # Primary GPT-4.1 model
+                "gpt-4.1-turbo",  # Alternative naming
+                "gpt-4.1-preview",  # Preview version
+                "gpt-4",  # Fallback to GPT-4
+                "gpt-3.5-turbo",  # Final fallback to GPT-3.5
+            ]
+            
+            response = None
+            used_model = None
+            
+            for model in gpt4_models:
+                try:
+                    print(f"Trying model: {model}")
+                    response = self.client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        max_tokens=15000,  # Increased for GPT-4.1
+                        temperature=0.7,
+                        stream=False
+                    )
+                    used_model = model
+                    print(f"Successfully used model: {model}")
+                    break
+                except Exception as model_error:
+                    print(f"Failed with {model}: {model_error}")
+                    continue
+            
+            if response is None:
+                raise Exception("All GPT models failed to respond")
             
             ai_response = response.choices[0].message.content.strip()
             
             # Log the interaction for debugging
-            self._log_interaction(conversation, user_message, ai_response, messages)
+            self._log_interaction(conversation, user_message, ai_response, messages, used_model)
             
             return ai_response
             
@@ -168,7 +180,8 @@ class KhodroyarAIAgent:
         conversation: Conversation, 
         user_message: str, 
         ai_response: str, 
-        messages: List[Dict]
+        messages: List[Dict],
+        used_model: str = None
     ):
         """
         Log AI interaction for debugging and monitoring
@@ -178,6 +191,7 @@ class KhodroyarAIAgent:
             user_message: Original user message
             ai_response: AI generated response
             messages: Full message history sent to AI
+            used_model: The model that was successfully used
         """
         try:
             log_data = {
@@ -186,7 +200,8 @@ class KhodroyarAIAgent:
                 "user_message": user_message,
                 "ai_response": ai_response,
                 "message_count": len(messages),
-                "user_id": conversation.user_auth.user_id
+                "user_id": conversation.user_auth.user_id,
+                "used_model": used_model
             }
             
             # You can extend this to save to database or external logging service
@@ -197,18 +212,29 @@ class KhodroyarAIAgent:
     
     def test_connection(self) -> bool:
         """
-        Test connection to Aval AI API
+        Test connection to Aval AI API with GPT-4.1
         
         Returns:
             True if connection successful, False otherwise
         """
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": "سلام"}],
-                max_tokens=10
-            )
-            return True
+            # Try GPT-4.1 first, then fallback to other models
+            gpt4_models = ["gpt-4.1", "gpt-4.1-turbo", "gpt-4", "gpt-3.5-turbo"]
+            
+            for model in gpt4_models:
+                try:
+                    response = self.client.chat.completions.create(
+                        model=model,
+                        messages=[{"role": "user", "content": "سلام"}],
+                        max_tokens=10
+                    )
+                    print(f"Connection test successful with model: {model}")
+                    return True
+                except Exception as e:
+                    print(f"Connection test failed with {model}: {e}")
+                    continue
+            
+            return False
         except Exception as e:
             print(f"AI API Connection Test Failed: {str(e)}")
             return False
