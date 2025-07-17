@@ -11,6 +11,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from .models import UserAuth, Conversation, Message, Payment
+from .utils import to_shamsi_date
 
 # Create your views here.
 
@@ -596,8 +597,8 @@ def send_welcome_message_after_payment(user_auth, payment):
 
 ✅ پرداخت شما تایید شد
 💰 مبلغ: {payment.amount:,} ریال
-📅 شروع اشتراک: {payment.subscription_start.strftime('%Y/%m/%d')}
-📅 پایان اشتراک: {payment.subscription_end.strftime('%Y/%m/%d')}
+📅 شروع اشتراک: {to_shamsi_date(payment.subscription_start)}
+📅 پایان اشتراک: {to_shamsi_date(payment.subscription_end)}
 🔢 شماره پیگیری: {payment.ref_id}
 
 🚗 حالا می‌توانید از خدمات خودرویار استفاده کنید:
