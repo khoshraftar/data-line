@@ -80,7 +80,7 @@
                     <div class="row justify-content-center">
                         <!-- Golden Plan - 7 Days -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-primary h-100">
+                            <div class="card border-primary h-100 plan-card" data-plan="golden" data-price="5000" data-days="7">
                                 <div class="card-header bg-primary text-white text-center py-3">
                                     <h4 class="mb-0">اشتراک طلایی</h4>
                                 </div>
@@ -111,10 +111,10 @@
                                     </ul>
                                     
                                     <div class="text-center mt-auto">
-                                        <a href="{% url 'khodroyar:initiate_payment' %}?plan=golden" class="btn btn-outline-primary btn-lg w-100">
-                                            <i class="fas fa-credit-card me-2"></i>
+                                        <button class="btn btn-outline-primary btn-lg w-100 select-plan-btn" data-plan="golden">
+                                            <i class="fas fa-check me-2"></i>
                                             انتخاب اشتراک طلایی
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@
                         
                         <!-- Diamond Plan - Monthly -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-warning h-100 position-relative" style="border-width: 3px;">
+                            <div class="card border-warning h-100 position-relative plan-card" data-plan="diamond" data-price="97000" data-days="30" style="border-width: 3px;">
                                 <div class="position-absolute top-0 start-50 translate-middle-x" style="margin-top: -15px;">
                                     <span class="badge bg-warning text-dark px-3 py-2">
                                         <i class="fas fa-star me-1"></i>پیشنهاد ویژه
@@ -169,10 +169,10 @@
                                     </ul>
                                     
                                     <div class="text-center mt-auto">
-                                        <a href="{% url 'khodroyar:initiate_payment' %}?plan=diamond" class="btn btn-warning btn-lg w-100 payment-btn">
+                                        <button class="btn btn-outline-warning btn-lg w-100 select-plan-btn" data-plan="diamond">
                                             <i class="fas fa-gem me-2"></i>
                                             انتخاب اشتراک الماس
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -191,9 +191,22 @@
                             </a>
                         </div>
                         <div class="col-md-8 mb-3">
-                            <a href="{% url 'khodroyar:initiate_payment' %}" class="btn btn-primary btn-lg w-100 payment-btn">
+                            <div id="selected-plan-info" class="mb-3" style="display: none;">
+                                <div class="alert alert-info">
+                                    <h5 class="mb-2"><i class="fas fa-info-circle"></i> طرح انتخاب شده:</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong id="selected-plan-name">-</strong>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <span class="badge bg-primary fs-6" id="selected-plan-price">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="start-payment-btn" class="btn btn-primary btn-lg w-100 payment-btn" disabled>
                                 <i class="fas fa-lock"></i> شروع پرداخت از درگاه بانکی
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -217,5 +230,121 @@
     background-color: #0b5ed7;
     border-color: #0a58ca;
 }
+
+.plan-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.plan-card.selected {
+    border-width: 3px !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.3);
+}
+
+.plan-card.selected.diamond {
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+}
+
+.select-plan-btn {
+    transition: all 0.3s ease;
+}
+
+.select-plan-btn.selected {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedPlan = null;
+    
+    // Plan selection functionality
+    const planCards = document.querySelectorAll('.plan-card');
+    const selectPlanBtns = document.querySelectorAll('.select-plan-btn');
+    const selectedPlanInfo = document.getElementById('selected-plan-info');
+    const selectedPlanName = document.getElementById('selected-plan-name');
+    const selectedPlanPrice = document.getElementById('selected-plan-price');
+    const startPaymentBtn = document.getElementById('start-payment-btn');
+    
+    // Handle plan selection
+    function selectPlan(planCard, planBtn) {
+        // Remove previous selections
+        planCards.forEach(card => {
+            card.classList.remove('selected');
+        });
+        selectPlanBtns.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.plan === 'golden') {
+                btn.innerHTML = '<i class="fas fa-check me-2"></i>انتخاب اشتراک طلایی';
+                btn.className = 'btn btn-outline-primary btn-lg w-100 select-plan-btn';
+            } else if (btn.dataset.plan === 'diamond') {
+                btn.innerHTML = '<i class="fas fa-gem me-2"></i>انتخاب اشتراک الماس';
+                btn.className = 'btn btn-outline-warning btn-lg w-100 select-plan-btn';
+            }
+        });
+        
+        // Select current plan
+        planCard.classList.add('selected');
+        planBtn.classList.add('selected');
+        
+        // Update button text to show selected
+        if (planBtn.dataset.plan === 'golden') {
+            planBtn.innerHTML = '<i class="fas fa-check me-2"></i>اشتراک طلایی انتخاب شد';
+            planBtn.className = 'btn btn-success btn-lg w-100 select-plan-btn selected';
+        } else if (planBtn.dataset.plan === 'diamond') {
+            planBtn.innerHTML = '<i class="fas fa-gem me-2"></i>اشتراک الماس انتخاب شد';
+            planBtn.className = 'btn btn-success btn-lg w-100 select-plan-btn selected';
+        }
+        
+        // Store selected plan data
+        selectedPlan = {
+            plan: planCard.dataset.plan,
+            price: planCard.dataset.price,
+            days: planCard.dataset.days
+        };
+        
+        // Show selected plan info
+        selectedPlanInfo.style.display = 'block';
+        selectedPlanName.textContent = planCard.dataset.plan === 'golden' ? 'اشتراک طلایی (۷ روزه)' : 'اشتراک الماس (۳۰ روزه)';
+        selectedPlanPrice.textContent = `${parseInt(planCard.dataset.price).toLocaleString()} تومان`;
+        
+        // Enable payment button
+        startPaymentBtn.disabled = false;
+        startPaymentBtn.classList.remove('btn-secondary');
+        startPaymentBtn.classList.add('btn-primary');
+    }
+    
+    // Add click event listeners to plan cards
+    planCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const planBtn = this.querySelector('.select-plan-btn');
+            selectPlan(this, planBtn);
+        });
+    });
+    
+    // Add click event listeners to select buttons
+    selectPlanBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click event
+            const planCard = this.closest('.plan-card');
+            selectPlan(planCard, this);
+        });
+    });
+    
+    // Handle payment button click
+    startPaymentBtn.addEventListener('click', function() {
+        if (selectedPlan) {
+            const paymentUrl = `{% url 'khodroyar:initiate_payment' %}?plan=${selectedPlan.plan}`;
+            window.location.href = paymentUrl;
+        }
+    });
+});
+</script>
 {% endblock %} 
