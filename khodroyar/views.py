@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timedelta
 from .models import UserAuth, Conversation, Message, Payment
 from .utils import to_shamsi_date
+from .ai_agent import get_ai_agent
 
 # Create your views here.
 
@@ -488,38 +489,41 @@ def receive_message(request):
 
 
 def generate_response(message, user_auth, conversation_id=None):
-    """Process user message using Divar APIs and send bot response"""
+    """Process user message using AI agent and send bot response"""
     try:
-        # Get user's access token
-        access_token = user_auth.access_token
-        oauth_settings = settings.OAUTH_APPS_SETTINGS['khodroyar']
+        # Get conversation if conversation_id is provided
+        conversation = None
+        if conversation_id:
+            try:
+                conversation = Conversation.objects.get(conversation_id=conversation_id)
+            except Conversation.DoesNotExist:
+                print(f"Conversation {conversation_id} not found")
         
-        # Prepare headers for Divar API calls
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'X-API-Key': oauth_settings['api_key'],
-            'Content-Type': 'application/json'
-        }
+        # Get user context (subscription info, etc.)
+        user_context = {}
+        if user_auth:
+            # Get active subscription
+            active_payment = Payment.objects.filter(
+                user_auth=user_auth,
+                status='completed',
+                subscription_end__gt=datetime.now()
+            ).first()
+            
+            if active_payment:
+                user_context = {
+                    'subscription_end': to_shamsi_date(active_payment.subscription_end),
+                    'plan_name': active_payment.metadata.get('plan_name', 'اشتراک طلایی'),
+                    'subscription_days': active_payment.metadata.get('subscription_days', 7)
+                }
         
-        # Simple message processing logic
-        # You can extend this based on your specific chatbot requirements
+        # Use the AI agent to generate the response
+        ai_agent = get_ai_agent()
         
-        # Check if message contains keywords for specific actions
-        message_lower = message.lower()
-        
-        if 'help' in message_lower or 'راهنما' in message_lower:
-            bot_response = "سلام! من ربات خودرویار هستم. می‌توانم در موارد زیر به شما کمک کنم:\n- جستجوی خودرو\n- اطلاعات قیمت\n- مقایسه خودروها\n\n چه کمکی از دستم بر می‌آید؟"
-        
-        elif 'search' in message_lower or 'جستجو' in message_lower:
-            # Here you would integrate with Divar's search API
-            bot_response = "برای جستجوی خودرو، لطفاً مشخصات مورد نظر خود را وارد کنید (مثل: برند، مدل، سال ساخت)"
-        
-        elif 'price' in message_lower or 'قیمت' in message_lower:
-            bot_response = "برای دریافت اطلاعات قیمت، لطفاً مدل خودروی مورد نظر را مشخص کنید."
-        
+        if conversation:
+            bot_response = ai_agent.generate_response(message, conversation, user_context)
         else:
-            # Default response - you can integrate with AI services here
-            bot_response = "متوجه پیام شما شدم. لطفاً بفرمایید چه کمکی از دستم بر می‌آید؟"
+            # Fallback response if no conversation context
+            bot_response = "سلام! من ربات خودرویار هستم. برای شروع مکالمه، لطفاً پیام خود را ارسال کنید."
         
         # Send bot response using conversation_id if available
         if conversation_id:
