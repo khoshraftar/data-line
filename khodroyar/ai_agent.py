@@ -5,6 +5,7 @@ from typing import List, Dict, Optional
 import openai
 from django.conf import settings
 from .models import Conversation, Message
+from .car_search import get_car_search_service
 
 
 class KhodroyarAIAgent:
@@ -33,8 +34,32 @@ class KhodroyarAIAgent:
                 api_key=self.api_key
             )
             print("Using standard OpenAI client as fallback")
+        
+        # Initialize car search service
+        self.car_search_service = get_car_search_service()
+        
+        # Define available functions for the AI
+        self.available_functions = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_cars_by_budget",
+                    "description": "جستجوی خودروها بر اساس بودجه کاربر (۵٪ بالاتر تا ۱۰٪ پایین‌تر از بودجه)",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "budget": {
+                                "type": "integer",
+                                "description": "بودجه کاربر به تومان"
+                            }
+                        },
+                        "required": ["budget"]
+                    }
+                }
+            }
+        ]
     
-    def get_conversation_history(self, conversation: Conversation, max_messages: int = 10) -> List[Dict]:
+    def get_conversation_history(self, conversation: Conversation, max_messages: int = 20) -> List[Dict]:
         """
         Get conversation history for context
         
@@ -57,6 +82,43 @@ class KhodroyarAIAgent:
         
         return history
     
+    def _call_function(self, function_name: str, arguments: Dict) -> str:
+        """
+        Call the specified function with given arguments
+        
+        Args:
+            function_name: Name of the function to call
+            arguments: Function arguments
+            
+        Returns:
+            Function result as string
+        """
+        try:
+            if function_name == "search_cars_by_budget":
+                budget = arguments.get("budget")
+                
+                cars = self.car_search_service.search_cars_by_budget(budget)
+                
+                if not cars:
+                    return f"متأسفانه هیچ خودرویی در محدوده بودجه {self.car_search_service._format_price(budget)} یافت نشد."
+                
+                result = f"با بودجه {self.car_search_service._format_price(budget)}، {len(cars)} خودرو پیدا شد:\n\n"
+                
+                for i, car in enumerate(cars[:10], 1):  # Show top 10 results
+                    result += f"{i}. {car['car_name']} - {car['price_formatted']}\n"
+                
+                if len(cars) > 10:
+                    result += f"\nو {len(cars) - 10} خودروی دیگر..."
+                
+                return result
+                
+            else:
+                return f"تابع {function_name} شناخته نشد."
+                
+        except Exception as e:
+            print(f"Error calling function {function_name}: {str(e)}")
+            return f"خطا در اجرای تابع {function_name}: {str(e)}"
+    
     def generate_response(
         self, 
         user_message: str, 
@@ -64,7 +126,7 @@ class KhodroyarAIAgent:
         user_context: Optional[Dict] = None
     ) -> str:
         """
-        Generate AI response for user message using GPT-4.1
+        Generate AI response for user message using GPT-4.1 with function calling
         
         Args:
             user_message: The user's message
@@ -104,16 +166,22 @@ class KhodroyarAIAgent:
             for model in gpt4_models:
                 try:
                     print(f"Trying model: {model}")
+                    
+                    # First call - check if function calling is needed
                     response = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
-                        max_tokens=15000,  # Increased for GPT-4.1
+                        tools=self.available_functions,
+                        tool_choice="auto",
+                        max_tokens=75000,
                         temperature=0.7,
                         stream=False
                     )
+                    
                     used_model = model
                     print(f"Successfully used model: {model}")
                     break
+                    
                 except Exception as model_error:
                     print(f"Failed with {model}: {model_error}")
                     continue
@@ -121,7 +189,46 @@ class KhodroyarAIAgent:
             if response is None:
                 raise Exception("All GPT models failed to respond")
             
-            ai_response = response.choices[0].message.content.strip()
+            # Check if function calling is needed
+            if response.choices[0].message.tool_calls:
+                # Handle function calls
+                tool_calls = response.choices[0].message.tool_calls
+                function_results = []
+                
+                for tool_call in tool_calls:
+                    function_name = tool_call.function.name
+                    function_args = json.loads(tool_call.function.arguments)
+                    
+                    print(f"Calling function: {function_name} with args: {function_args}")
+                    
+                    # Call the function
+                    function_result = self._call_function(function_name, function_args)
+                    function_results.append(function_result)
+                
+                # Add function results to messages and get final response
+                messages.append(response.choices[0].message)
+                
+                for i, tool_call in enumerate(tool_calls):
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": function_results[i]
+                    })
+                
+                # Get final response from AI
+                final_response = self.client.chat.completions.create(
+                    model=used_model,
+                    messages=messages,
+                    max_tokens=75000,
+                    temperature=0.7,
+                    stream=False
+                )
+                
+                ai_response = final_response.choices[0].message.content.strip()
+                
+            else:
+                # No function calling needed
+                ai_response = response.choices[0].message.content.strip()
             
             # Log the interaction for debugging
             self._log_interaction(conversation, user_message, ai_response, messages, used_model)
@@ -146,7 +253,7 @@ class KhodroyarAIAgent:
         Returns:
             System prompt string
         """
-        base_prompt = """شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه خودرو. 
+        base_prompt = """شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو جهت خرید بر اساس بودجه . 
 
 وظایف شما:
 - پاسخ به سوالات مربوط به خودرو
@@ -156,11 +263,19 @@ class KhodroyarAIAgent:
 - پاسخ به سوالات فنی خودرو
 
 نکات مهم:
+- همیشه ابتدا بودجه کاربر را بپرسید
 - همیشه به فارسی پاسخ دهید
 - پاسخ‌های مفید و دقیق ارائه دهید
 - اگر اطلاعات کافی ندارید، صادقانه بگویید
 - از لحن دوستانه و حرفه‌ای استفاده کنید
-- در صورت نیاز به اطلاعات بیشتر، سوال بپرسید"""
+- در صورت نیاز به اطلاعات بیشتر، سوال بپرسید
+- جواب مفید و کوتاه باشد
+
+برای جستجوی خودرو بر اساس بودجه، از تابع search_cars_by_budget استفاده کنید:
+- این تابع خودروهایی را که ۵٪ بالاتر تا ۱۰٪ پایین‌تر از بودجه کاربر هستند، برمی‌گرداند
+- بودجه را به تومان دریافت کنید (مثلاً 500 میلیون تومان = 500000000 تومان)
+
+اگر کاربر بودجه خود را اعلام کرد، حتماً از این تابع برای جستجوی خودرو استفاده کنید و نتایج را به صورت مفید و منظم ارائه دهید."""
 
         # Add user context if available
         if user_context:

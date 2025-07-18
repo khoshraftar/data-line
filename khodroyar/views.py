@@ -11,7 +11,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from .models import UserAuth, Conversation, Message, Payment
-from .utils import to_shamsi_date
+from .utils import to_shamsi_date, check_subscription_status
 from .ai_agent import get_ai_agent
 
 # Create your views here.
@@ -499,7 +499,18 @@ def generate_response(message, user_auth, conversation_id=None):
             except Conversation.DoesNotExist:
                 print(f"Conversation {conversation_id} not found")
         
-        # Get user context (subscription info, etc.)
+        # Check subscription status first
+        if user_auth:
+            # Use the utility function to check subscription status
+            has_ended, subscription_message = check_subscription_status(user_auth)
+            
+            if has_ended:
+                # Subscription has ended or doesn't exist - return predefined message without engaging AI
+                if conversation_id:
+                    send_bot_message(user_auth, conversation_id, subscription_message)
+                return subscription_message
+        
+        # Get user context (subscription info, etc.) for active subscriptions
         user_context = {}
         if user_auth:
             # Get active subscription
