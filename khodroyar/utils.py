@@ -1,7 +1,7 @@
 import jdatetime
 from datetime import datetime
 from .models import Payment
-
+from django.utils import timezone
 
 def to_shamsi_date(date_obj):
     """Convert datetime to Shamsi date format"""
@@ -51,25 +51,16 @@ def check_subscription_status(user_auth):
     if not latest_payment:
         # No payment found - treat as no subscription
         return True, """🔒 شما هنوز اشتراک خودرویار ندارید!
-
 💳 برای استفاده از خدمات خودرویار، لطفاً اشتراک تهیه کنید:
-
-
 """
     
     # Check if subscription has ended
-    if latest_payment.subscription_end and latest_payment.subscription_end < datetime.now():
+    if latest_payment.subscription_end and latest_payment.subscription_end < datetime.now(timezone.utc):
         # Subscription has ended
         ended_message = f"""⏰ اشتراک شما به پایان رسیده است!
-
 📅 اشتراک شما در تاریخ {to_shamsi_date(latest_payment.subscription_end)} منقضی شده است.
-
 🔄 برای ادامه استفاده از خدمات خودرویار، لطفاً اشتراک خود را تمدید کنید:
-
-💳 برای تمدید اشتراک، روی لینک زیر کلیک کنید:
-https://data-lines.ir/khodroyar/pre-payment/
-
-اگر سوالی دارید، با پشتیبانی تماس بگیرید."""
+"""
         
         return True, ended_message
     
