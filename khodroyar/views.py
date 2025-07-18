@@ -162,7 +162,7 @@ def oauth_callback(request):
         })
 
 def pre_payment(request):
-    """Pre-payment page - describes Khodroyar and offers 7-day subscription"""
+    """Pre-payment page - describes Khodroyar and offers 1-day and 1-week subscription options"""
     # Get user_auth from session
     user_auth_id = request.session.get('user_auth_id')
     if not user_auth_id:
@@ -196,12 +196,12 @@ def initiate_payment(request):
     # Set payment amount and description based on plan
     if plan == 'diamond':
         payment_amount = settings.KHODROYAR_DIAMOND_PAYMENT_AMOUNT
-        plan_name = 'اشتراک الماس ۳۰ روزه'
-        subscription_days = 30
+        plan_name = 'اشتراک الماس ۷ روزه'
+        subscription_days = 7
     else:
         payment_amount = settings.KHODROYAR_PAYMENT_AMOUNT
-        plan_name = 'اشتراک طلایی ۷ روزه'
-        subscription_days = 7
+        plan_name = 'اشتراک طلایی ۱ روزه'
+        subscription_days = 1
     
     # Check if ZarinPal merchant ID is configured
     if not settings.ZARINPAL_MERCHANT_ID:
@@ -329,7 +329,7 @@ def payment_callback(request):
                 payment.subscription_start = datetime.now()
                 
                 # Get subscription days from payment metadata
-                subscription_days = payment.metadata.get('subscription_days', 7) if payment.metadata else 7
+                subscription_days = payment.metadata.get('subscription_days', 1) if payment.metadata else 1
                 payment.subscription_end = datetime.now() + timedelta(days=subscription_days)
                 payment.save()
                 
@@ -524,7 +524,7 @@ def generate_response(message, user_auth, conversation_id=None):
                 user_context = {
                     'subscription_end': to_shamsi_date(active_payment.subscription_end),
                     'plan_name': active_payment.metadata.get('plan_name', 'اشتراک طلایی'),
-                    'subscription_days': active_payment.metadata.get('subscription_days', 7)
+                    'subscription_days': active_payment.metadata.get('subscription_days', 1)
                 }
         
         # Use the AI agent to generate the response

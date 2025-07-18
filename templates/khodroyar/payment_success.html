@@ -44,7 +44,7 @@
                                 <p><strong>پایان اشتراک:</strong> {{ payment.subscription_end|date:"j F Y - H:i" }}</p>
                             </div>
                         </div>
-                        <p class="mb-0 mt-2"><i class="fas fa-clock text-info"></i> اشتراک شما به مدت ۷ روز فعال خواهد بود.</p>
+                        <p class="mb-0 mt-2"><i class="fas fa-clock text-info"></i> اشتراک شما به مدت {{ payment.metadata.subscription_days|default:1 }} روز فعال خواهد بود.</p>
                     </div>
                     
                     <div class="alert alert-warning">

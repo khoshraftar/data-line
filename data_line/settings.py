@@ -165,8 +165,8 @@ ZARINPAL_GATEWAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
 
 # Payment Settings
 PAYMENT_AMOUNT = 270000  # 27,000 Toman in Rials (270,000 Rials)
-KHODROYAR_PAYMENT_AMOUNT = 470000  # 47,000 Toman in Rials (470,000 Rials)
-KHODROYAR_DIAMOND_PAYMENT_AMOUNT = 970000  # 97,000 Toman in Rials (970,000 Rials)
+KHODROYAR_PAYMENT_AMOUNT = 280000  # 28,000 Toman in Rials (280,000 Rials)
+KHODROYAR_DIAMOND_PAYMENT_AMOUNT = 480000  # 48,000 Toman in Rials (480,000 Rials)
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

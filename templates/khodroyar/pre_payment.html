@@ -78,17 +78,17 @@
                     </div>
                     
                     <div class="row justify-content-center">
-                        <!-- Golden Plan - 7 Days -->
+                        <!-- Golden Plan - 1 Day -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-primary h-100 plan-card" data-plan="golden" data-price="47000" data-days="7">
+                            <div class="card border-primary h-100 plan-card" data-plan="golden" data-price="28000" data-days="1">
                                 <div class="card-header bg-primary text-white text-center py-3">
                                     <h4 class="mb-0">اشتراک طلایی</h4>
                                 </div>
                                 <div class="card-body p-4 d-flex flex-column">
                                     <div class="text-center mb-4">
-                                        <div class="display-6 fw-bold text-primary">۴۷,۰۰۰</div>
+                                        <div class="display-6 fw-bold text-primary">۲۸,۰۰۰</div>
                                         <div class="text-muted">تومان</div>
-                                        <div class="small text-muted">برای ۷ روز</div>
+                                        <div class="small text-muted">برای ۱ روز</div>
                                     </div>
                                     
                                     <ul class="list-unstyled flex-grow-1">
@@ -120,9 +120,9 @@
                             </div>
                         </div>
                         
-                        <!-- Diamond Plan - Monthly -->
+                        <!-- Diamond Plan - 1 Week -->
                         <div class="col-lg-6 mb-4">
-                            <div class="card border-warning h-100 position-relative plan-card" data-plan="diamond" data-price="97000" data-days="30" style="border-width: 3px;">
+                            <div class="card border-warning h-100 position-relative plan-card" data-plan="diamond" data-price="48000" data-days="7" style="border-width: 3px;">
                                 <div class="position-absolute top-0 start-50 translate-middle-x" style="margin-top: -15px;">
                                     <span class="badge bg-warning text-dark px-3 py-2">
                                         <i class="fas fa-star me-1"></i>پیشنهاد ویژه
@@ -135,9 +135,9 @@
                                 </div>
                                 <div class="card-body p-4 d-flex flex-column">
                                     <div class="text-center mb-4">
-                                        <div class="display-6 fw-bold text-warning">۹۷,۰۰۰</div>
+                                        <div class="display-6 fw-bold text-warning">۴۸,۰۰۰</div>
                                         <div class="text-muted">تومان</div>
-                                        <div class="small text-muted">برای ۳۰ روز</div>
+                                        <div class="small text-muted">برای ۷ روز</div>
                                         <div class="badge bg-success mt-2">صرفه‌جویی ۴۰٪</div>
                                     </div>
                                     
@@ -148,7 +148,7 @@
                                         </li>
                                         <li class="mb-3">
                                             <i class="fas fa-check text-success me-2"></i>
-                                            <strong>دسترسی نامحدود ۳۰ روزه</strong>
+                                            <strong>دسترسی نامحدود ۷ روزه</strong>
                                         </li>
                                         <li class="mb-3">
                                             <i class="fas fa-check text-success me-2"></i>
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show selected plan info
         selectedPlanInfo.style.display = 'block';
-        selectedPlanName.textContent = planCard.dataset.plan === 'golden' ? 'اشتراک طلایی (۷ روزه)' : 'اشتراک الماس (۳۰ روزه)';
+        selectedPlanName.textContent = planCard.dataset.plan === 'golden' ? 'اشتراک طلایی (۱ روزه)' : 'اشتراک الماس (۷ روزه)';
         selectedPlanPrice.textContent = `${parseInt(planCard.dataset.price).toLocaleString()} تومان`;
         
         // Enable payment button
