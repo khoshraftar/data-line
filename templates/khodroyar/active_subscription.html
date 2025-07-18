@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}اشتراک فعال خودرویار - دیتا لاین{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle fa-4x text-success"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-success mb-3">اشتراک فعال</h1>
+                <p class="lead text-muted">شما در حال حاضر اشتراک فعال خودرویار دارید</p>
+            </div>
+
+            <!-- Active Subscription Card -->
+            <div class="card shadow-lg border-success border-3 mb-5">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-gem me-2"></i>
+                        {{ active_payment.metadata.plan_name|default:"اشتراک خودرویار" }}
+                    </h3>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar-check fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">شروع اشتراک</h5>
+                                    <p class="text-muted mb-0">{{ active_payment.subscription_start|date:"Y/m/d H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar-times fa-2x text-warning me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">پایان اشتراک</h5>
+                                    <p class="text-muted mb-0">{{ active_payment.subscription_end|date:"Y/m/d H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-money-bill-wave fa-2x text-primary me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">مبلغ پرداختی</h5>
+                                    <p class="text-muted mb-0">{{ active_payment.amount|floatformat:0 }} ریال</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-receipt fa-2x text-info me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1">شماره پیگیری</h5>
+                                    <p class="text-muted mb-0">{{ active_payment.ref_id }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscription Status -->
+                    <div class="alert alert-success text-center mb-4">
+                        <h5 class="mb-2">
+                            <i class="fas fa-check-circle me-2"></i>
+                            اشتراک شما فعال است
+                        </h5>
+                        <p class="mb-0">شما می‌توانید از تمام امکانات خودرویار استفاده کنید</p>
+                    </div>
+
+                    <!-- Remaining Time -->
+                    <div class="text-center mb-4">
+                        <div class="badge bg-warning text-dark fs-6 px-4 py-2">
+                            <i class="fas fa-clock me-2"></i>
+                            زمان باقی‌مانده: 
+                            {% if active_payment.subscription_end %}
+                                {% with remaining_time=active_payment.subscription_end|timeuntil:now %}
+                                    {{ remaining_time }}
+                                {% endwith %}
+                            {% else %}
+                                نامشخص
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Available -->
+            <div class="card shadow-lg border-0 mb-5">
+                <div class="card-body p-5">
+                    <h3 class="text-center mb-4">امکانات در دسترس شما</h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-robot fa-2x text-primary me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold">ربات هوشمند</h5>
+                                    <p class="text-muted">پاسخ به سوالات شما درباره خودروها</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-search fa-2x text-success me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold">جستجوی پیشرفته</h5>
+                                    <p class="text-muted">جستجوی هوشمند خودرو بر اساس معیارهای مختلف</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-chart-line fa-2x text-info me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold">تحلیل قیمت</h5>
+                                    <p class="text-muted">تحلیل قیمت خودروها و اطلاعات بازار</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-comments fa-2x text-warning me-3"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold">پشتیبانی ۲۴/۷</h5>
+                                    <p class="text-muted">پشتیبانی شبانه‌روزی برای پاسخگویی</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow-lg border-0 mb-5">
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ divar_completion_url }}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-arrow-right"></i> بازگشت به دیوار
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>توجه:</strong> شما نمی‌توانید اشتراک جدید خریداری کنید تا زمانی که اشتراک فعلی شما منقضی شود.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscription History -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h3 class="text-center mb-4">تاریخچه اشتراک‌ها</h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>نوع اشتراک</th>
+                                    <th>تاریخ شروع</th>
+                                    <th>تاریخ پایان</th>
+                                    <th>وضعیت</th>
+                                    <th>مبلغ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in user_auth.payment_set.all|dictsortreversed:"created_at" %}
+                                <tr class="{% if payment.id == active_payment.id %}table-success{% endif %}">
+                                    <td>
+                                        <span class="badge {% if payment.metadata.plan == 'diamond' %}bg-warning{% else %}bg-primary{% endif %}">
+                                            {{ payment.metadata.plan_name|default:"اشتراک خودرویار" }}
+                                        </span>
+                                    </td>
+                                    <td>{{ payment.subscription_start|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>{{ payment.subscription_end|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                            {% if payment.subscription_end > now %}
+                                                <span class="badge bg-success">فعال</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">منقضی شده</span>
+                                            {% endif %}
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">در انتظار</span>
+                                        {% elif payment.status == 'failed' %}
+                                            <span class="badge bg-danger">ناموفق</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ payment.amount|floatformat:0 }} ریال</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">هیچ اشتراکی یافت نشد</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+</style>
+{% endblock %} 

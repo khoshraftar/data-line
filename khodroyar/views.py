@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from .models import UserAuth, Conversation, Message, Payment
 from .utils import to_shamsi_date, check_subscription_status
 from .ai_agent import get_ai_agent
-
+from django.utils import timezone
 # Create your views here.
 
 def home(request):
@@ -145,8 +145,20 @@ def oauth_callback(request):
             # Store user_auth in session for payment flow
             request.session['user_auth_id'] = user_auth.id
             
-            # Show success message and redirect to pre-payment page
-            messages.success(request, 'ورود با موفقیت انجام شد!')
+            # Check if user already has an active subscription
+            active_payment = Payment.objects.filter(
+                user_auth=user_auth,
+                status='completed',
+                subscription_end__gt=datetime.now()
+            ).first()
+            
+            if active_payment:
+                # User has an active subscription - show success message and redirect to pre_payment (which will show active subscription page)
+                messages.success(request, 'ورود با موفقیت انجام شد! شما اشتراک فعال دارید.')
+            else:
+                # User doesn't have active subscription - show success message and redirect to pre_payment page
+                messages.success(request, 'ورود با موفقیت انجام شد!')
+            
             return redirect('khodroyar:pre_payment')
             
         except requests.RequestException as e:
@@ -173,6 +185,22 @@ def pre_payment(request):
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
     
+    # Check if user already has an active subscription
+    active_payment = Payment.objects.filter(
+        user_auth=user_auth,
+        status='completed',
+        subscription_end__gt=timezone.now()
+    ).first()
+    
+    if active_payment:
+        # User has an active subscription - show subscription status page instead
+        return render(request, 'khodroyar/active_subscription.html', {
+            'user_auth': user_auth,
+            'active_payment': active_payment,
+            'divar_completion_url': settings.DIVAR_COMPLETION_URL,
+            'now': datetime.now()
+        })
+    
     return render(request, 'khodroyar/pre_payment.html', {
         'user_auth': user_auth,
         'divar_completion_url': settings.DIVAR_COMPLETION_URL
@@ -189,6 +217,18 @@ def initiate_payment(request):
         user_auth = UserAuth.objects.get(id=user_auth_id)
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
+    
+    # Check if user already has an active subscription
+    active_payment = Payment.objects.filter(
+        user_auth=user_auth,
+        status='completed',
+        subscription_end__gt=datetime.now()
+    ).first()
+    
+    if active_payment:
+        # User has an active subscription - redirect to active subscription page
+        messages.warning(request, 'شما در حال حاضر اشتراک فعال دارید و نمی‌توانید اشتراک جدید خریداری کنید.')
+        return redirect('khodroyar:pre_payment')
     
     # Get plan from query parameters
     plan = request.GET.get('plan', 'golden')  # Default to golden plan
@@ -371,6 +411,12 @@ def payment_success(request):
     try:
         user_auth = UserAuth.objects.get(id=user_auth_id)
         payment = Payment.objects.filter(user_auth=user_auth, status='completed').first()
+        
+        # Check if user has a completed payment
+        if not payment:
+            messages.error(request, 'پرداخت تکمیل شده‌ای یافت نشد.')
+            return redirect('khodroyar:pre_payment')
+            
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
     
@@ -390,6 +436,12 @@ def payment_failed(request):
     try:
         user_auth = UserAuth.objects.get(id=user_auth_id)
         payment = Payment.objects.filter(user_auth=user_auth).order_by('-created_at').first()
+        
+        # Check if user has any payment record
+        if not payment:
+            messages.error(request, 'هیچ پرداختی یافت نشد.')
+            return redirect('khodroyar:pre_payment')
+            
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
     
