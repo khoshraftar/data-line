@@ -1,7 +1,7 @@
 import jdatetime
 from datetime import datetime
 from .models import Payment
-import pytz
+from django.utils import timezone
 
 def to_shamsi_date(date_obj):
     """Convert datetime to Shamsi date format"""
@@ -55,7 +55,7 @@ def check_subscription_status(user_auth):
 """
     
     # Check if subscription has ended
-    if latest_payment.subscription_end and latest_payment.subscription_end < datetime.now(tz=pytz.UTC):
+    if latest_payment.subscription_end and latest_payment.subscription_end < timezone.now():
         # Subscription has ended
         ended_message = f"""⏰ اشتراک شما به پایان رسیده است!
 📅 اشتراک شما در تاریخ {to_shamsi_date(latest_payment.subscription_end)} منقضی شده است.
