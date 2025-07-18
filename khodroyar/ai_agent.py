@@ -154,10 +154,6 @@ class KhodroyarAIAgent:
             # Try GPT-4.1 models in order of preference
             gpt4_models = [
                 "gpt-4.1",  # Primary GPT-4.1 model
-                "gpt-4.1-turbo",  # Alternative naming
-                "gpt-4.1-preview",  # Preview version
-                "gpt-4",  # Fallback to GPT-4
-                "gpt-3.5-turbo",  # Final fallback to GPT-3.5
             ]
             
             response = None
@@ -173,7 +169,7 @@ class KhodroyarAIAgent:
                         messages=messages,
                         tools=self.available_functions,
                         tool_choice="auto",
-                        max_tokens=75000,
+                        max_tokens=15000,
                         temperature=0.7,
                         stream=False
                     )
@@ -219,7 +215,7 @@ class KhodroyarAIAgent:
                 final_response = self.client.chat.completions.create(
                     model=used_model,
                     messages=messages,
-                    max_tokens=75000,
+                    max_tokens=15000,
                     temperature=0.7,
                     stream=False
                 )
