@@ -169,7 +169,7 @@ class KhodroyarAIAgent:
                         messages=messages,
                         tools=self.available_functions,
                         tool_choice="auto",
-                        max_tokens=15000,
+                        max_tokens=16000,
                         temperature=0.7,
                         stream=False
                     )
