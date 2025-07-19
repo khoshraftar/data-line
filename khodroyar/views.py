@@ -603,7 +603,7 @@ def generate_response(message, user_auth, conversation_id=None):
         return bot_response
             
     except Exception as e:
-        error_response = f"متأسفانه مشکلی در پردازش پیام شما پیش آمد: {str(e)}"
+        error_response = f"متأسفانه مشکلی در پردازش پیام شما پیش آمد"
         if conversation_id:
             send_bot_message(user_auth, conversation_id, error_response)
         return error_response
