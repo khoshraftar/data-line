@@ -73,20 +73,6 @@
                         <p class="mb-0">شما می‌توانید از تمام امکانات خودرویار استفاده کنید</p>
                     </div>
 
-                    <!-- Remaining Time -->
-                    <div class="text-center mb-4">
-                        <div class="badge bg-warning text-dark fs-6 px-4 py-2">
-                            <i class="fas fa-clock me-2"></i>
-                            زمان باقی‌مانده: 
-                            {% if active_payment.subscription_end %}
-                                {% with remaining_time=active_payment.subscription_end|timeuntil:now %}
-                                    {{ remaining_time }}
-                                {% endwith %}
-                            {% else %}
-                                نامشخص
-                            {% endif %}
-                        </div>
-                    </div>
                 </div>
             </div>
 
