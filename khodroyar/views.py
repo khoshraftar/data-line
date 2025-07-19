@@ -674,7 +674,7 @@ def send_welcome_message_after_payment(user_auth, payment):
 • مقایسه خودروها
 • راهنمای خرید
 
-برای شروع، پیام خود را بنویسید!"""
+برای شروع، پیام خود را بنویسید! (مثلا: سلام)""" 
 
         # First, send welcome message using user_id to get conversation_id
         # Use a different endpoint that accepts user_id instead of conversation_id
