@@ -1,9 +1,4 @@
 from django.contrib import admin
-from django.utils.html import format_html
-from django.utils import timezone
-from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
-from datetime import timedelta
 from .models import UserAuth, Conversation, Message, Payment
 
 # Register your models here.
@@ -38,37 +33,20 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = [
-        'user_auth', 
-        'plan_name', 
-        'formatted_amount', 
-        'subscription_status', 
-        'subscription_duration', 
-        'status', 
-        'created_at'
-    ]
-    list_filter = ['status', 'created_at', 'subscription_start', 'subscription_end']
-    search_fields = ['user_auth__user_id', 'user_auth__phone', 'authority', 'ref_id']
-    readonly_fields = ['created_at', 'updated_at', 'subscription_status_display']
-    list_editable = ['status']
-    actions = ['extend_subscription_1_day', 'extend_subscription_7_days', 'mark_as_completed', 'mark_as_failed']
+    list_display = ['user_auth', 'amount', 'status', 'authority', 'ref_id', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['user_auth__user_id', 'authority', 'ref_id']
+    readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
-        ('اطلاعات کاربر', {
-            'fields': ('user_auth',)
-        }),
         ('اطلاعات پرداخت', {
-            'fields': ('amount', 'status', 'formatted_amount')
-        }),
-        ('اطلاعات اشتراک', {
-            'fields': ('plan_name', 'subscription_start', 'subscription_end', 'subscription_duration', 'subscription_status_display')
+            'fields': ('user_auth', 'amount', 'status')
         }),
         ('اطلاعات ZarinPal', {
-            'fields': ('authority', 'ref_id'),
-            'classes': ('collapse',)
+            'fields': ('authority', 'ref_id')
         }),
-        ('متادیتا', {
-            'fields': ('metadata',),
+        ('اطلاعات اشتراک', {
+            'fields': ('subscription_start', 'subscription_end'),
             'classes': ('collapse',)
         }),
         ('تاریخ‌ها', {
