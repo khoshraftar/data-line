@@ -227,7 +227,7 @@ class KhodroyarAIAgent:
                 ai_response = response.choices[0].message.content.strip()
             
             # Log the interaction for debugging
-            self._log_interaction(conversation, user_message, ai_response, messages, used_model)
+            # self._log_interaction(conversation, user_message, ai_response, messages, used_model)
             
             return ai_response
             
@@ -284,41 +284,6 @@ class KhodroyarAIAgent:
                 base_prompt += f"\n\nاطلاعات کاربر:\n" + "\n".join(context_info)
         
         return base_prompt
-    
-    def _log_interaction(
-        self, 
-        conversation: Conversation, 
-        user_message: str, 
-        ai_response: str, 
-        messages: List[Dict],
-        used_model: str = None
-    ):
-        """
-        Log AI interaction for debugging and monitoring
-        
-        Args:
-            conversation: Conversation object
-            user_message: Original user message
-            ai_response: AI generated response
-            messages: Full message history sent to AI
-            used_model: The model that was successfully used
-        """
-        try:
-            log_data = {
-                "timestamp": datetime.now().isoformat(),
-                "conversation_id": conversation.conversation_id,
-                "user_message": user_message,
-                "ai_response": ai_response,
-                "message_count": len(messages),
-                "user_id": conversation.user_auth.user_id,
-                "used_model": used_model
-            }
-            
-            # You can extend this to save to database or external logging service
-            print(f"AI Interaction Log: {json.dumps(log_data, ensure_ascii=False)}")
-            
-        except Exception as e:
-            print(f"Error logging AI interaction: {str(e)}")
     
     def test_connection(self) -> bool:
         """
