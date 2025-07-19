@@ -59,7 +59,7 @@ class KhodroyarAIAgent:
             }
         ]
     
-    def get_conversation_history(self, conversation: Conversation, max_messages: int = 20) -> List[Dict]:
+    def get_conversation_history(self, conversation: Conversation, max_messages: int = 50) -> List[Dict]:
         """
         Get conversation history for context
         
