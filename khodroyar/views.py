@@ -14,6 +14,7 @@ from .models import UserAuth, Conversation, Message, Payment
 from .utils import to_shamsi_date, check_subscription_status
 from .ai_agent import get_ai_agent
 from django.utils import timezone
+import time
 # Create your views here.
 
 def home(request):
@@ -375,7 +376,14 @@ def payment_callback(request):
                 
                 # Send welcome message to user after successful payment
                 try:
-                    send_welcome_message_after_payment(payment.user_auth, payment)
+                    if send_welcome_message_after_payment(payment.user_auth, payment):
+                        print("Welcome message sent successfully")
+                    else:
+                        time.sleep(2)
+                        if send_welcome_message_after_payment(payment.user_auth, payment):
+                            print("Welcome message sent successfully")
+                        else:
+                            print("Failed to send welcome message for user", payment.user_auth.user_id)
                 except Exception as e:
                     print(f"Failed to send welcome message after payment: {str(e)}")
                     # Don't fail the payment process if message sending fails
