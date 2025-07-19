@@ -86,7 +86,7 @@ class UserAuthAdmin(admin.ModelAdmin):
                         mock_payment = MockPayment(user_auth, formatted_message)
                         
                         # Send welcome message
-                        if send_welcome_message_after_payment(user_auth, mock_payment, custom_message=formatted_message):
+                        if send_welcome_message_after_payment(user_auth, mock_payment):
                             success_count += 1
                         else:
                             error_count += 1
