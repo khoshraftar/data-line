@@ -1,11 +1,11 @@
 [
   {
     "car_name": "وانت آریسان",
-    "current_price": 580000000
+    "current_price": 582000000
   },
   {
     "car_name": "سورن پلاس (XU7P)",
-    "current_price": 753000000
+    "current_price": 751000000
   },
   {
     "car_name": "سورن پلاس (رینگ فولادی)",
@@ -17,11 +17,11 @@
   },
   {
     "car_name": "سورن پلاس دوگانه‌سوز (کپسول کوچک)",
-    "current_price": 849000000
+    "current_price": 845000000
   },
   {
     "car_name": "سورن پلاس دوگانه‌سوز (کپسول بزرگ)",
-    "current_price": 878000000
+    "current_price": 873000000
   },
   {
     "car_name": "دنا پلاس بورسی",
@@ -29,51 +29,51 @@
   },
   {
     "car_name": "دنا پلاس MT6 (رینگ فولادی)",
-    "current_price": 1007000000
+    "current_price": 1005000000
   },
   {
     "car_name": "دنا پلاس MT6",
-    "current_price": 1025000000
+    "current_price": 1024000000
   },
   {
     "car_name": "دنا پلاس توربو اتوماتیک (آپشنال)",
-    "current_price": 1217000000
+    "current_price": 1216000000
   },
   {
     "car_name": "پژو 207 موتور TU3",
-    "current_price": 759000000
+    "current_price": 760000000
   },
   {
     "car_name": "پژو 207 دنده‌ای هیدرولیک",
-    "current_price": 833000000
+    "current_price": 832000000
   },
   {
     "car_name": "پژو 207 دنده‌ای پانوراما (رینگ فولادی)",
-    "current_price": 904000000
+    "current_price": 900000000
   },
   {
     "car_name": "پژو 207 دنده‌ای پانوراما",
-    "current_price": 923000000
+    "current_price": 918000000
   },
   {
     "car_name": "پژو 207 اتوماتیک",
-    "current_price": 1050000000
+    "current_price": 1046000000
   },
   {
     "car_name": "پژو 207 اتوماتیک پانوراما",
-    "current_price": 1183000000
+    "current_price": 1182000000
   },
   {
     "car_name": "رانا پلاس",
-    "current_price": 779000000
+    "current_price": 770000000
   },
   {
     "car_name": "تارا دستی V1",
-    "current_price": 959000000
+    "current_price": 960000000
   },
   {
     "car_name": "تارا اتوماتیک V4",
-    "current_price": 1177000000
+    "current_price": 1176000000
   },
   {
     "car_name": "هایما اس 5 ( S5 )",
@@ -85,7 +85,7 @@
   },
   {
     "car_name": "هایما اس 7 ( S7 ) پرو",
-    "current_price": 1895000000
+    "current_price": 1880000000
   },
   {
     "car_name": "هایما 8 اس ( 8S )",
@@ -153,7 +153,7 @@
   },
   {
     "car_name": "ساینا S",
-    "current_price": 535000000
+    "current_price": 534000000
   },
   {
     "car_name": "ساینا GX دوگانه سوز",
@@ -161,7 +161,7 @@
   },
   {
     "car_name": "ساینا اتوماتیک",
-    "current_price": 637000000
+    "current_price": 627000000
   },
   {
     "car_name": "کوییک اتوماتیک",
@@ -169,7 +169,7 @@
   },
   {
     "car_name": "کوییک RS",
-    "current_price": 521000000
+    "current_price": 522000000
   },
   {
     "car_name": "کوییک S",
@@ -189,7 +189,7 @@
   },
   {
     "car_name": "شاهین GL",
-    "current_price": 895000000
+    "current_price": 893000000
   },
   {
     "car_name": "شاهین G (سانروف)",
@@ -201,7 +201,7 @@
   },
   {
     "car_name": "شاهین اتوماتیک پلاس",
-    "current_price": 1252000000
+    "current_price": 1250000000
   },
   {
     "car_name": "سایپا 151",
@@ -253,7 +253,7 @@
   },
   {
     "car_name": "X22 پرو دستی",
-    "current_price": 1090000000
+    "current_price": 1085000000
   },
   {
     "car_name": "X33 کراس (دستی)",
@@ -265,7 +265,7 @@
   },
   {
     "car_name": "X55 پرو",
-    "current_price": 1795000000
+    "current_price": 1803000000
   },
   {
     "car_name": "آریزو 5",
@@ -273,11 +273,11 @@
   },
   {
     "car_name": "آریزو 6 پرو",
-    "current_price": 1910000000
+    "current_price": 1905000000
   },
   {
     "car_name": "آریزو6 جی‌تی",
-    "current_price": 2110000000
+    "current_price": 2115000000
   },
   {
     "car_name": "آریزو 8",
@@ -285,7 +285,7 @@
   },
   {
     "car_name": "تیگو7 پرمیوم",
-    "current_price": 2360000000
+    "current_price": 2368000000
   },
   {
     "car_name": "تیگو7 پرومکس",
@@ -317,7 +317,7 @@
   },
   {
     "car_name": "تیگو 8 پرومکس (IE)",
-    "current_price": 3480000000
+    "current_price": 3470000000
   },
   {
     "car_name": "اکستریم LX",
@@ -329,7 +329,7 @@
   },
   {
     "car_name": "اکستریم VX",
-    "current_price": 5180000000
+    "current_price": 5150000000
   },
   {
     "car_name": "بک X3",
@@ -361,11 +361,11 @@
   },
   {
     "car_name": "کی‌ام‌سی A5",
-    "current_price": 1810000000
+    "current_price": 1800000000
   },
   {
     "car_name": "کی‌ام‌سی X5",
-    "current_price": 1885000000
+    "current_price": 1875000000
   },
   {
     "car_name": "کی‌ام‌سی T8",
@@ -381,7 +381,7 @@
   },
   {
     "car_name": "رسپکت 2",
-    "current_price": 1626000000
+    "current_price": 1635000000
   },
   {
     "car_name": "فیدلیتی (5 نفره)",
@@ -393,11 +393,11 @@
   },
   {
     "car_name": "فیدلیتی الیت (5 نفره)",
-    "current_price": 2215000000
+    "current_price": 2245000000
   },
   {
     "car_name": "فیدلیتی الیت (7 نفره)",
-    "current_price": 2245000000
+    "current_price": 2270000000
   },
   {
     "car_name": "فیدلیتی پرستیژ (5 نفره)",
@@ -409,7 +409,7 @@
   },
   {
     "car_name": "دیگنیتی پرایم",
-    "current_price": 1945000000
+    "current_price": 1925000000
   },
   {
     "car_name": "دیگنیتی پرستیژ",
@@ -461,7 +461,7 @@
   },
   {
     "car_name": "مزدا3",
-    "current_price": 3860000000
+    "current_price": 3835000000
   },
   {
     "car_name": "لوکانو L7",
@@ -485,7 +485,7 @@
   },
   {
     "car_name": "لاماری ایما",
-    "current_price": 2310000000
+    "current_price": 2315000000
   },
   {
     "car_name": "لاماری هیبرید",
@@ -497,7 +497,7 @@
   },
   {
     "car_name": "مکث کلوت اتوماتیک (تیپ 3)",
-    "current_price": 1850000000
+    "current_price": 1800000000
   },
   {
     "car_name": "دایون Y7",
@@ -541,7 +541,7 @@
   },
   {
     "car_name": "لوین بنزینی 2024",
-    "current_price": 2575000000
+    "current_price": 2570000000
   },
   {
     "car_name": "لوین هیبرید 2023",
@@ -693,7 +693,7 @@
   },
   {
     "car_name": "تی‌راک 2024",
-    "current_price": 4270000000
+    "current_price": 4260000000
   },
   {
     "car_name": "سانی",
@@ -801,7 +801,7 @@
   },
   {
     "car_name": "Q5 (سیلور پکیج)",
-    "current_price": 5050000000
+    "current_price": 4960000000
   },
   {
     "car_name": "Q5 (بلک پکیج)",
