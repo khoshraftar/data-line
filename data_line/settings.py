@@ -164,7 +164,7 @@ ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'
 ZARINPAL_GATEWAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
 
 # Payment Settings
-PAYMENT_AMOUNT = 270000  # 27,000 Toman in Rials (270,000 Rials)
+PAYMENT_AMOUNT = 170000  # 17,000 Toman in Rials (170,000 Rials)
 KHODROYAR_PAYMENT_AMOUNT = 280000  # 28,000 Toman in Rials (280,000 Rials)
 KHODROYAR_DIAMOND_PAYMENT_AMOUNT = 480000  # 48,000 Toman in Rials (480,000 Rials)
 
