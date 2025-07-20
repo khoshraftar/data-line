@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Optional
 import openai
+import jdatetime
 from django.conf import settings
 from .models import Conversation, Message
 from .car_search import get_car_search_service
@@ -54,6 +55,35 @@ class KhodroyarAIAgent:
                             }
                         },
                         "required": ["budget"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_car_price_by_name",
+                    "description": "جستجوی خودرو بر اساس نام با قابلیت تطبیق تقریبی برای نام‌های مشابه",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "car_name": {
+                                "type": "string",
+                                "description": "نام خودرو برای جستجو"
+                            }
+                        },
+                        "required": ["car_name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_current_shamsi_datetime",
+                    "description": "دریافت تاریخ و زمان فعلی به صورت شمسی (فارسی)",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
                     }
                 }
             }
@@ -111,6 +141,47 @@ class KhodroyarAIAgent:
                     result += f"\nو {len(cars) - 10} خودروی دیگر..."
                 
                 return result
+                
+            elif function_name == "search_car_price_by_name":
+                car_name = arguments.get("car_name")
+                
+                cars = self.car_search_service.search_car_price_by_name(car_name)
+                
+                if not cars:
+                    return f"متأسفانه خودرویی با نام '{car_name}' پیدا نشد."
+                
+                result = f"خودروهایی که با نام '{car_name}' شبیه‌سازی شده‌اند:\n\n"
+                
+                for i, car in enumerate(cars[:10], 1):  # Show top 10 results
+                    result += f"{i}. {car['car_name']} - {car['price_formatted']}\n"
+                
+                if len(cars) > 10:
+                    result += f"\nو {len(cars) - 10} خودروی دیگر..."
+                
+                return result
+                
+            elif function_name == "get_current_shamsi_datetime":
+                # Get current datetime and convert to Shamsi
+                current_datetime = datetime.now()
+                shamsi_datetime = jdatetime.datetime.fromgregorian(datetime=current_datetime)
+                
+                # Format the Shamsi datetime
+                shamsi_date = f"{shamsi_datetime.year}/{shamsi_datetime.month:02d}/{shamsi_datetime.day:02d}"
+                shamsi_time = f"{shamsi_datetime.hour:02d}:{shamsi_datetime.minute:02d}"
+                
+                # Get Persian day name
+                persian_days = {
+                    0: "شنبه",
+                    1: "یکشنبه", 
+                    2: "دوشنبه",
+                    3: "سه‌شنبه",
+                    4: "چهارشنبه",
+                    5: "پنج‌شنبه",
+                    6: "جمعه"
+                }
+                day_name = persian_days[shamsi_datetime.weekday()]
+                
+                return f"📅 تاریخ و زمان فعلی: {day_name} {shamsi_date} - ساعت {shamsi_time}"
                 
             else:
                 return f"تابع {function_name} شناخته نشد."
@@ -265,13 +336,29 @@ class KhodroyarAIAgent:
 - از لحن دوستانه و حرفه‌ای استفاده کنید
 - در صورت نیاز به اطلاعات بیشتر، سوال بپرسید
 - جواب مفید و کوتاه باشد
+- قبل از ارائه قیمت خودروها، حتماً تاریخ و زمان فعلی را ذکر کنید
 - بعد اینکه خودرو بر اساس بودجه کاربر معرفی میکنی قیمت خودرو ها هم حتما ذکر کن
 
-برای جستجوی خودرو بر اساس بودجه، از تابع search_cars_by_budget استفاده کنید:
+توابع موجود:
+
+1. برای جستجوی خودرو بر اساس بودجه، از تابع search_cars_by_budget استفاده کنید:
 - این تابع خودروهایی را که ۵٪ بالاتر تا ۱۰٪ پایین‌تر از بودجه کاربر هستند، برمی‌گرداند
 - بودجه را به تومان دریافت کنید (مثلاً 500 میلیون تومان = 500000000 تومان)
 
-اگر کاربر بودجه خود را اعلام کرد، حتماً از این تابع برای جستجوی خودرو استفاده کنید و نتایج را به صورت مفید و منظم ارائه دهید."""
+2. برای جستجوی قیمت خودرو بر اساس نام، از تابع search_car_price_by_name استفاده کنید:
+- این تابع خودروهایی را که نامشان شبیه به نام درخواستی کاربر است، برمی‌گرداند
+- قابلیت تطبیق تقریبی دارد و نام‌های مشابه را پیدا می‌کند
+- برای سوالاتی مثل "قیمت پژو 207 چقدر است؟" یا "دنا پلاس چند است؟" استفاده کنید
+
+3. برای دریافت تاریخ و زمان فعلی، از تابع get_current_shamsi_datetime استفاده کنید:
+- این تابع تاریخ و زمان فعلی را به صورت شمسی (فارسی) برمی‌گرداند
+- قبل از ارائه قیمت خودروها، حتماً از این تابع استفاده کنید تا کاربر بداند قیمت‌ها مربوط به چه تاریخی است
+
+اگر کاربر بودجه خود را اعلام کرد، حتماً از تابع search_cars_by_budget برای جستجوی خودرو استفاده کنید و نتایج را به صورت مفید و منظم ارائه دهید.
+
+اگر کاربر نام خودروی خاصی را پرسید، از تابع search_car_price_by_name استفاده کنید و قیمت آن خودرو را ارائه دهید.
+
+قبل از ارائه هرگونه اطلاعات قیمت، حتماً تاریخ و زمان فعلی را با استفاده از تابع get_current_shamsi_datetime ذکر کنید."""
 
         # Add user context if available
         if user_context:
