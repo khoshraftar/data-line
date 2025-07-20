@@ -22,6 +22,7 @@ from .utils import (
 from .ai_agent import get_ai_agent
 from django.utils import timezone
 import time
+import pytz
 # Create your views here.
 
 def home(request):
@@ -387,11 +388,11 @@ def payment_callback(request):
                 # Payment verified successfully
                 payment.status = 'completed'
                 payment.ref_id = result['data']['ref_id']
-                payment.subscription_start = datetime.now()
+                payment.subscription_start = datetime.now(pytz.timezone('Asia/Tehran'))
                 
                 # Get subscription days from payment metadata
                 subscription_days = payment.metadata.get('subscription_days', 1) if payment.metadata else 1
-                payment.subscription_end = datetime.now() + timedelta(days=subscription_days)
+                payment.subscription_end = datetime.now(pytz.timezone('Asia/Tehran')) + timedelta(days=subscription_days)
                 payment.save()
                 
                 # Send welcome message to user after successful payment
