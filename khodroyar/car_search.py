@@ -47,9 +47,12 @@ class CarSearchService:
             List of cars within budget range, sorted by price
         """
         try:
+            # Convert budget from Tomans to Rials for comparison with stored data
+            budget_in_rials = budget * 10
+            
             # Calculate budget range: 10% under to 5% over
-            min_price = int(budget * 0.9)  # 10% under budget
-            max_price = int(budget * 1.05)  # 5% over budget
+            min_price = int(budget_in_rials * 0.9)  # 10% under budget
+            max_price = int(budget_in_rials * 1.05)  # 5% over budget
             
             matching_cars = []
             
@@ -126,20 +129,19 @@ class CarSearchService:
     
     def _format_price(self, price: int) -> str:
         """
-        Format price in a readable format
+        Format price in a beautiful Persian format
         
         Args:
-            price: Price in Tomans
+            price: Price in Rials (from scraped data)
             
         Returns:
-            Formatted price string
+            Beautifully formatted price string in Persian
         """
-        if price >= 1000000000:  # 1 billion
-            return f"{price // 1000000000} میلیارد تومان"
-        elif price >= 1000000:  # 1 million
-            return f"{price // 1000000} میلیون تومان"
-        else:
-            return f"{price:,} تومان"
+        # Convert from Rials to Tomans (1 Toman = 10 Rials)
+        price_in_tomans = price // 10
+        
+        # Format with commas for readability but show exact amount
+        return f"{price_in_tomans:,} تومان"
     
     def get_all_cars(self) -> List[Dict]:
         """

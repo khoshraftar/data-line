@@ -130,9 +130,15 @@ class KhodroyarAIAgent:
                 cars = self.car_search_service.search_cars_by_budget(budget)
                 
                 if not cars:
-                    return f"متأسفانه هیچ خودرویی در محدوده بودجه {self.car_search_service._format_price(budget)} یافت نشد."
+                    # Format budget for display (budget is already in Tomans) - show exact amount
+                    budget_formatted = f"{budget:,} تومان"
+                    
+                    return f"متأسفانه هیچ خودرویی در محدوده بودجه {budget_formatted} یافت نشد."
                 
-                result = f"با بودجه {self.car_search_service._format_price(budget)}، {len(cars)} خودرو پیدا شد:\n\n"
+                # Format budget for display (budget is already in Tomans) - show exact amount
+                budget_formatted = f"{budget:,} تومان"
+                
+                result = f"با بودجه {budget_formatted}، {len(cars)} خودرو پیدا شد:\n\n"
                 
                 for i, car in enumerate(cars[:10], 1):  # Show top 10 results
                     result += f"{i}. {car['car_name']} - {car['price_formatted']}\n"
@@ -363,6 +369,7 @@ class KhodroyarAIAgent:
 - این تابع خودروهایی را که نامشان شبیه به نام درخواستی کاربر است، برمی‌گرداند
 - قابلیت تطبیق تقریبی دارد و نام‌های مشابه را پیدا می‌کند
 - برای سوالاتی مثل "قیمت پژو 207 چقدر است؟" یا "دنا پلاس چند است؟" استفاده کنید
+- قیمت خروجی رو به صورت فارسی ذکر کن مثلا ۱۰۰۰۰۰۰۰۰ تومان = ۱۰۰ میلیون تومان
 
 3. برای دریافت تاریخ فعلی، از تابع get_current_shamsi_date استفاده کنید:
 - این تابع تاریخ فعلی را به صورت شمسی (فارسی) برمی‌گرداند
