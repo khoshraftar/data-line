@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django import forms
 from .models import UserAuth, Conversation, Message, Payment
 from .views import send_welcome_message_after_payment
+from .utils import to_shamsi_datetime_full
 
 # Register your models here.
 
@@ -61,8 +62,8 @@ class UserAuthAdmin(admin.ModelAdmin):
                         if latest_payment:
                             formatted_message = message_template.format(
                                 amount=latest_payment.amount,
-                                start_date=latest_payment.subscription_start.strftime("%j %B %Y - %H:%M") if latest_payment.subscription_start else "نامشخص",
-                                end_date=latest_payment.subscription_end.strftime("%j %B %Y - %H:%M") if latest_payment.subscription_end else "نامشخص",
+                                start_date=to_shamsi_datetime_full(latest_payment.subscription_start) if latest_payment.subscription_start else "نامشخص",
+                                end_date=to_shamsi_datetime_full(latest_payment.subscription_end) if latest_payment.subscription_end else "نامشخص",
                                 ref_id=latest_payment.ref_id or "نامشخص"
                             )
                         else:
