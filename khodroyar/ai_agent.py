@@ -239,12 +239,9 @@ class KhodroyarAIAgent:
             messages.extend(conversation_history)
             messages.append({"role": "user", "content": user_message})
             
-            print(f"Calling Aval AI API with base_url: {self.base_url}")
-            print(f"Messages to send: {messages}")
-            
             # Try GPT-4.1 models in order of preference
             gpt4_models = [
-                "gpt-4.1",  # Primary GPT-4.1 model
+                "gpt-4.1",      # Primary GPT-4.1 model
             ]
             
             response = None
@@ -252,7 +249,6 @@ class KhodroyarAIAgent:
             
             for model in gpt4_models:
                 try:
-                    print(f"Trying model: {model}")
                     
                     # First call - check if function calling is needed
                     response = self.client.chat.completions.create(
