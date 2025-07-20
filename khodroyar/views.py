@@ -738,7 +738,7 @@ def send_welcome_message_after_payment(user_auth, payment):
             
             if conversation_id:
                 # Create conversation in our database with the received conversation_id
-                conversation = Conversation.objects.create(
+                conversation = Conversation.objects.get_or_create(
                     user_auth=user_auth,
                     conversation_id=conversation_id,
                     title='خودرویار - اشتراک جدید',
