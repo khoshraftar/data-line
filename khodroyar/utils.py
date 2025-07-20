@@ -25,7 +25,7 @@ def convert_to_tehran_timezone(datetime_obj):
     
     # If datetime is naive, assume it's in UTC
     if timezone.is_naive(datetime_obj):
-        datetime_obj = timezone.make_aware(datetime_obj, timezone.UTC)
+        datetime_obj = timezone.make_aware(datetime_obj, pytz.UTC)
     
     # Convert to Tehran timezone
     return datetime_obj.astimezone(tehran_tz)
