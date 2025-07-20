@@ -173,7 +173,7 @@ KHODROYAR_DIAMOND_PAYMENT_AMOUNT = 480000  # 48,000 Toman in Rials (480,000 Rial
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 

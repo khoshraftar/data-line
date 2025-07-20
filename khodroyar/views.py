@@ -11,7 +11,13 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from .models import UserAuth, Conversation, Message, Payment
-from .utils import to_shamsi_date, check_subscription_status
+from .utils import (
+    to_shamsi_date, 
+    to_shamsi_datetime_full, 
+    format_amount_in_toman,
+    get_current_tehran_datetime,
+    check_subscription_status
+)
 from .ai_agent import get_ai_agent
 from django.utils import timezone
 import time
@@ -195,11 +201,24 @@ def pre_payment(request):
     
     if active_payment:
         # User has an active subscription - show subscription status page instead
+        # Format dates and amounts for Tehran timezone
+        active_payment.subscription_start_formatted = to_shamsi_datetime_full(active_payment.subscription_start)
+        active_payment.subscription_end_formatted = to_shamsi_datetime_full(active_payment.subscription_end)
+        active_payment.amount_formatted = format_amount_in_toman(active_payment.amount)
+        
+        # Format all payments for subscription history
+        all_payments = user_auth.payment_set.all().order_by('-created_at')
+        for payment in all_payments:
+            payment.subscription_start_formatted = to_shamsi_date_short(payment.subscription_start) if payment.subscription_start else "-"
+            payment.subscription_end_formatted = to_shamsi_date_short(payment.subscription_end) if payment.subscription_end else "-"
+            payment.amount_formatted = format_amount_in_toman(payment.amount)
+        
         return render(request, 'khodroyar/active_subscription.html', {
             'user_auth': user_auth,
             'active_payment': active_payment,
+            'all_payments': all_payments,
             'divar_completion_url': settings.DIVAR_COMPLETION_URL,
-            'now': datetime.now()
+            'now': get_current_tehran_datetime()
         })
     
     return render(request, 'khodroyar/pre_payment.html', {
@@ -424,6 +443,12 @@ def payment_success(request):
         if not payment:
             messages.error(request, 'پرداخت تکمیل شده‌ای یافت نشد.')
             return redirect('khodroyar:pre_payment')
+        
+        # Format dates and amounts for Tehran timezone
+        payment.subscription_start_formatted = to_shamsi_datetime_full(payment.subscription_start)
+        payment.subscription_end_formatted = to_shamsi_datetime_full(payment.subscription_end)
+        payment.amount_formatted = format_amount_in_toman(payment.amount)
+        payment.payment_date_formatted = to_shamsi_datetime_full(payment.updated_at)
             
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
@@ -449,6 +474,10 @@ def payment_failed(request):
         if not payment:
             messages.error(request, 'هیچ پرداختی یافت نشد.')
             return redirect('khodroyar:pre_payment')
+        
+        # Format dates and amounts for Tehran timezone
+        payment.amount_formatted = format_amount_in_toman(payment.amount)
+        payment.created_date_formatted = to_shamsi_datetime_full(payment.created_at)
             
     except UserAuth.DoesNotExist:
         return redirect('khodroyar:login')
@@ -671,9 +700,9 @@ def send_welcome_message_after_payment(user_auth, payment):
         welcome_message = f"""🎉 تبریک! اشتراک خودرویار شما با موفقیت فعال شد!
 
 ✅ پرداخت شما تایید شد
-💰 مبلغ: {payment.amount:,} ریال
-📅 شروع اشتراک: {to_shamsi_date(payment.subscription_start)}
-📅 پایان اشتراک: {to_shamsi_date(payment.subscription_end)}
+💰 مبلغ: {format_amount_in_toman(payment.amount)}
+📅 شروع اشتراک: {to_shamsi_datetime_full(payment.subscription_start)}
+📅 پایان اشتراک: {to_shamsi_datetime_full(payment.subscription_end)}
 🔢 شماره پیگیری: {payment.ref_id}
 
 🚗 حالا می‌توانید از خدمات خودرویار استفاده کنید:
@@ -682,7 +711,7 @@ def send_welcome_message_after_payment(user_auth, payment):
 • مقایسه خودروها
 • راهنمای خرید
 
-برای شروع، پیام خود را بنویسید! (مثلا: سلام)""" 
+برای شروع، پیام خود را بنویسید! (مثلا: سلام)"""
 
         # First, send welcome message using user_id to get conversation_id
         # Use a different endpoint that accepts user_id instead of conversation_id

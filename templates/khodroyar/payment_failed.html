@@ -26,7 +26,7 @@
                         <div class="row text-start">
                             <div class="col-md-6">
                                 <p><strong>شناسه کاربر:</strong> {{ user_auth.user_id|truncatechars:20 }}</p>
-                                <p><strong>مبلغ:</strong> {{ payment.amount|floatformat:0 }} ریال</p>
+                                <p><strong>مبلغ:</strong> {{ payment.amount_formatted }}</p>
                             </div>
                             <div class="col-md-6">
                                 <p><strong>وضعیت:</strong> 
@@ -34,7 +34,7 @@
                                         {{ payment.get_status_display }}
                                     </span>
                                 </p>
-                                <p><strong>تاریخ:</strong> {{ payment.created_at|date:"j F Y - H:i" }}</p>
+                                <p><strong>تاریخ:</strong> {{ payment.created_date_formatted }}</p>
                             </div>
                         </div>
                     </div>

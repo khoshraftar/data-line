@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Optional
 import openai
 import jdatetime
+import pytz
 from django.conf import settings
 from .models import Conversation, Message
 from .car_search import get_car_search_service
@@ -167,8 +168,9 @@ class KhodroyarAIAgent:
                 return result
                 
             elif function_name == "get_current_shamsi_date":
-                # Get current datetime and convert to Shamsi
-                current_datetime = datetime.now()
+                # Get current datetime in Tehran timezone and convert to Shamsi
+                tehran_tz = pytz.timezone('Asia/Tehran')
+                current_datetime = datetime.now(tehran_tz)
                 shamsi_datetime = jdatetime.datetime.fromgregorian(datetime=current_datetime)
                 
                 # Persian month names
@@ -336,7 +338,7 @@ class KhodroyarAIAgent:
         Returns:
             System prompt string
         """
-        base_prompt = """شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو جهت خرید بر اساس بودجه . 
+        base_prompt = """شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو صفر جهت خرید بر اساس بودجه . 
 
 وظایف شما:
 - پاسخ به سوالات مربوط به خودرو

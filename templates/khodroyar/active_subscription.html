@@ -31,7 +31,7 @@
                                 <i class="fas fa-calendar-check fa-2x text-success me-3"></i>
                                 <div>
                                     <h5 class="fw-bold mb-1">شروع اشتراک</h5>
-                                    <p class="text-muted mb-0">{{ active_payment.subscription_start|date:"Y/m/d H:i" }}</p>
+                                    <p class="text-muted mb-0">{{ active_payment.subscription_start_formatted }}</p>
                                 </div>
                             </div>
                         </div>
@@ -40,7 +40,7 @@
                                 <i class="fas fa-calendar-times fa-2x text-warning me-3"></i>
                                 <div>
                                     <h5 class="fw-bold mb-1">پایان اشتراک</h5>
-                                    <p class="text-muted mb-0">{{ active_payment.subscription_end|date:"Y/m/d H:i" }}</p>
+                                    <p class="text-muted mb-0">{{ active_payment.subscription_end_formatted }}</p>
                                 </div>
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                                 <i class="fas fa-money-bill-wave fa-2x text-primary me-3"></i>
                                 <div>
                                     <h5 class="fw-bold mb-1">مبلغ پرداختی</h5>
-                                    <p class="text-muted mb-0">{{ active_payment.amount|floatformat:0 }} ریال</p>
+                                    <p class="text-muted mb-0">{{ active_payment.amount_formatted }}</p>
                                 </div>
                             </div>
                         </div>
@@ -164,15 +164,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for payment in user_auth.payment_set.all|dictsortreversed:"created_at" %}
+                                {% for payment in all_payments %}
                                 <tr class="{% if payment.id == active_payment.id %}table-success{% endif %}">
                                     <td>
                                         <span class="badge {% if payment.metadata.plan == 'diamond' %}bg-warning{% else %}bg-primary{% endif %}">
                                             {{ payment.metadata.plan_name|default:"اشتراک خودرویار" }}
                                         </span>
                                     </td>
-                                    <td>{{ payment.subscription_start|date:"Y/m/d"|default:"-" }}</td>
-                                    <td>{{ payment.subscription_end|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>{{ payment.subscription_start_formatted }}</td>
+                                    <td>{{ payment.subscription_end_formatted }}</td>
                                     <td>
                                         {% if payment.status == 'completed' %}
                                             {% if payment.subscription_end > now %}
@@ -188,7 +188,7 @@
                                             <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ payment.amount|floatformat:0 }} ریال</td>
+                                    <td>{{ payment.amount_formatted }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>

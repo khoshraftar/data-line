@@ -24,11 +24,11 @@
                         <h5><i class="fas fa-info-circle"></i> اطلاعات پرداخت:</h5>
                         <div class="row text-start">
                             <div class="col-md-6">
-                                <p><strong>مبلغ پرداختی:</strong> {{ payment.amount|floatformat:0 }} ریال</p>
+                                <p><strong>مبلغ پرداختی:</strong> {{ payment.amount_formatted }}</p>
                             </div>
                             <div class="col-md-6">
                                 <p><strong>شماره پیگیری:</strong> {{ payment.ref_id }}</p>
-                                <p><strong>تاریخ پرداخت:</strong> {{ payment.updated_at|date:"j F Y - H:i" }}</p>
+                                <p><strong>تاریخ پرداخت:</strong> {{ payment.payment_date_formatted }}</p>
                             </div>
                         </div>
                     </div>
@@ -37,10 +37,10 @@
                         <h5><i class="fas fa-calendar-alt"></i> اطلاعات اشتراک:</h5>
                         <div class="row text-start">
                             <div class="col-md-6">
-                                <p><strong>شروع اشتراک:</strong> {{ payment.subscription_start|date:"j F Y - H:i" }}</p>
+                                <p><strong>شروع اشتراک:</strong> {{ payment.subscription_start_formatted }}</p>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>پایان اشتراک:</strong> {{ payment.subscription_end|date:"j F Y - H:i" }}</p>
+                                <p><strong>پایان اشتراک:</strong> {{ payment.subscription_end_formatted }}</p>
                             </div>
                         </div>
                         <p class="mb-0 mt-2"><i class="fas fa-clock text-info"></i> اشتراک شما به مدت {{ payment.metadata.subscription_days|default:1 }} روز فعال خواهد بود.</p>
