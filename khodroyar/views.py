@@ -499,7 +499,6 @@ def receive_message(request):
     """API endpoint to receive messages from users"""
     try:
         data = json.loads(request.body)
-        print(f"Received message: {data}")
         
         # Handle the new message format
         new_message = data.get('new_chatbot_message', {})

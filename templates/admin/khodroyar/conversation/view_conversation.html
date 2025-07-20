@@ -1,0 +1,286 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+    .conversation-header {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .conversation-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .conversation-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #007cba;
+        padding-bottom: 10px;
+    }
+    
+    .messages-container {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        max-height: 600px;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    
+    .message {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        position: relative;
+    }
+    
+    .message.user {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        margin-left: 20%;
+    }
+    
+    .message.bot {
+        background: #f3e5f5;
+        border-left: 4px solid #9c27b0;
+        margin-right: 20%;
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .message-type {
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+    }
+    
+    .message-type.user {
+        background: #2196f3;
+        color: white;
+    }
+    
+    .message-type.bot {
+        background: #9c27b0;
+        color: white;
+    }
+    
+    .message-content {
+        font-size: 14px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .message-time {
+        color: #999;
+        font-size: 11px;
+    }
+    
+    .no-messages {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 40px;
+    }
+    
+    .back-button {
+        margin-bottom: 20px;
+    }
+    
+    .back-button a {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #007cba;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    
+    .back-button a:hover {
+        background: #005a87;
+    }
+    
+    .stats {
+        background: #f0f8ff;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        border: 1px solid #b3d9ff;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007cba;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:khodroyar_conversation_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; مشاهده مکالمه
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="back-button">
+        <a href="{% url 'admin:khodroyar_conversation_changelist' %}">← بازگشت به لیست مکالمات</a>
+    </div>
+    
+    <h1>{{ title }}</h1>
+    
+    <div class="conversation-header">
+        <div class="conversation-title">
+            {{ conversation.title|default:conversation.conversation_id }}
+        </div>
+        
+        <div class="conversation-info">
+            <div class="info-item">
+                <span class="info-label">شناسه مکالمه</span>
+                <span class="info-value">{{ conversation.conversation_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">کاربر</span>
+                <span class="info-value">{{ conversation.user_auth.user_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">وضعیت</span>
+                <span class="info-value">
+                    {% if conversation.is_active %}
+                        <span style="color: green;">فعال</span>
+                    {% else %}
+                        <span style="color: red;">غیرفعال</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">تاریخ ایجاد</span>
+                <span class="info-value">{{ conversation.created_at|date:"j F Y - H:i" }}</span>
+            </div>
+            {% if conversation.user_auth.phone %}
+            <div class="info-item">
+                <span class="info-label">شماره تلفن</span>
+                <span class="info-value">{{ conversation.user_auth.phone }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">آخرین بروزرسانی</span>
+                <span class="info-value">{{ conversation.updated_at|date:"j F Y - H:i" }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_messages }}</div>
+                <div class="stat-label">کل پیام‌ها</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ user_messages }}</div>
+                <div class="stat-label">پیام‌های کاربر</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ bot_messages }}</div>
+                <div class="stat-label">پیام‌های ربات</div>
+            </div>
+            {% if messages %}
+            <div class="stat-item">
+                <div class="stat-number">{{ messages.first.created_at|timesince:messages.last.created_at }}</div>
+                <div class="stat-label">مدت مکالمه</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="message {{ message.message_type }}">
+                <div class="message-header">
+                    <span class="message-type {{ message.message_type }}">
+                        {% if message.message_type == 'user' %}
+                            کاربر
+                        {% else %}
+                            ربات
+                        {% endif %}
+                    </span>
+                    <span class="message-time">{{ message.created_at|date:"j F Y - H:i:s" }}</span>
+                </div>
+                <div class="message-content">{{ message.content }}</div>
+                {% if message.metadata %}
+                <div style="margin-top: 10px; font-size: 11px; color: #999;">
+                    <strong>متادیتا:</strong> {{ message.metadata|pprint }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-messages">
+                هیچ پیامی در این مکالمه یافت نشد.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

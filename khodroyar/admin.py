@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django import forms
+from django.utils.html import format_html
 from .models import UserAuth, Conversation, Message, Payment
 from .views import send_welcome_message_after_payment
 from .utils import to_shamsi_datetime_full
@@ -128,10 +129,69 @@ class UserAuthAdmin(admin.ModelAdmin):
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ['conversation_id', 'user_auth', 'title', 'is_active', 'created_at']
+    list_display = ['conversation_id', 'user_auth', 'title', 'is_active', 'created_at', 'view_conversation_link']
     list_filter = ['is_active', 'created_at', 'updated_at']
     search_fields = ['conversation_id', 'title', 'user_auth__user_id']
     readonly_fields = ['created_at', 'updated_at']
+    
+    actions = ['view_conversation']
+    
+    def view_conversation_link(self, obj):
+        """Create a link to view the conversation"""
+        url = reverse('admin:khodroyar_conversation_view', args=[obj.id])
+        return format_html('<a href="{}" class="button">مشاهده مکالمه</a>', url)
+    view_conversation_link.short_description = 'عملیات'
+    view_conversation_link.allow_tags = True
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:conversation_id>/view/',
+                self.admin_site.admin_view(self.view_conversation_detail),
+                name='khodroyar_conversation_view',
+            ),
+        ]
+        return custom_urls + urls
+    
+    def view_conversation(self, request, queryset):
+        """View conversation action - redirects to the first selected conversation"""
+        if queryset.count() != 1:
+            self.message_user(
+                request,
+                'لطفاً دقیقاً یک مکالمه را انتخاب کنید.',
+                messages.ERROR
+            )
+            return HttpResponseRedirect(request.get_full_path())
+        
+        conversation = queryset.first()
+        return HttpResponseRedirect(
+            reverse('admin:khodroyar_conversation_view', args=[conversation.id])
+        )
+    
+    view_conversation.short_description = 'مشاهده مکالمه انتخاب شده'
+    
+    def view_conversation_detail(self, request, conversation_id):
+        """Display conversation detail with all messages"""
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        messages = conversation.messages.all().order_by('created_at')
+        
+        # Calculate message statistics
+        total_messages = messages.count()
+        user_messages = messages.filter(message_type='user').count()
+        bot_messages = messages.filter(message_type='bot').count()
+        
+        context = {
+            'title': f'مشاهده مکالمه: {conversation.title or conversation.conversation_id}',
+            'conversation': conversation,
+            'messages': messages,
+            'total_messages': total_messages,
+            'user_messages': user_messages,
+            'bot_messages': bot_messages,
+            'opts': self.model._meta,
+        }
+        
+        return render(request, 'admin/khodroyar/conversation/view_conversation.html', context)
 
 
 @admin.register(Message)
