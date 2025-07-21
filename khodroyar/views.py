@@ -498,6 +498,33 @@ def payment_failed(request):
 def receive_message(request):
     """API endpoint to receive messages from users"""
     try:
+        # Check for Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return JsonResponse({
+                'success': False,
+                'error': 'Authorization header is required'
+            }, status=401)
+        
+        # Validate Authorization header format
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid authorization header format. Expected: Bearer <token>'
+            }, status=401)
+        
+        # Extract token from Authorization header
+        token = auth_header.split(' ')[1]
+        
+        # Validate token against Divar authorization token
+        expected_token = settings.DIVAR_AUTHORIZATION_TOKEN
+        
+        if token != expected_token:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid authorization token'
+            }, status=401)
+        
         data = json.loads(request.body)
         
         # Handle the new message format

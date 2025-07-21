@@ -219,6 +219,7 @@ DIVAR_API_BASE_URL = 'https://open-api.divar.ir/v2/open-platform/'
 DIVAR_ADDON_CREATE_URL = f'{DIVAR_API_BASE_URL}addons/post/'+'{post_token}'
 DIVAR_COMPLETION_URL = 'https://open-platform-redirect.divar.ir/completion'
 DIVAR_CHAT_API_URL = 'https://open-api.divar.ir/experimental/open-platform/chatbot-conversations/{conversation_id}/messages'
+DIVAR_AUTHORIZATION_TOKEN = os.getenv('DIVAR_AUTHORIZATION_TOKEN', 'your-divar-authorization-token-here')
 
 # Aval AI API Configuration
 AVAL_AI_BASE_URL = 'https://api.avalai.ir/v1'
