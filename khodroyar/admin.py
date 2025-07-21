@@ -12,29 +12,6 @@ from datetime import datetime
 
 # Register your models here.
 
-class WelcomeMessageForm(forms.Form):
-    message = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 5, 'cols': 80}),
-        label='پیام خوش‌آمدگویی',
-        initial="""🎉 تبریک! اشتراک خودرویار شما با موفقیت فعال شد!
-
-✅ پرداخت شما تایید شد
-💰 مبلغ: {amount:,} ریال
-📅 شروع اشتراک: {start_date}
-📅 پایان اشتراک: {end_date}
-🔢 شماره پیگیری: {ref_id}
-
-🚗 حالا می‌توانید از خدمات خودرویار استفاده کنید:
-• جستجوی خودرو
-• اطلاعات قیمت
-• مقایسه خودروها
-• راهنمای خرید
-
-برای شروع، پیام خود را بنویسید! (مثلا: سلام)""",
-        help_text='پیام خوش‌آمدگویی که برای کاربر ارسال خواهد شد'
-    )
-
-
 class SendMessageForm(forms.Form):
     message = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 5, 'cols': 80}),
@@ -62,83 +39,84 @@ class UserAuthAdmin(admin.ModelAdmin):
     
     def send_welcome_message(self, request, queryset):
         """Send welcome message to selected users"""
-        if request.method == 'POST':
-            form = WelcomeMessageForm(request.POST)
-            if form.is_valid():
-                message_template = form.cleaned_data['message']
-                success_count = 0
-                error_count = 0
+        success_count = 0
+        error_count = 0
+        
+        # Default welcome message template
+        message_template = """🎉 تبریک! اشتراک خودرویار شما با موفقیت فعال شد!
+
+✅ پرداخت شما تایید شد
+💰 مبلغ: {amount:,} ریال
+📅 شروع اشتراک: {start_date}
+📅 پایان اشتراک: {end_date}
+🔢 شماره پیگیری: {ref_id}
+
+🚗 حالا می‌توانید از خدمات خودرویار استفاده کنید:
+• جستجوی خودرو
+• اطلاعات قیمت
+• مقایسه خودروها
+• راهنمای خرید
+
+برای شروع، پیام خود را بنویسید! (مثلا: سلام)"""
+        
+        for user_auth in queryset:
+            try:
+                # Get user's latest completed payment for formatting
+                latest_payment = Payment.objects.filter(
+                    user_auth=user_auth,
+                    status='completed'
+                ).order_by('-created_at').first()
                 
-                for user_auth in queryset:
-                    try:
-                        # Get user's latest completed payment for formatting
-                        latest_payment = Payment.objects.filter(
-                            user_auth=user_auth,
-                            status='completed'
-                        ).order_by('-created_at').first()
-                        
-                        # Format message with payment data or use placeholders
-                        if latest_payment:
-                            formatted_message = message_template.format(
-                                amount=latest_payment.amount,
-                                start_date=to_shamsi_datetime_full(latest_payment.subscription_start) if latest_payment.subscription_start else "نامشخص",
-                                end_date=to_shamsi_datetime_full(latest_payment.subscription_end) if latest_payment.subscription_end else "نامشخص",
-                                ref_id=latest_payment.ref_id or "نامشخص"
-                            )
-                        else:
-                            # Use placeholder values if no payment exists
-                            formatted_message = message_template.format(
-                                amount=0,
-                                start_date="نامشخص",
-                                end_date="نامشخص",
-                                ref_id="ADMIN_WELCOME"
-                            )
-                        
-                        # Create a mock payment object for the welcome message function
-                        mock_payment = MockPayment(
-                            user_auth=user_auth,
-                            amount=latest_payment.amount if latest_payment else 0,
-                            ref_id=latest_payment.ref_id if latest_payment else 'ADMIN_WELCOME',
-                            subscription_start=latest_payment.subscription_start if latest_payment else None,
-                            subscription_end=latest_payment.subscription_end if latest_payment else None
-                        )
-                        
-                        # Send welcome message
-                        if send_welcome_message_after_payment(user_auth, mock_payment):
-                            success_count += 1
-                        else:
-                            error_count += 1
-                    except Exception as e:
-                        error_count += 1
-                        print(f"Error sending welcome message to {user_auth.user_id}: {str(e)}")
-                
-                if success_count > 0:
-                    self.message_user(
-                        request,
-                        f'پیام خوش‌آمدگویی با موفقیت برای {success_count} کاربر ارسال شد.',
-                        messages.SUCCESS
+                # Format message with payment data or use placeholders
+                if latest_payment:
+                    formatted_message = message_template.format(
+                        amount=latest_payment.amount,
+                        start_date=to_shamsi_datetime_full(latest_payment.subscription_start) if latest_payment.subscription_start else "نامشخص",
+                        end_date=to_shamsi_datetime_full(latest_payment.subscription_end) if latest_payment.subscription_end else "نامشخص",
+                        ref_id=latest_payment.ref_id or "نامشخص"
+                    )
+                else:
+                    # Use placeholder values if no payment exists
+                    formatted_message = message_template.format(
+                        amount=0,
+                        start_date="نامشخص",
+                        end_date="نامشخص",
+                        ref_id="ADMIN_WELCOME"
                     )
                 
-                if error_count > 0:
-                    self.message_user(
-                        request,
-                        f'خطا در ارسال پیام برای {error_count} کاربر.',
-                        messages.ERROR
-                    )
+                # Create a mock payment object for the welcome message function
+                mock_payment = MockPayment(
+                    user_auth=user_auth,
+                    amount=latest_payment.amount if latest_payment else 0,
+                    ref_id=latest_payment.ref_id if latest_payment else 'ADMIN_WELCOME',
+                    subscription_start=latest_payment.subscription_start if latest_payment else None,
+                    subscription_end=latest_payment.subscription_end if latest_payment else None
+                )
                 
-                return HttpResponseRedirect(request.get_full_path())
-        else:
-            form = WelcomeMessageForm()
+                # Send welcome message
+                if send_welcome_message_after_payment(user_auth, mock_payment):
+                    success_count += 1
+                else:
+                    error_count += 1
+            except Exception as e:
+                error_count += 1
+                print(f"Error sending welcome message to {user_auth.user_id}: {str(e)}")
         
-        context = {
-            'title': 'ارسال پیام خوش‌آمدگویی',
-            'form': form,
-            'queryset': queryset,
-            'opts': self.model._meta,
-            'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
-        }
+        if success_count > 0:
+            self.message_user(
+                request,
+                f'پیام خوش‌آمدگویی با موفقیت برای {success_count} کاربر ارسال شد.',
+                messages.SUCCESS
+            )
         
-        return render(request, 'admin/khodroyar/userauth/send_welcome_message.html', context)
+        if error_count > 0:
+            self.message_user(
+                request,
+                f'خطا در ارسال پیام برای {error_count} کاربر.',
+                messages.ERROR
+            )
+        
+        return HttpResponseRedirect(request.get_full_path())
     
     send_welcome_message.short_description = 'ارسال پیام خوش‌آمدگویی به کاربران انتخاب شده'
 
