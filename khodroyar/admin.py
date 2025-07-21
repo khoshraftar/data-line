@@ -62,7 +62,7 @@ class UserAuthAdmin(admin.ModelAdmin):
     
     def send_welcome_message(self, request, queryset):
         """Send welcome message to selected users"""
-        if 'apply' in request.POST:
+        if request.method == 'POST':
             form = WelcomeMessageForm(request.POST)
             if form.is_valid():
                 message_template = form.cleaned_data['message']
