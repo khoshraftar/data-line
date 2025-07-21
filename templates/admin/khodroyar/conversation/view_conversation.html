@@ -195,6 +195,12 @@
             {{ conversation.title|default:conversation.conversation_id }}
         </div>
         
+        <div class="conversation-actions" style="margin-bottom: 15px;">
+            <a href="{% url 'admin:khodroyar_conversation_send_message' conversation.id %}" class="button" style="background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">
+                📤 ارسال پیام
+            </a>
+        </div>
+        
         <div class="conversation-info">
             <div class="info-item">
                 <span class="info-label">شناسه مکالمه</span>

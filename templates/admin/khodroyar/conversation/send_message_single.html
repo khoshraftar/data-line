@@ -1,0 +1,148 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ form.media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+<style>
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .form-row label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-row textarea {
+        width: 100%;
+        max-width: 600px;
+        min-height: 150px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: inherit;
+    }
+    .help-text {
+        color: #666;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    .conversation-info {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    .conversation-info h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007cba;
+        padding-bottom: 10px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .info-label {
+        font-weight: bold;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-size: 14px;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:khodroyar_conversation_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; <a href="{% url 'admin:khodroyar_conversation_view' conversation.id %}">{{ conversation.conversation_id }}</a>
+    &rsaquo; {% trans 'Send Message' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+    
+    <div class="conversation-info">
+        <h3>اطلاعات مکالمه</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">شناسه مکالمه</span>
+                <span class="info-value">{{ conversation.conversation_id }}</span>
+            </div>
+            {% if conversation.title %}
+            <div class="info-item">
+                <span class="info-label">عنوان</span>
+                <span class="info-value">{{ conversation.title }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">کاربر</span>
+                <span class="info-value">{{ conversation.user_auth.user_id }}</span>
+            </div>
+            {% if conversation.user_auth.phone %}
+            <div class="info-item">
+                <span class="info-label">شماره تلفن</span>
+                <span class="info-value">{{ conversation.user_auth.phone }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">وضعیت</span>
+                <span class="info-value">
+                    {% if conversation.is_active %}
+                        <span style="color: green;">فعال</span>
+                    {% else %}
+                        <span style="color: red;">غیرفعال</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">تاریخ ایجاد</span>
+                <span class="info-value">{{ conversation.created_at|date:"j F Y - H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            {{ form.message.label_tag }}
+            {{ form.message }}
+            {% if form.message.help_text %}
+            <div class="help-text">{{ form.message.help_text }}</div>
+            {% endif %}
+            {% if form.message.errors %}
+            <div class="errors">
+                {% for error in form.message.errors %}
+                <p class="errornote">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="submit-row">
+            <input type="submit" name="apply" value="ارسال پیام" class="default" />
+            <a href="{% url 'admin:khodroyar_conversation_view' conversation.id %}" class="button cancel-link">انصراف</a>
+        </div>
+    </form>
+</div>
+{% endblock %} 

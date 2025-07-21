@@ -6,8 +6,9 @@ from django.shortcuts import render, get_object_or_404
 from django import forms
 from django.utils.html import format_html
 from .models import UserAuth, Conversation, Message, Payment
-from .views import send_welcome_message_after_payment
+from .views import send_welcome_message_after_payment, send_bot_message
 from .utils import to_shamsi_datetime_full
+from datetime import datetime
 
 # Register your models here.
 
@@ -31,6 +32,14 @@ class WelcomeMessageForm(forms.Form):
 
 برای شروع، پیام خود را بنویسید! (مثلا: سلام)""",
         help_text='پیام خوش‌آمدگویی که برای کاربر ارسال خواهد شد'
+    )
+
+
+class SendMessageForm(forms.Form):
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 5, 'cols': 80}),
+        label='پیام',
+        help_text='پیامی که برای کاربر ارسال خواهد شد'
     )
 
 @admin.register(UserAuth)
@@ -134,12 +143,17 @@ class ConversationAdmin(admin.ModelAdmin):
     search_fields = ['conversation_id', 'title', 'user_auth__user_id']
     readonly_fields = ['created_at', 'updated_at']
     
-    actions = ['view_conversation']
+    actions = ['view_conversation', 'send_message']
     
     def view_conversation_link(self, obj):
-        """Create a link to view the conversation"""
-        url = reverse('admin:khodroyar_conversation_view', args=[obj.id])
-        return format_html('<a href="{}" class="button">مشاهده مکالمه</a>', url)
+        """Create links to view the conversation and send message"""
+        view_url = reverse('admin:khodroyar_conversation_view', args=[obj.id])
+        send_url = reverse('admin:khodroyar_conversation_send_message', args=[obj.id])
+        return format_html(
+            '<a href="{}" class="button" style="margin-right: 5px;">👁️ مشاهده</a>'
+            '<a href="{}" class="button" style="background: #28a745; color: white;">📤 ارسال پیام</a>',
+            view_url, send_url
+        )
     view_conversation_link.short_description = 'عملیات'
     view_conversation_link.allow_tags = True
     
@@ -150,6 +164,11 @@ class ConversationAdmin(admin.ModelAdmin):
                 '<int:conversation_id>/view/',
                 self.admin_site.admin_view(self.view_conversation_detail),
                 name='khodroyar_conversation_view',
+            ),
+            path(
+                '<int:conversation_id>/send-message/',
+                self.admin_site.admin_view(self.send_message_to_conversation),
+                name='khodroyar_conversation_send_message',
             ),
         ]
         return custom_urls + urls
@@ -170,6 +189,122 @@ class ConversationAdmin(admin.ModelAdmin):
         )
     
     view_conversation.short_description = 'مشاهده مکالمه انتخاب شده'
+    
+    def send_message(self, request, queryset):
+        """Send a message to selected conversations"""
+        if 'apply' in request.POST:
+            form = SendMessageForm(request.POST)
+            if form.is_valid():
+                message_content = form.cleaned_data['message']
+                success_count = 0
+                error_count = 0
+                
+                for conversation in queryset:
+                    try:
+                        # Send message using the conversation's user_auth and conversation_id
+                        if send_bot_message(conversation.user_auth, conversation.conversation_id, message_content):
+                            # Also save the message to our database
+                            Message.objects.create(
+                                conversation=conversation,
+                                message_type='bot',
+                                content=message_content,
+                                metadata={
+                                    'sent_at': datetime.now().isoformat(),
+                                    'timestamp': datetime.now().isoformat(),
+                                    'admin_sent': True
+                                }
+                            )
+                            success_count += 1
+                        else:
+                            error_count += 1
+                    except Exception as e:
+                        error_count += 1
+                        print(f"Error sending message to {conversation.conversation_id}: {str(e)}")
+                
+                if success_count > 0:
+                    self.message_user(
+                        request,
+                        f'پیام با موفقیت برای {success_count} مکالمه ارسال شد.',
+                        messages.SUCCESS
+                    )
+                
+                if error_count > 0:
+                    self.message_user(
+                        request,
+                        f'خطا در ارسال پیام برای {error_count} مکالمه.',
+                        messages.ERROR
+                    )
+                
+                return HttpResponseRedirect(request.get_full_path())
+        else:
+            form = SendMessageForm()
+        
+        context = {
+            'title': 'ارسال پیام به مکالمه‌ها',
+            'form': form,
+            'queryset': queryset,
+            'opts': self.model._meta,
+            'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+        
+        return render(request, 'admin/khodroyar/conversation/send_message.html', context)
+    
+    send_message.short_description = 'ارسال پیام به مکالمه‌ها انتخاب شده'
+    
+    def send_message_to_conversation(self, request, conversation_id):
+        """Send a message to a specific conversation"""
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        
+        if 'apply' in request.POST:
+            form = SendMessageForm(request.POST)
+            if form.is_valid():
+                message_content = form.cleaned_data['message']
+                try:
+                    # Send message using the conversation's user_auth and conversation_id
+                    if send_bot_message(conversation.user_auth, conversation.conversation_id, message_content):
+                        # Also save the message to our database
+                        Message.objects.create(
+                            conversation=conversation,
+                            message_type='bot',
+                            content=message_content,
+                            metadata={
+                                'sent_at': datetime.now().isoformat(),
+                                'timestamp': datetime.now().isoformat(),
+                                'admin_sent': True
+                            }
+                        )
+                        self.message_user(
+                            request,
+                            f'پیام با موفقیت به مکالمه {conversation.conversation_id} ارسال شد.',
+                            messages.SUCCESS
+                        )
+                    else:
+                        self.message_user(
+                            request,
+                            f'خطا در ارسال پیام به مکالمه {conversation.conversation_id}.',
+                            messages.ERROR
+                        )
+                except Exception as e:
+                    self.message_user(
+                        request,
+                        f'خطا در ارسال پیام: {str(e)}',
+                        messages.ERROR
+                    )
+                
+                return HttpResponseRedirect(
+                    reverse('admin:khodroyar_conversation_view', args=[conversation.id])
+                )
+        else:
+            form = SendMessageForm()
+        
+        context = {
+            'title': f'ارسال پیام به مکالمه: {conversation.title or conversation.conversation_id}',
+            'form': form,
+            'conversation': conversation,
+            'opts': self.model._meta,
+        }
+        
+        return render(request, 'admin/khodroyar/conversation/send_message_single.html', context)
     
     def view_conversation_detail(self, request, conversation_id):
         """Display conversation detail with all messages"""
