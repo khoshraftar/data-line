@@ -740,7 +740,7 @@ def send_welcome_message_after_payment(user_auth, payment):
         }
         
         # Use the experimental endpoint for initial message with user_id
-        initial_chat_api_url = 'https://open-api.divar.ir/v1/open-platform/chat/bot/users/{user_id}/messages'
+        initial_chat_api_url = f'https://open-api.divar.ir/v1/open-platform/chat/bot/users/{user_auth.user_id}/messages'
         
         response = requests.post(
             initial_chat_api_url,

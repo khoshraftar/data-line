@@ -42,6 +42,15 @@ class SendMessageForm(forms.Form):
         help_text='پیامی که برای کاربر ارسال خواهد شد'
     )
 
+# Mock Payment class for admin welcome messages
+class MockPayment:
+    def __init__(self, user_auth, amount=0, ref_id='ADMIN_WELCOME', subscription_start=None, subscription_end=None):
+        self.user_auth = user_auth
+        self.amount = amount
+        self.ref_id = ref_id
+        self.subscription_start = subscription_start
+        self.subscription_end = subscription_end
+
 @admin.register(UserAuth)
 class UserAuthAdmin(admin.ModelAdmin):
     list_display = ['user_id', 'phone', 'created_at', 'updated_at']
@@ -86,15 +95,13 @@ class UserAuthAdmin(admin.ModelAdmin):
                             )
                         
                         # Create a mock payment object for the welcome message function
-                        class MockPayment:
-                            def __init__(self, user_auth, message):
-                                self.user_auth = user_auth
-                                self.amount = latest_payment.amount if latest_payment else 0
-                                self.ref_id = latest_payment.ref_id if latest_payment else 'ADMIN_WELCOME'
-                                self.subscription_start = latest_payment.subscription_start if latest_payment else None
-                                self.subscription_end = latest_payment.subscription_end if latest_payment else None
-                        
-                        mock_payment = MockPayment(user_auth, formatted_message)
+                        mock_payment = MockPayment(
+                            user_auth=user_auth,
+                            amount=latest_payment.amount if latest_payment else 0,
+                            ref_id=latest_payment.ref_id if latest_payment else 'ADMIN_WELCOME',
+                            subscription_start=latest_payment.subscription_start if latest_payment else None,
+                            subscription_end=latest_payment.subscription_end if latest_payment else None
+                        )
                         
                         # Send welcome message
                         if send_welcome_message_after_payment(user_auth, mock_payment):
