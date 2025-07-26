@@ -196,7 +196,6 @@ class KhodroyarAIAgent:
         # Get current date
         current_date = self._get_current_shamsi_date()
         car_prices_info = self.car_search_service.get_car_prices_for_prompt()
-        print(car_prices_info)
         base_prompt = f"""شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو صفر و دست دوم جهت خرید بر اساس بودجه . 
 
 وظایف شما:
