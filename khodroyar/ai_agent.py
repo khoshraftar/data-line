@@ -118,7 +118,7 @@ class KhodroyarAIAgent:
         user_context: Optional[Dict] = None
     ) -> str:
         """
-        Generate AI response for user message using GPT-4.1
+        Generate AI response for user message using GPT-4.1 with function calling
         
         Args:
             user_message: The user's message
@@ -134,6 +134,71 @@ class KhodroyarAIAgent:
             
             # Build system prompt
             system_prompt = self._build_system_prompt(user_context)
+            
+            # Define available functions
+            functions = [
+                {
+                    "name": "calculate_used_car_price",
+                    "description": "Calculate used car price based on age, kilometers, and damages",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "base_price": {
+                                "type": "number",
+                                "description": "Original car price in tomans"
+                            },
+                            "car_age": {
+                                "type": "integer",
+                                "description": "Car age in years"
+                            },
+                            "car_kilometers": {
+                                "type": "integer",
+                                "description": "Total kilometers driven"
+                            },
+                            "damages": {
+                                "type": "array",
+                                "description": "List of car damages",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["paint", "replacement", "body_replacement", "hood_replacement"],
+                                            "description": "Type of damage"
+                                        },
+                                        "part": {
+                                            "type": "string",
+                                            "description": "Part name"
+                                        },
+                                        "severity": {
+                                            "type": "string",
+                                            "enum": ["minor", "major"],
+                                            "description": "Severity for paint damage"
+                                        }
+                                    },
+                                    "required": ["type"]
+                                }
+                            },
+                            "brand_popularity": {
+                                "type": "number",
+                                "description": "Brand popularity factor (1.0 for popular, 0.9 for less popular)",
+                                "default": 1.0
+                            },
+                            "options_factor": {
+                                "type": "number",
+                                "description": "Options factor (0.9 to 1.1)",
+                                "default": 1.0
+                            },
+                            "market_factor": {
+                                "type": "number",
+                                "description": "Market factor (usually 1.0)",
+                                "default": 1.0
+                            }
+                        },
+                        "required": ["base_price", "car_age", "car_kilometers", "damages"]
+                    }
+                }
+            ]
             
             # Prepare messages for AI
             messages = [{"role": "system", "content": system_prompt}]
@@ -153,6 +218,8 @@ class KhodroyarAIAgent:
                     response = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
+                        functions=functions,
+                        function_call="auto",
                         max_tokens=16000,
                         temperature=0.7,
                         stream=False
@@ -169,8 +236,49 @@ class KhodroyarAIAgent:
             if response is None:
                 raise Exception("All GPT models failed to respond")
             
-            # Get AI response
-            ai_response = response.choices[0].message.content.strip()
+            # Check if function call was requested
+            if response.choices[0].message.function_call:
+                function_call = response.choices[0].message.function_call
+                
+                if function_call.name == "calculate_used_car_price":
+                    # Parse function arguments
+                    import json
+                    function_args = json.loads(function_call.arguments)
+                    
+                    # Call the function
+                    result = self.calculate_used_car_price(
+                        base_price=function_args["base_price"],
+                        car_age=function_args["car_age"],
+                        car_kilometers=function_args["car_kilometers"],
+                        damages=function_args["damages"],
+                        brand_popularity=function_args.get("brand_popularity", 1.0),
+                        options_factor=function_args.get("options_factor", 1.0),
+                        market_factor=function_args.get("market_factor", 1.0)
+                    )
+                    
+                    # Add function result to messages
+                    messages.append({
+                        "role": "function",
+                        "name": "calculate_used_car_price",
+                        "content": json.dumps(result, ensure_ascii=False)
+                    })
+                    
+                    # Get final response from AI
+                    final_response = self.client.chat.completions.create(
+                        model=used_model,
+                        messages=messages,
+                        max_tokens=16000,
+                        temperature=0.7,
+                        stream=False
+                    )
+                    
+                    ai_response = final_response.choices[0].message.content.strip()
+                else:
+                    # Unknown function call
+                    ai_response = "متأسفانه تابع درخواستی پشتیبانی نمی‌شود."
+            else:
+                # No function call, get direct response
+                ai_response = response.choices[0].message.content.strip()
             
             return ai_response
             
@@ -222,23 +330,30 @@ class KhodroyarAIAgent:
 
 {car_prices_info}
 
+برای محاسبه قیمت خودروهای دست دوم:
+- از تابع calculate_used_car_price استفاده کنید
+- این تابع فرمول دقیق محاسبه قیمت خودروهای دست دوم را پیاده‌سازی کرده است
+- ورودی‌های مورد نیاز: قیمت پایه (قیمت خودرو صفر)، سن خودرو (سال)، کیلومتر، لیست آسیب‌ها
+- خروجی: قیمت نهایی و بازه قیمت (±۵ درصد)
 
-فرمول محاسبه قیمت خودروهای دست دوم:
-P=P0*(1-δA)*(1-δK)*(cond)*(Copt)*(Cbrand)*(Cmarket)
-P0: قیمت خودرو صفر
-δA:  نرخ استهلاک سالیانه (افت قیمت سال اول ۱۰ درصد، سال دوم تا چهارم هر سال ۵ درصد و بعد چهارسال هر سال ۲ درصد)   مثلا یک خودرو ی ۶ ساله 0.9*0.95*0.95*0.95*0.95*0.98 میشود
-δK: نرخ استهلاک کیلومتری (۱ درصد به ازای هر ۱۰ هزارکیلومتر اضافه بر ۲۵ هزار کیلومتری سالیانه) 
-Ccond: وضعیت سلامت خودرو. هر قطعه رنگ شدگی ۳ درصد کاهش و رنگ شدگی سقف و یا شاسی ۹ درصد کاهش  هر قطعه تعویض هم ۵ درصد کاهش و تعویض اتاق برای خودرو های ۱۰ سال اخیر ۲۵ درصد برای خودرو های ۱۰ تا ۱۵ سال گذشته ۱۵ درصد و قبل ۱۵ سال ۰ درصد کاهش. تعویض کاپوت هم ۹ درصد کاهش
-Copt: آپشن های خودرو عددی بین 0.9 تا 1.1 معمولا 1
-Cbrand: محبوبیت برند خودرو. خودرو های رایج مثل ایران خودرو و سایپا ۱ و برند های کم طرفدار مثل ام جی و جیلی و لیفان ۰.۹
-Cmarket:  در اکثر موارد ۱ 
+نحوه استفاده از تابع calculate_used_car_price:
+1. قیمت پایه خودرو صفر را از لیست بالا پیدا کنید
+2.  سن خودرو (سال) را مشخص کنید
+3. کیلومتر خودرو را وارد کنید
+4. لیست آسیب‌ها را به صورت زیر تعریف کنید:
+   - رنگ شدگی: {{'type': 'paint', 'part': 'نام قطعه', 'severity': 'minor/major'}}
+   - تعویض قطعه: {{'type': 'replacement', 'part': 'نام قطعه'}}
+   - تعویض اتاق: {{'type': 'body_replacement', 'part': 'نام قطعه'}}
+   - تعویض کاپوت: {{'type': 'hood_replacement', 'part': 'hood'}}
+5. فاکتورهای اختیاری: محبوبیت برند (1.0 برای محبوب، 0.9 برای کم‌محبوب)، آپشن‌ها (0.9-1.1)
 
 برای پاسخ به سوالات کاربر:
 - اگر کاربر بودجه خود را اعلام کرد، از اطلاعات قیمت بالا برای پیدا کردن خودروهای مناسب استفاده کنید
 - اگر کاربر قیمت خودروی خاصی را پرسید، از اطلاعات قیمت بالا برای پیدا کردن آن خودرو استفاده کنید
 - اگر صفر خودرو تولید نمیشد و قیمتش رو در لیست بالا نداشتی نزدیک ترین خودرو رو انتخاب کن و ۱۰ درصد کمتر در نظر بگیر به عنوان قیمت صفر خودرو مذکور
 - همیشه قیمت‌ها را به صورت فارسی و خوانا ارائه دهید (مثلاً ۱ میلیارد و ۵۰۰ میلیون تومان)
-- از فرمول محاسبه قیمت خودرو های دست دوم جهت محاسبه قیمت خودرو دست دوم استفاده کن و عدد بدست آمده را به صورت بازه ۵ درصد بالاتر و ۵ درصد پاین تر به کاربر ارائه بده (به طور مثال ۱۰۰ میلیون تا ۱۵۰ میلیون تومان) و جزئیات فرمول را به کاربر توضیح نده
+- برای محاسبه قیمت خودروهای دست دوم، حتماً از تابع calculate_used_car_price استفاده کنید
+- قیمت نهایی را به صورت بازه ۵ درصد بالاتر و ۵ درصد پایین‌تر ارائه دهید
 - قبل از ارائه هرگونه اطلاعات قیمت، حتماً تاریخ فعلی را ذکر کنید: {current_date}"""
 
         # Add user context if available
@@ -282,6 +397,186 @@ Cmarket:  در اکثر موارد ۱
         except Exception as e:
             print(f"AI API Connection Test Failed: {str(e)}")
             return False
+
+    def calculate_used_car_price(
+        self,
+        base_price: float,
+        car_age: int,
+        car_kilometers: int,
+        damages: List[Dict],
+        brand_popularity: float = 1.0,
+        options_factor: float = 1.0,
+        market_factor: float = 1.0
+    ) -> Dict[str, float]:
+        """
+        Calculate used car price based on the formula:
+        P = P0 * (1-δA) * (1-δK) * Ccond * Copt * Cbrand * Cmarket
+        
+        Args:
+            base_price: Original car price (P0)
+            car_age: Car age in years
+            car_kilometers: Total kilometers driven
+            damages: List of damage dictionaries with keys:
+                - type: 'paint', 'replacement', 'body_replacement', 'hood_replacement'
+                - part: part name (for paint and replacement)
+                - severity: 'minor', 'major' (for paint)
+            brand_popularity: Brand popularity factor (1.0 for popular brands, 0.9 for less popular)
+            options_factor: Options factor (0.9 to 1.1, default 1.0)
+            market_factor: Market factor (usually 1.0)
+            
+        Returns:
+            Dictionary with calculated price and breakdown
+        """
+        try:
+            # Calculate annual depreciation (δA)
+            annual_depreciation = self._calculate_annual_depreciation(car_age)
+            
+            # Calculate kilometer depreciation (δK)
+            kilometer_depreciation = self._calculate_kilometer_depreciation(car_age, car_kilometers)
+            
+            # Calculate condition factor (Ccond)
+            condition_factor = self._calculate_condition_factor(damages, car_age)
+            
+            # Apply the formula
+            final_price = (
+                base_price * 
+                (1 - annual_depreciation) * 
+                (1 - kilometer_depreciation) * 
+                condition_factor * 
+                options_factor * 
+                brand_popularity * 
+                market_factor
+            )
+            
+            # Calculate price range (±5%)
+            price_range_lower = final_price * 0.95
+            price_range_upper = final_price * 1.05
+            
+            return {
+                'base_price': base_price,
+                'final_price': final_price,
+                'price_range_lower': price_range_lower,
+                'price_range_upper': price_range_upper,
+                'annual_depreciation': annual_depreciation,
+                'kilometer_depreciation': kilometer_depreciation,
+                'condition_factor': condition_factor,
+                'options_factor': options_factor,
+                'brand_popularity': brand_popularity,
+                'market_factor': market_factor
+            }
+            
+        except Exception as e:
+            print(f"Error calculating used car price: {str(e)}")
+            return {
+                'base_price': base_price,
+                'final_price': base_price,
+                'price_range_lower': base_price * 0.95,
+                'price_range_upper': base_price * 1.05,
+                'error': str(e)
+            }
+    
+    def _calculate_annual_depreciation(self, car_age: int) -> float:
+        """
+        Calculate annual depreciation factor (δA)
+        
+        Args:
+            car_age: Car age in years
+            
+        Returns:
+            Annual depreciation factor
+        """
+        if car_age <= 0:
+            return 0.0
+        
+        depreciation = 1.0
+        
+        for year in range(1, car_age + 1):
+            if year == 1:
+                # First year: 10% depreciation
+                depreciation *= 0.9
+            elif year <= 4:
+                # Years 2-4: 5% depreciation each year
+                depreciation *= 0.95
+            else:
+                # After 4 years: 2% depreciation each year
+                depreciation *= 0.98
+        
+        return 1.0 - depreciation
+    
+    def _calculate_kilometer_depreciation(self, car_age: int, car_kilometers: int) -> float:
+        """
+        Calculate kilometer depreciation factor (δK)
+        
+        Args:
+            car_age: Car age in years
+            car_kilometers: Total kilometers driven
+            
+        Returns:
+            Kilometer depreciation factor
+        """
+        # Standard annual kilometers: 25,000 km
+        standard_annual_km = 25000
+        expected_km = car_age * standard_annual_km
+        
+        if car_kilometers <= expected_km:
+            return 0.0
+        
+        # Calculate excess kilometers
+        excess_km = car_kilometers - expected_km
+        
+        # 1% depreciation for every 10,000 km excess
+        depreciation = (excess_km / 10000) * 0.01
+        
+        return min(depreciation, 0.5)  # Cap at 50% depreciation
+    
+    def _calculate_condition_factor(self, damages: List[Dict], car_age: int) -> float:
+        """
+        Calculate condition factor (Ccond) based on damages
+        
+        Args:
+            damages: List of damage dictionaries
+            car_age: Car age in years
+            
+        Returns:
+            Condition factor
+        """
+        condition_factor = 1.0
+        
+        for damage in damages:
+            damage_type = damage.get('type', '')
+            
+            if damage_type == 'paint':
+                part = damage.get('part', '')
+                severity = damage.get('severity', 'minor')
+                
+                if part in ['roof', 'chassis'] or severity == 'major':
+                    # Roof/chassis paint or major paint damage: 9% reduction
+                    condition_factor *= 0.91
+                else:
+                    # Regular paint damage: 3% reduction
+                    condition_factor *= 0.97
+                    
+            elif damage_type == 'replacement':
+                # Part replacement: 5% reduction
+                condition_factor *= 0.95
+                
+            elif damage_type == 'body_replacement':
+                # Body replacement based on car age
+                if car_age <= 10:
+                    # Recent cars (≤10 years): 25% reduction
+                    condition_factor *= 0.75
+                elif car_age <= 15:
+                    # Cars 10-15 years: 15% reduction
+                    condition_factor *= 0.85
+                else:
+                    # Cars >15 years: 0% reduction
+                    pass
+                    
+            elif damage_type == 'hood_replacement':
+                # Hood replacement: 9% reduction
+                condition_factor *= 0.91
+        
+        return condition_factor
 
 
 # Global AI agent instance
