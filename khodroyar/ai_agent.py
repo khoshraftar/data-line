@@ -8,11 +8,13 @@ import pytz
 from django.conf import settings
 from .models import Conversation, Message
 from .car_search import get_car_search_service
+from .car_features_search import get_car_features_search_service
 
 
 class KhodroyarAIAgent:
     """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
     car_search_service = get_car_search_service()
+    car_features_search_service = get_car_features_search_service()
 
     def __init__(self):
         """Initialize the AI agent with Aval AI configuration"""
@@ -38,6 +40,219 @@ class KhodroyarAIAgent:
             )
             print("Using standard OpenAI client as fallback")
         
+        # Define available functions for the AI agent
+        self.available_functions = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_car_features",
+                    "description": "Search for car features and specifications by car name with similarity matching",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "car_name": {
+                                "type": "string",
+                                "description": "Name of the car to search for (can be partial or similar)"
+                            },
+                            "similarity_threshold": {
+                                "type": "number",
+                                "description": "Minimum similarity threshold (0.0 to 1.0, default 0.4)",
+                                "default": 0.4
+                            }
+                        },
+                        "required": ["car_name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_cars_by_company",
+                    "description": "Search for cars by company name with similarity matching",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "company_name": {
+                                "type": "string",
+                                "description": "Name of the car company to search for"
+                            },
+                            "similarity_threshold": {
+                                "type": "number",
+                                "description": "Minimum similarity threshold (0.0 to 1.0, default 0.4)",
+                                "default": 0.4
+                            }
+                        },
+                        "required": ["company_name"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_cars_by_feature",
+                    "description": "Search for cars by specific features or characteristics",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "feature_keyword": {
+                                "type": "string",
+                                "description": "Keyword to search for in car features, specs, advantages, or disadvantages"
+                            },
+                            "similarity_threshold": {
+                                "type": "number",
+                                "description": "Minimum similarity threshold (0.0 to 1.0, default 0.3)",
+                                "default": 0.3
+                            }
+                        },
+                        "required": ["feature_keyword"]
+                    }
+                }
+            }
+        ]
+    
+    def search_car_features(self, car_name: str, similarity_threshold: float = 0.4) -> Dict:
+        """
+        Function to search for car features by name
+        
+        Args:
+            car_name: Name of the car to search for
+            similarity_threshold: Minimum similarity threshold
+            
+        Returns:
+            Dictionary with search results
+        """
+        try:
+            results = self.car_features_search_service.search_car_by_name(car_name, similarity_threshold)
+            
+            if not results:
+                return {
+                    "success": False,
+                    "message": f"هیچ خودرویی با نام '{car_name}' یافت نشد.",
+                    "results": []
+                }
+            
+            # Format results for better presentation
+            formatted_results = []
+            for car in results[:5]:  # Limit to top 5 results
+                formatted_car = {
+                    "شرکت": car['company'],
+                    "نام خودرو": car['car_name'],
+                    "نام کامل": car['full_name'],
+                    "مشخصات فنی": car['technical_specs'][:200] + "..." if len(car['technical_specs']) > 200 else car['technical_specs'],
+                    "مزایا": car['advantages'][:200] + "..." if len(car['advantages']) > 200 else car['advantages'],
+                    "معایب": car['disadvantages'][:200] + "..." if len(car['disadvantages']) > 200 else car['disadvantages']
+                }
+                formatted_results.append(formatted_car)
+            
+            return {
+                "success": True,
+                "message": f"نتایج جستجو برای '{car_name}':",
+                "results": formatted_results,
+                "total_found": len(results)
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"خطا در جستجوی خودرو: {str(e)}",
+                "results": []
+            }
+    
+    def search_cars_by_company(self, company_name: str, similarity_threshold: float = 0.4) -> Dict:
+        """
+        Function to search for cars by company
+        
+        Args:
+            company_name: Name of the company to search for
+            similarity_threshold: Minimum similarity threshold
+            
+        Returns:
+            Dictionary with search results
+        """
+        try:
+            results = self.car_features_search_service.search_cars_by_company(company_name, similarity_threshold)
+            
+            if not results:
+                return {
+                    "success": False,
+                    "message": f"هیچ خودرویی از شرکت '{company_name}' یافت نشد.",
+                    "results": []
+                }
+            
+            # Format results for better presentation
+            formatted_results = []
+            for car in results[:10]:  # Limit to top 10 results
+                formatted_car = {
+                    "شرکت": car['company'],
+                    "نام خودرو": car['car_name'],
+                    "نام کامل": car['full_name'],
+                    "مشخصات فنی": car['technical_specs'][:150] + "..." if len(car['technical_specs']) > 150 else car['technical_specs'],
+                    "مزایا": car['advantages'][:150] + "..." if len(car['advantages']) > 150 else car['advantages'],
+                    "معایب": car['disadvantages'][:150] + "..." if len(car['disadvantages']) > 150 else car['disadvantages']
+                }
+                formatted_results.append(formatted_car)
+            
+            return {
+                "success": True,
+                "message": f"خودروهای شرکت '{company_name}':",
+                "results": formatted_results,
+                "total_found": len(results)
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"خطا در جستجوی شرکت: {str(e)}",
+                "results": []
+            }
+    
+    def search_cars_by_feature(self, feature_keyword: str, similarity_threshold: float = 0.3) -> Dict:
+        """
+        Function to search for cars by features
+        
+        Args:
+            feature_keyword: Keyword to search for in features
+            similarity_threshold: Minimum similarity threshold
+            
+        Returns:
+            Dictionary with search results
+        """
+        try:
+            results = self.car_features_search_service.search_cars_by_feature(feature_keyword, similarity_threshold)
+            
+            if not results:
+                return {
+                    "success": False,
+                    "message": f"هیچ خودرویی با ویژگی '{feature_keyword}' یافت نشد.",
+                    "results": []
+                }
+            
+            # Format results for better presentation
+            formatted_results = []
+            for car in results[:8]:  # Limit to top 8 results
+                formatted_car = {
+                    "شرکت": car['company'],
+                    "نام خودرو": car['car_name'],
+                    "نام کامل": car['full_name'],
+                    "مشخصات فنی": car['technical_specs'][:150] + "..." if len(car['technical_specs']) > 150 else car['technical_specs'],
+                    "مزایا": car['advantages'][:150] + "..." if len(car['advantages']) > 150 else car['advantages'],
+                    "معایب": car['disadvantages'][:150] + "..." if len(car['disadvantages']) > 150 else car['disadvantages']
+                }
+                formatted_results.append(formatted_car)
+            
+            return {
+                "success": True,
+                "message": f"خودروهای دارای ویژگی '{feature_keyword}':",
+                "results": formatted_results,
+                "total_found": len(results)
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"خطا در جستجوی ویژگی: {str(e)}",
+                "results": []
+            }
     
     def get_conversation_history(self, conversation: Conversation, max_messages: int = 50) -> List[Dict]:
         """
@@ -118,7 +333,7 @@ class KhodroyarAIAgent:
         user_context: Optional[Dict] = None
     ) -> str:
         """
-        Generate AI response for user message using GPT-4.1
+        Generate AI response for user message using GPT-4.1 with function calling
         
         Args:
             user_message: The user's message
@@ -150,9 +365,12 @@ class KhodroyarAIAgent:
             
             for model in gpt4_models:
                 try:
+                    # First, try to get a response with function calling
                     response = self.client.chat.completions.create(
                         model=model,
                         messages=messages,
+                        tools=self.available_functions,
+                        tool_choice="auto",
                         max_tokens=16000,
                         temperature=0.7,
                         stream=False
@@ -169,8 +387,64 @@ class KhodroyarAIAgent:
             if response is None:
                 raise Exception("All GPT models failed to respond")
             
-            # Get AI response
-            ai_response = response.choices[0].message.content.strip()
+            # Check if the AI wants to call a function
+            if response.choices[0].message.tool_calls:
+                # Handle function calls
+                tool_calls = response.choices[0].message.tool_calls
+                tool_results = []
+                
+                for tool_call in tool_calls:
+                    function_name = tool_call.function.name
+                    function_args = json.loads(tool_call.function.arguments)
+                    
+                    print(f"AI requested function call: {function_name} with args: {function_args}")
+                    
+                    # Execute the appropriate function
+                    if function_name == "search_car_features":
+                        result = self.search_car_features(
+                            car_name=function_args.get("car_name"),
+                            similarity_threshold=function_args.get("similarity_threshold", 0.4)
+                        )
+                    elif function_name == "search_cars_by_company":
+                        result = self.search_cars_by_company(
+                            company_name=function_args.get("company_name"),
+                            similarity_threshold=function_args.get("similarity_threshold", 0.4)
+                        )
+                    elif function_name == "search_cars_by_feature":
+                        result = self.search_cars_by_feature(
+                            feature_keyword=function_args.get("feature_keyword"),
+                            similarity_threshold=function_args.get("similarity_threshold", 0.3)
+                        )
+                    else:
+                        result = {"success": False, "message": f"Unknown function: {function_name}"}
+                    
+                    tool_results.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "content": json.dumps(result, ensure_ascii=False)
+                    })
+                
+                # Add function results to messages and get final response
+                messages.append({
+                    "role": "assistant",
+                    "content": response.choices[0].message.content,
+                    "tool_calls": tool_calls
+                })
+                messages.extend(tool_results)
+                
+                # Get final response from AI
+                final_response = self.client.chat.completions.create(
+                    model=used_model,
+                    messages=messages,
+                    max_tokens=16000,
+                    temperature=0.7,
+                    stream=False
+                )
+                
+                ai_response = final_response.choices[0].message.content.strip()
+            else:
+                # No function calls, return direct response
+                ai_response = response.choices[0].message.content.strip()
             
             return ai_response
             
@@ -196,6 +470,7 @@ class KhodroyarAIAgent:
         # Get current date
         current_date = self._get_current_shamsi_date()
         car_prices_info = self.car_search_service.get_car_prices_for_prompt()
+        car_features_summary = self.car_features_search_service.get_car_features_summary()
         print(car_prices_info)
         base_prompt = f"""شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو صفر و دست دوم جهت خرید بر اساس بودجه . 
 
@@ -204,6 +479,7 @@ class KhodroyarAIAgent:
 - کمک در جستجو و مقایسه خودروها
 - ارائه اطلاعات قیمت و مشخصات
 - راهنمایی جهت بازدید خودرو
+- جستجوی مشخصات فنی، مزایا و معایب خودروها
 
 نکات مهم:
 - همیشه به فارسی پاسخ دهید
@@ -218,9 +494,18 @@ class KhodroyarAIAgent:
 - قبل از ارائه قیمت خودروها، حتماً تاریخ فعلی را ذکر کنید
 - شما در حال حاضر این امکان را ندارید که آگهی خودرو های دیوار دریافت کنید یا پیشنهاد دهید و از کاربر بخواید که مشخصات خوددرو برای شما توضیح دهد تا قیمت را ارزیابی کنید
 
+قابلیت‌های جستجوی خودرو:
+- جستجوی خودرو بر اساس نام (با تطبیق مشابهت)
+- جستجوی خودرو بر اساس شرکت سازنده
+- جستجوی خودرو بر اساس ویژگی‌های خاص (مثل توربو، هیبرید، و غیره)
+
 اطلاعات قیمت خودروهای صفر:
 
 {car_prices_info}
+
+اطلاعات مشخصات و ویژگی‌های خودروهای صفر:
+
+{car_features_summary}
 
 فرمول محاسبه قیمت خودروهای دست دوم:
 P=P0*(1-δA)*(1-δK)*(cond)*(Copt)*(Cbrand)*(Cmarket)
