@@ -274,7 +274,6 @@ class KhodroyarAIAgent:
                 
                 if function_call.name == "calculate_used_car_price":
                     # Parse function arguments
-                    import json
                     function_args = json.loads(function_call.arguments)
                     
                     # Log function parameters
