@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from datetime import datetime
 from typing import List, Dict, Optional
 import openai
@@ -8,6 +9,16 @@ import pytz
 from django.conf import settings
 from .models import Conversation, Message
 from .car_search import get_car_search_service
+
+# Configure logging for function calls
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Only output to stdout
+    ]
+)
+logger = logging.getLogger('khodroyar_function_calls')
 
 
 class KhodroyarAIAgent:
@@ -240,21 +251,51 @@ class KhodroyarAIAgent:
             if response.choices[0].message.function_call:
                 function_call = response.choices[0].message.function_call
                 
+                # Log function call attempt
+                logger.info(f"Function call requested: {function_call.name}")
+                logger.info(f"User message: {user_message}")
+                logger.info(f"Conversation ID: {conversation.id}")
+                
                 if function_call.name == "calculate_used_car_price":
                     # Parse function arguments
                     import json
                     function_args = json.loads(function_call.arguments)
                     
-                    # Call the function
-                    result = self.calculate_used_car_price(
-                        base_price=function_args["base_price"],
-                        car_age=function_args["car_age"],
-                        car_kilometers=function_args["car_kilometers"],
-                        damages=function_args["damages"],
-                        brand_popularity=function_args.get("brand_popularity", 1.0),
-                        options_factor=function_args.get("options_factor", 1.0),
-                        market_factor=function_args.get("market_factor", 1.0)
-                    )
+                    # Log function parameters
+                    logger.info(f"Function parameters: {json.dumps(function_args, ensure_ascii=False, indent=2)}")
+                    
+                    # Record start time for performance tracking
+                    start_time = datetime.now()
+                    
+                    try:
+                        # Call the function
+                        result = self.calculate_used_car_price(
+                            base_price=function_args["base_price"],
+                            car_age=function_args["car_age"],
+                            car_kilometers=function_args["car_kilometers"],
+                            damages=function_args["damages"],
+                            brand_popularity=function_args.get("brand_popularity", 1.0),
+                            options_factor=function_args.get("options_factor", 1.0),
+                            market_factor=function_args.get("market_factor", 1.0)
+                        )
+                        
+                        # Calculate execution time
+                        execution_time = (datetime.now() - start_time).total_seconds()
+                        
+                        # Log successful execution
+                        logger.info(f"Function executed successfully in {execution_time:.3f} seconds")
+                        logger.info(f"Function result: Base price: {result['base_price']:,} -> Final price: {result['final_price']:,.0f}")
+                        logger.info(f"Price range: {result['price_range_lower']:,.0f} - {result['price_range_upper']:,.0f}")
+                        
+                        # Log detailed breakdown
+                        logger.info(f"Depreciation breakdown: Annual: {result['annual_depreciation']:.2%}, Kilometer: {result['kilometer_depreciation']:.2%}, Condition: {result['condition_factor']:.3f}")
+                        
+                    except Exception as func_error:
+                        # Log function execution error
+                        execution_time = (datetime.now() - start_time).total_seconds()
+                        logger.error(f"Function execution failed after {execution_time:.3f} seconds: {str(func_error)}")
+                        logger.error(f"Function arguments that caused error: {json.dumps(function_args, ensure_ascii=False)}")
+                        raise func_error
                     
                     # Add function result to messages
                     messages.append({
@@ -273,11 +314,17 @@ class KhodroyarAIAgent:
                     )
                     
                     ai_response = final_response.choices[0].message.content.strip()
+                    
+                    # Log final response
+                    logger.info(f"Final AI response generated successfully")
+                    
                 else:
                     # Unknown function call
+                    logger.warning(f"Unknown function call requested: {function_call.name}")
                     ai_response = "متأسفانه تابع درخواستی پشتیبانی نمی‌شود."
             else:
                 # No function call, get direct response
+                logger.info("No function call requested - direct response generated")
                 ai_response = response.choices[0].message.content.strip()
             
             return ai_response
@@ -428,14 +475,25 @@ class KhodroyarAIAgent:
             Dictionary with calculated price and breakdown
         """
         try:
+            # Log function entry with parameters
+            logger.info(f"=== Starting calculate_used_car_price ===")
+            logger.info(f"Input parameters: Base price: {base_price:,}, Age: {car_age}, Kilometers: {car_kilometers:,}")
+            logger.info(f"Damages: {len(damages)} items")
+            for i, damage in enumerate(damages):
+                logger.info(f"  Damage {i+1}: {damage}")
+            logger.info(f"Factors: Brand: {brand_popularity}, Options: {options_factor}, Market: {market_factor}")
+            
             # Calculate annual depreciation (δA)
             annual_depreciation = self._calculate_annual_depreciation(car_age)
+            logger.info(f"Annual depreciation calculated: {annual_depreciation:.2%}")
             
             # Calculate kilometer depreciation (δK)
             kilometer_depreciation = self._calculate_kilometer_depreciation(car_age, car_kilometers)
+            logger.info(f"Kilometer depreciation calculated: {kilometer_depreciation:.2%}")
             
             # Calculate condition factor (Ccond)
             condition_factor = self._calculate_condition_factor(damages, car_age)
+            logger.info(f"Condition factor calculated: {condition_factor:.3f}")
             
             # Apply the formula
             final_price = (
@@ -452,6 +510,11 @@ class KhodroyarAIAgent:
             price_range_lower = final_price * 0.95
             price_range_upper = final_price * 1.05
             
+            # Log final calculation details
+            logger.info(f"Final calculation: {base_price:,} * {1-annual_depreciation:.3f} * {1-kilometer_depreciation:.3f} * {condition_factor:.3f} * {options_factor:.3f} * {brand_popularity:.3f} * {market_factor:.3f} = {final_price:,.0f}")
+            logger.info(f"Price range: {price_range_lower:,.0f} - {price_range_upper:,.0f}")
+            logger.info(f"=== calculate_used_car_price completed ===")
+            
             return {
                 'base_price': base_price,
                 'final_price': final_price,
@@ -466,6 +529,8 @@ class KhodroyarAIAgent:
             }
             
         except Exception as e:
+            logger.error(f"Error in calculate_used_car_price: {str(e)}")
+            logger.error(f"Parameters that caused error: Base price: {base_price}, Age: {car_age}, Kilometers: {car_kilometers}")
             print(f"Error calculating used car price: {str(e)}")
             return {
                 'base_price': base_price,
