@@ -23,7 +23,7 @@ logger = logging.getLogger('khodroyar_function_calls')
 
 
 class KhodroyarAIAgent:
-    """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
+    """AI Agent for Khodroyar chatbot using Aval AI API with Grok-4"""
     car_search_service = get_car_search_service()
     car_details_service = get_car_details_service()
 
@@ -232,15 +232,15 @@ class KhodroyarAIAgent:
             messages.extend(conversation_history)
             messages.append({"role": "user", "content": user_message})
             
-            # Try GPT-4.1 models in order of preference
-            gpt4_models = [
-                "gpt-4.1",      # Primary GPT-4.1 model
+            # Try Grok-4 models in order of preference
+            grok4_models = [
+                "grok-4",      # Primary Grok-4 model
             ]
             
             response = None
             used_model = None
             
-            for model in gpt4_models:
+            for model in grok4_models:
                 try:
                     response = self.client.chat.completions.create(
                         model=model,
@@ -261,7 +261,7 @@ class KhodroyarAIAgent:
                     continue
             
             if response is None:
-                raise Exception("All GPT models failed to respond")
+                raise Exception("All Grok models failed to respond")
             
             # Check if function call was requested
             if response.choices[0].message.function_call:
@@ -466,16 +466,16 @@ class KhodroyarAIAgent:
     
     def test_connection(self) -> bool:
         """
-        Test connection to Aval AI API with GPT-4.1
+        Test connection to Aval AI API with Grok-4
         
         Returns:
             True if connection successful, False otherwise
         """
         try:
-            # Try GPT-4.1 first, then fallback to other models
-            gpt4_models = ["gpt-4.1", "gpt-4.1-turbo", "gpt-4", "gpt-3.5-turbo"]
+            # Try Grok-4 first, then fallback to other models
+            grok4_models = ["grok-4"]
             
-            for model in gpt4_models:
+            for model in grok4_models:
                 try:
                     response = self.client.chat.completions.create(
                         model=model,
