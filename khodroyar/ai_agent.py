@@ -405,6 +405,7 @@ class KhodroyarAIAgent:
    - تعویض قطعه: {{'type': 'replacement', 'part': 'نام قطعه'}}
    - تعویض اتاق: {{'type': 'body_replacement', 'part': 'نام قطعه'}}
    - تعویض کاپوت: {{'type': 'hood_replacement', 'part': 'hood'}}
+   - دوررنگ/تمام رنگ: {{'type': 'full_paint'}}
 5. تابع قیمت نهایی را محاسبه می‌کند
 
 
@@ -647,6 +648,10 @@ class KhodroyarAIAgent:
             elif damage_type == 'hood_replacement':
                 # Hood replacement: 9% reduction
                 condition_factor *= 0.91
+                
+            elif damage_type == 'full_paint':
+                # Full paint (دوررنگ/تمام رنگ): 37% reduction
+                condition_factor *= 0.63
         
         return condition_factor
 
