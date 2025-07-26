@@ -191,21 +191,6 @@ class KhodroyarAIAgent:
                                     },
                                     "required": ["type"]
                                 }
-                            },
-                            "brand_popularity": {
-                                "type": "number",
-                                "description": "Brand popularity factor (1.0 for popular, 0.9 for less popular)",
-                                "default": 1.0
-                            },
-                            "options_factor": {
-                                "type": "number",
-                                "description": "Options factor (0.9 to 1.1)",
-                                "default": 1.0
-                            },
-                            "market_factor": {
-                                "type": "number",
-                                "description": "Market factor (usually 1.0)",
-                                "default": 1.0
                             }
                         },
                         "required": ["base_price", "car_age", "car_kilometers", "damages"]
@@ -285,10 +270,7 @@ class KhodroyarAIAgent:
                             base_price=function_args["base_price"],
                             car_age=function_args["car_age"],
                             car_kilometers=function_args["car_kilometers"],
-                            damages=function_args["damages"],
-                            brand_popularity=function_args.get("brand_popularity", 1.0),
-                            options_factor=function_args.get("options_factor", 1.0),
-                            market_factor=function_args.get("market_factor", 1.0)
+                            damages=function_args["damages"]
                         )
                         
                     except Exception as func_error:
@@ -424,7 +406,7 @@ class KhodroyarAIAgent:
    - تعویض قطعه: {{'type': 'replacement', 'part': 'نام قطعه'}}
    - تعویض اتاق: {{'type': 'body_replacement', 'part': 'نام قطعه'}}
    - تعویض کاپوت: {{'type': 'hood_replacement', 'part': 'hood'}}
-5. فاکتورهای اختیاری: محبوبیت برند (1.0 برای محبوب، 0.9 برای کم‌محبوب)، آپشن‌ها (0.9-1.1)
+5. تابع قیمت نهایی را محاسبه می‌کند
 
 
 برای دریافت اطلاعات فنی و مشخصات خودرو (مشخصات فنی، مزایا و معایب):
@@ -498,14 +480,11 @@ class KhodroyarAIAgent:
         base_price: float,
         car_age: int,
         car_kilometers: int,
-        damages: List[Dict],
-        brand_popularity: float = 1.0,
-        options_factor: float = 1.0,
-        market_factor: float = 1.0
+        damages: List[Dict]
     ) -> Dict[str, float]:
         """
         Calculate used car price based on the formula:
-        P = P0 * (1-δA) * (1-δK) * Ccond * Copt * Cbrand * Cmarket
+        P = P0 * (1-δA) * (1-δK) * Ccond
         
         Args:
             base_price: Original car price (P0)
@@ -515,9 +494,6 @@ class KhodroyarAIAgent:
                 - type: 'paint', 'replacement', 'body_replacement', 'hood_replacement'
                 - part: part name (for paint and replacement)
                 - severity: 'minor', 'major' (for paint)
-            brand_popularity: Brand popularity factor (1.0 for popular brands, 0.9 for less popular)
-            options_factor: Options factor (0.9 to 1.1, default 1.0)
-            market_factor: Market factor (usually 1.0)
             
         Returns:
             Dictionary with calculated price and breakdown
@@ -529,7 +505,6 @@ class KhodroyarAIAgent:
             logger.info(f"Damages: {len(damages)} items")
             for i, damage in enumerate(damages):
                 logger.info(f"  Damage {i+1}: {damage}")
-            logger.info(f"Factors: Brand: {brand_popularity}, Options: {options_factor}, Market: {market_factor}")
             
             # Calculate annual depreciation (δA)
             annual_depreciation = self._calculate_annual_depreciation(car_age)
@@ -545,10 +520,7 @@ class KhodroyarAIAgent:
                 base_price * 
                 (1 - annual_depreciation) * 
                 (1 - kilometer_depreciation) * 
-                condition_factor * 
-                options_factor * 
-                brand_popularity * 
-                market_factor
+                condition_factor
             )
             
             # Calculate price range (±5%)
@@ -562,10 +534,7 @@ class KhodroyarAIAgent:
                 'price_range_upper': price_range_upper,
                 'annual_depreciation': annual_depreciation,
                 'kilometer_depreciation': kilometer_depreciation,
-                'condition_factor': condition_factor,
-                'options_factor': options_factor,
-                'brand_popularity': brand_popularity,
-                'market_factor': market_factor
+                'condition_factor': condition_factor
             }
             
         except Exception as e:
