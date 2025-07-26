@@ -23,7 +23,7 @@ logger = logging.getLogger('khodroyar_function_calls')
 
 
 class KhodroyarAIAgent:
-    """AI Agent for Khodroyar chatbot using Aval AI API with Gemini 2.5"""
+    """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
     car_search_service = get_car_search_service()
     car_details_service = get_car_details_service()
 
@@ -217,15 +217,15 @@ class KhodroyarAIAgent:
             messages.extend(conversation_history)
             messages.append({"role": "user", "content": user_message})
             
-            # Try Gemini 2.5 models in order of preference
-            gemini_models = [
-                "gemini-2.5-flash",      # Primary Gemini 2.5 model
+            # Try GPT-4.1 models in order of preference
+            gpt_models = [
+                "gpt-4.1",      # Primary GPT-4.1 model
             ]
             
             response = None
             used_model = None
             
-            for model in gemini_models:
+            for model in gpt_models:
                 try:
                     response = self.client.chat.completions.create(
                         model=model,
@@ -246,7 +246,7 @@ class KhodroyarAIAgent:
                     continue
             
             if response is None:
-                raise Exception("All Gemini models failed to respond")
+                raise Exception("All GPT models failed to respond")
             
             # Check if function call was requested
             if response.choices[0].message.function_call:
@@ -447,16 +447,16 @@ class KhodroyarAIAgent:
     
     def test_connection(self) -> bool:
         """
-        Test connection to Aval AI API with Gemini 2.5
+        Test connection to Aval AI API with GPT-4.1
         
         Returns:
             True if connection successful, False otherwise
         """
         try:
-            # Try Gemini 2.5 first, then fallback to other models
-            gemini_models = ["gemini-2.5-flash"]
+            # Try GPT-4.1 first, then fallback to other models
+            gpt_models = ["gpt-4.1"]
             
-            for model in gemini_models:
+            for model in gpt_models:
                 try:
                     response = self.client.chat.completions.create(
                         model=model,
