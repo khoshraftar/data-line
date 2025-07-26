@@ -190,8 +190,6 @@ class KhodroyarAIAgent:
         Returns:
             System prompt string
         """
-        # Get car prices for the prompt
-        car_prices_info = self.car_search_service.get_car_prices_for_prompt()
         
         # Get current date
         current_date = self._get_current_shamsi_date()
