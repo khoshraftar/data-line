@@ -49,6 +49,57 @@ class CarSearchService:
             print(f"Error loading car data: {str(e)}")
             return []
     
+    def _format_price(self, price: int) -> str:
+        """
+        Format price in Persian/Farsi format
+        
+        Args:
+            price: Price in tomans
+            
+        Returns:
+            Formatted price string in Persian
+        """
+        try:
+            if price is None or price <= 0:
+                return "قیمت نامشخص"
+            
+            # Convert to Persian digits
+            persian_digits = {
+                '0': '۰', '1': '۱', '2': '۲', '3': '۳', '4': '۴',
+                '5': '۵', '6': '۶', '7': '۷', '8': '۸', '9': '۹'
+            }
+            
+            def to_persian_number(num):
+                return ''.join(persian_digits[digit] for digit in str(num))
+            
+            # Format based on price range
+            if price >= 1_000_000_000:  # 1 billion or more
+                billions = price // 1_000_000_000
+                millions = (price % 1_000_000_000) // 1_000_000
+                
+                if millions > 0:
+                    return f"{to_persian_number(billions)} میلیارد و {to_persian_number(millions)} میلیون تومان"
+                else:
+                    return f"{to_persian_number(billions)} میلیارد تومان"
+                    
+            elif price >= 1_000_000:  # 1 million or more
+                millions = price // 1_000_000
+                thousands = (price % 1_000_000) // 1_000
+                
+                if thousands > 0:
+                    return f"{to_persian_number(millions)} میلیون و {to_persian_number(thousands)} هزار تومان"
+                else:
+                    return f"{to_persian_number(millions)} میلیون تومان"
+                    
+            elif price >= 1_000:  # 1 thousand or more
+                thousands = price // 1_000
+                return f"{to_persian_number(thousands)} هزار تومان"
+            else:
+                return f"{to_persian_number(price)} تومان"
+                
+        except Exception as e:
+            print(f"Error formatting price {price}: {str(e)}")
+            return "قیمت نامشخص"
 
     def get_car_prices_for_prompt(self) -> str:
         """
