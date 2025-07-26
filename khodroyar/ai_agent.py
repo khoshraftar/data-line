@@ -7,11 +7,13 @@ import jdatetime
 import pytz
 from django.conf import settings
 from .models import Conversation, Message
+from .car_search import get_car_search_service
 
 
 class KhodroyarAIAgent:
     """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
-    
+    car_search_service = get_car_search_service()
+
     def __init__(self):
         """Initialize the AI agent with Aval AI configuration"""
         self.base_url = settings.AVAL_AI_BASE_URL
@@ -193,6 +195,7 @@ class KhodroyarAIAgent:
         
         # Get current date
         current_date = self._get_current_shamsi_date()
+        car_prices_info = self.car_search_service.get_car_prices_for_prompt()
         
         base_prompt = f"""شما ربات خودرویار هستید، یک دستیار هوشمند برای کمک به کاربران در زمینه انتخاب خودرو صفر و دست دوم جهت خرید بر اساس بودجه . 
 
