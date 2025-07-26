@@ -110,7 +110,7 @@ class CarPriceCalculator:
                 depreciation *= 0.95
             else:
                 # After 4 years: 2% depreciation each year
-                depreciation *= 0.98
+                depreciation *= 0.97
         
         return 1.0 - depreciation
     

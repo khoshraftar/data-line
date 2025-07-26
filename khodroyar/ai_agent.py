@@ -9,6 +9,7 @@ import pytz
 from django.conf import settings
 from .models import Conversation, Message
 from .car_search import get_car_search_service
+from .car_details_service import get_car_details_service
 
 # Configure logging for function calls
 logging.basicConfig(
@@ -24,6 +25,7 @@ logger = logging.getLogger('khodroyar_function_calls')
 class KhodroyarAIAgent:
     """AI Agent for Khodroyar chatbot using Aval AI API with GPT-4.1"""
     car_search_service = get_car_search_service()
+    car_details_service = get_car_details_service()
 
     def __init__(self):
         """Initialize the AI agent with Aval AI configuration"""
@@ -208,6 +210,20 @@ class KhodroyarAIAgent:
                         },
                         "required": ["base_price", "car_age", "car_kilometers", "damages"]
                     }
+                },
+                {
+                    "name": "get_car_details",
+                    "description": "Get detailed information about a specific car model, including technical specifications, pros and cons using similarity search from car details database.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "car_name": {
+                                "type": "string",
+                                "description": "Full car name to search for (e.g., 'پژو 207', 'دنا پلاس', 'سورن پلاس', 'لاماری ایما')"
+                            }
+                        },
+                        "required": ["car_name"]
+                    }
                 }
             ]
             
@@ -264,9 +280,6 @@ class KhodroyarAIAgent:
                     # Log function parameters
                     logger.info(f"Function parameters: {json.dumps(function_args, ensure_ascii=False, indent=2)}")
                     
-                    # Record start time for performance tracking
-                    start_time = datetime.now()
-                    
                     try:
                         # Call the function
                         result = self.calculate_used_car_price(
@@ -279,22 +292,8 @@ class KhodroyarAIAgent:
                             market_factor=function_args.get("market_factor", 1.0)
                         )
                         
-                        # Calculate execution time
-                        execution_time = (datetime.now() - start_time).total_seconds()
-                        
-                        # Log successful execution
-                        logger.info(f"Function executed successfully in {execution_time:.3f} seconds")
-                        logger.info(f"Function result: Base price: {result['base_price']:,} -> Final price: {result['final_price']:,.0f}")
-                        logger.info(f"Price range: {result['price_range_lower']:,.0f} - {result['price_range_upper']:,.0f}")
-                        
-                        # Log detailed breakdown
-                        logger.info(f"Depreciation breakdown: Annual: {result['annual_depreciation']:.2%}, Kilometer: {result['kilometer_depreciation']:.2%}, Condition: {result['condition_factor']:.3f}")
-                        
                     except Exception as func_error:
-                        # Log function execution error
-                        execution_time = (datetime.now() - start_time).total_seconds()
-                        logger.error(f"Function execution failed after {execution_time:.3f} seconds: {str(func_error)}")
-                        logger.error(f"Function arguments that caused error: {json.dumps(function_args, ensure_ascii=False)}")
+                        logger.error(f"Function execution failed: {str(func_error)}")
                         raise func_error
                     
                     # Add function result to messages
@@ -315,8 +314,40 @@ class KhodroyarAIAgent:
                     
                     ai_response = final_response.choices[0].message.content.strip()
                     
-                    # Log final response
-                    logger.info(f"Final AI response generated successfully")
+                elif function_call.name == "get_car_details":
+                    # Parse function arguments
+                    function_args = json.loads(function_call.arguments)
+                    
+                    # Log function parameters
+                    logger.info(f"Function parameters: {json.dumps(function_args, ensure_ascii=False, indent=2)}")
+                    
+                    try:
+                        # Call the function
+                        result = self.car_details_service.get_car_details_and_pros_cons(
+                            car_name=function_args["car_name"]
+                        )
+                        
+                    except Exception as func_error:
+                        logger.error(f"Function execution failed: {str(func_error)}")
+                        raise func_error
+                    
+                    # Add function result to messages
+                    messages.append({
+                        "role": "function",
+                        "name": "get_car_details",
+                        "content": json.dumps(result, ensure_ascii=False)
+                    })
+                    
+                    # Get final response from AI
+                    final_response = self.client.chat.completions.create(
+                        model=used_model,
+                        messages=messages,
+                        max_tokens=16000,
+                        temperature=0.7,
+                        stream=False
+                    )
+                    
+                    ai_response = final_response.choices[0].message.content.strip()
                     
                 else:
                     # Unknown function call
@@ -372,6 +403,7 @@ class KhodroyarAIAgent:
 - قبل از ارائه قیمت خودروها، حتماً تاریخ فعلی را ذکر کنید
 - شما در حال حاضر این امکان را ندارید که آگهی خودرو های دیوار دریافت کنید یا پیشنهاد دهید و از کاربر بخواید که مشخصات خوددرو برای شما توضیح دهد تا قیمت را ارزیابی کنید
 - خودرو های سایپا کم خرج تر از ایران خودرو هستند و برای مسافر کشی و اسنپ مناسب تر هستند
+- در صورتی که از یک اسم چندین مدل خودرو وجود داشت مثل سورن از کاربر بپرسید که به دنبال کدام مدل هست
 
 اطلاعات قیمت خودروهای صفر:
 
@@ -394,14 +426,30 @@ class KhodroyarAIAgent:
    - تعویض کاپوت: {{'type': 'hood_replacement', 'part': 'hood'}}
 5. فاکتورهای اختیاری: محبوبیت برند (1.0 برای محبوب، 0.9 برای کم‌محبوب)، آپشن‌ها (0.9-1.1)
 
+
+برای دریافت اطلاعات فنی و مشخصات خودرو (مشخصات فنی، مزایا و معایب):
+- از تابع get_car_details استفاده کنید
+- این تابع با جستجوی اطلاعات کامل خودرو را از پایگاه داده پیدا می‌کند
+- ورودی مورد نیاز: نام کامل خودرو (مثل 'پژو 207 دنده‌ای هیدرولیک')
+- خروجی: مشخصات فنی، مزایا، معایب و اطلاعات کامل خودرو
+
+نحوه استفاده از تابع get_car_details:
+1. نام کامل خودرو را وارد کنید (مثل 'پژو 207 دنده‌ای هیدرولیک')
+2. تابع با جستجوی شباهت، بهترین تطبیق را پیدا می‌کند
+3. اطلاعات برگشتی شامل: مشخصات فنی، مزایا، معایب و نام دقیق خودرو
+4. اگر خروجی با خودرو مورد نظر تطبیق نداشت از اطلاعات استفاده نکن و از خودت جواب بده
+
+
+
 برای پاسخ به سوالات کاربر:
 - اگر کاربر بودجه خود را اعلام کرد، از اطلاعات قیمت بالا برای پیدا کردن خودروهای مناسب استفاده کنید
 - اگر کاربر قیمت خودروی خاصی را پرسید، از اطلاعات قیمت بالا برای پیدا کردن آن خودرو استفاده کنید
+- اگر کاربر درباره مشخصات، مزایا یا معایب خودروی خاصی سوال کرد، از تابع get_car_details استفاده کنید
 - اگر صفر خودرو تولید نمیشد و قیمتش رو در لیست بالا نداشتی نزدیک ترین خودرو رو انتخاب کن و ۱۰ درصد کمتر در نظر بگیر به عنوان قیمت صفر خودرو مذکور
 - همیشه قیمت‌ها را به صورت فارسی و خوانا ارائه دهید (مثلاً ۱ میلیارد و ۵۰۰ میلیون تومان)
 - برای محاسبه قیمت خودروهای دست دوم، حتماً از تابع calculate_used_car_price استفاده کنید
 - قیمت نهایی را به صورت بازه ۵ درصد بالاتر و ۵ درصد پایین‌تر ارائه دهید
-- قبل از ارائه هرگونه اطلاعات قیمت، حتماً تاریخ فعلی را ذکر کنید: {current_date}"""
+-  قبل از ارائه هرگونه اطلاعات قیمت، حتماً تاریخ فعلی را ذکر کنید: {current_date} مثلا'قیمت ۲۰۷ اتوماتیک سقف شیشه ای در تاریخ ۲۰ بهمن ۱۴۰۴ ...'""" 
 
         # Add user context if available
         if user_context:
@@ -485,15 +533,12 @@ class KhodroyarAIAgent:
             
             # Calculate annual depreciation (δA)
             annual_depreciation = self._calculate_annual_depreciation(car_age)
-            logger.info(f"Annual depreciation calculated: {annual_depreciation:.2%}")
             
             # Calculate kilometer depreciation (δK)
             kilometer_depreciation = self._calculate_kilometer_depreciation(car_age, car_kilometers)
-            logger.info(f"Kilometer depreciation calculated: {kilometer_depreciation:.2%}")
             
             # Calculate condition factor (Ccond)
             condition_factor = self._calculate_condition_factor(damages, car_age)
-            logger.info(f"Condition factor calculated: {condition_factor:.3f}")
             
             # Apply the formula
             final_price = (
@@ -510,11 +555,6 @@ class KhodroyarAIAgent:
             price_range_lower = final_price * 0.95
             price_range_upper = final_price * 1.05
             
-            # Log final calculation details
-            logger.info(f"Final calculation: {base_price:,} * {1-annual_depreciation:.3f} * {1-kilometer_depreciation:.3f} * {condition_factor:.3f} * {options_factor:.3f} * {brand_popularity:.3f} * {market_factor:.3f} = {final_price:,.0f}")
-            logger.info(f"Price range: {price_range_lower:,.0f} - {price_range_upper:,.0f}")
-            logger.info(f"=== calculate_used_car_price completed ===")
-            
             return {
                 'base_price': base_price,
                 'final_price': final_price,
@@ -530,7 +570,6 @@ class KhodroyarAIAgent:
             
         except Exception as e:
             logger.error(f"Error in calculate_used_car_price: {str(e)}")
-            logger.error(f"Parameters that caused error: Base price: {base_price}, Age: {car_age}, Kilometers: {car_kilometers}")
             print(f"Error calculating used car price: {str(e)}")
             return {
                 'base_price': base_price,

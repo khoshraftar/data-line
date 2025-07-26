@@ -1,7 +1,7 @@
 {
   "scraped_at": "2025-07-26 13:56:19",
   "source_url": "https://www.hamrah-mechanic.com/carprice/",
-  "total_cars": 330,
+  "total_cars": 335,
   "cars": [
     {
       "brand": "آئودی",
@@ -116,6 +116,18 @@
       "car_name": "پژو 206 تیپ 3-1402",
       "full_car_name": "ایران خودرو پژو 206 تیپ 3-1402",
       "price": "710000000"
+    },
+    {
+      "brand": "ایران خودرو",
+      "car_name": "پژو 206 تیپ 5",
+      "full_car_name": "ایران خودرو پژو 206 تیپ 5-1402",
+      "price": "730000000"
+    },
+    {
+      "brand": "ایران خودرو",
+      "car_name": "پژو 206 تیپ 2",
+      "full_car_name": "ایران خودرو پژو 206 تیپ 2-1402",
+      "price": "670000000"
     },
     {
       "brand": "ایران خودرو",

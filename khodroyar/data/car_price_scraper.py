@@ -161,7 +161,7 @@ class CarPriceScraper:
         try:
             # Create the data directory path
             import os
-            data_dir = 'khodroyar/data'
+            data_dir = '.'
             os.makedirs(data_dir, exist_ok=True)
             
             # Full path for the file
